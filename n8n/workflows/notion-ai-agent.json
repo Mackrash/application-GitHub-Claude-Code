@@ -1,0 +1,104 @@
+{
+  "name": "Agent IA Notion (MCP)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-chat",
+      "name": "Chat Trigger",
+      "type": "n8n-nodes-base.chatTrigger",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Tu es un assistant expert Notion. Tu peux créer, modifier, rechercher et organiser tout le contenu Notion de l'utilisateur.\n\nRègles:\n- Utilise toujours notion_search en premier pour trouver les pages/databases existantes avant de créer du nouveau contenu\n- Quand tu crées du contenu, utilise un formatage riche (headings, listes, etc.)\n- Confirme toujours ce que tu as fait après chaque action\n- Si une opération échoue, explique pourquoi et propose une alternative\n\nTu as accès à tous les outils Notion via MCP: recherche, pages, databases, blocs, commentaires, utilisateurs."
+        }
+      },
+      "id": "agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "openai-model",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [400, 500],
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sseUrl": "http://notion-mcp:3001/sse"
+      },
+      "id": "mcp-client",
+      "name": "MCP Client (Notion)",
+      "type": "@n8n/n8n-nodes-langchain.toolMcp",
+      "typeVersion": 1,
+      "position": [600, 500]
+    }
+  ],
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client (Notion)": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AI",
+      "id": "1"
+    },
+    {
+      "name": "Notion",
+      "id": "2"
+    },
+    {
+      "name": "MCP",
+      "id": "3"
+    }
+  ]
+}

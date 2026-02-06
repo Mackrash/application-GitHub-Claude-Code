@@ -1,0 +1,26 @@
+{
+  "name": "notion-mcp-n8n",
+  "version": "1.0.0",
+  "description": "MCP Server Notion pour n8n - Permet à un agent IA de gérer tout Notion via n8n",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "start:sse": "MCP_TRANSPORT=sse node dist/index.js",
+    "dev:sse": "MCP_TRANSPORT=sse tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@notionhq/client": "^2.2.15",
+    "express": "^4.21.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
