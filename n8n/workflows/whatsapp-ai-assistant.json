@@ -1,0 +1,1119 @@
+{
+  "name": "WhatsApp AI Assistant - Tony",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [160, 496],
+      "id": "2d1d4c72-26f1-4e8b-823d-5e34fdbdfb8b",
+      "name": "Webhook",
+      "webhookId": "YOUR-WEBHOOK-UUID"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "audioMessage",
+                    "operator": { "type": "string", "operation": "equals" },
+                    "id": "723e5a96-07ad-474e-a5e0-327bd558bcdf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "41c0705b-7ce9-4ccb-adb7-1d5af414f3b9",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "conversation",
+                    "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [432, 496],
+      "id": "77267519-88dc-417b-aa7e-85c0593721be",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "get-media-base64",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "messageId": "={{ $('Webhook').item.json.body.data.key.id }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [672, 496],
+      "id": "bed25f25-d998-4696-9f37-b1010a21acd4",
+      "name": "Obter m dia em base64",
+      "credentials": {
+        "evolutionApi": { "id": "gBv0uDZoPPTzfCMc", "name": "Evolution account" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data.base64",
+        "options": {
+          "fileName": "={{ $json.data.fileName }}",
+          "mimeType": "={{ $json.data.mimetype }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [896, 496],
+      "id": "e4d52fc4-98ba-4f1f-a350-c09cc5572acf",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [1120, 496],
+      "id": "955987f5-2ff9-4f67-94c2-a9bb9aa4400c",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": { "id": "HyeSPnEldlY5Godx", "name": "OpenAi account" }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8d494f55-5961-48b3-b1da-c5f262499c3d",
+              "name": "text",
+              "value": "={{ $('Webhook').item.json.body.data.message.conversation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [672, 720],
+      "id": "5045d458-950c-4b04-acdd-507255aa6f1b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "Tu es l'agent IA de Tony, un assistant intelligent de productivité.\n\nDate et heure actuelles : {{ $now }}\nFuseau horaire : Noumea\n\n## Capacités disponibles\n\n### 📅 Gestion du calendrier (Calendar MCP)\n- Vérifier les disponibilités\n- Créer, modifier, supprimer des événements\n- Récupérer les événements à venir\n\n### 📧 Gestion des emails (Gmail MCP)\n- Lire, envoyer, répondre aux emails\n- Organiser avec des labels\n- Chercher et filtrer des messages\n\n### 👥 Gestion des contacts (Google Contacts MCP)\n- Chercher des contacts\n- Récupérer emails et téléphones\n\n### 📝 Notion (Notion MCP)\n- Créer, lire, modifier, archiver des pages\n- Rechercher dans tout le workspace\n- Créer et requêter des databases\n- Créer, modifier, supprimer des entrées dans les databases\n- Ajouter et lire du contenu (blocs) dans les pages\n- Ajouter et lire des commentaires\n- Lister les utilisateurs du workspace\n- Gérer les propriétés : tags, statuts, dates, relations\n\n## Règles\n1. Sois concis (WhatsApp = messages courts)\n2. Confirme toujours l'action effectuée\n3. Si tu n'es pas sûr, demande une clarification\n4. Utilise le format 24h pour les heures\n5. Ne jamais inventer d'email ou de numéro\n6. Toujours demander confirmation avant d'envoyer un email\n7. Pour Notion : utilise notion_search d'abord pour trouver les pages/databases existantes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [1840, 496],
+      "id": "0a8d4794-7e3b-428f-b14e-417b371b838c",
+      "name": "Control center"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [1568, 688],
+      "id": "69d7c5cf-56ba-403a-8c44-07f3220f6ff0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": { "id": "HyeSPnEldlY5Godx", "name": "OpenAi account" }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.data.key.remoteJid }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [1760, 672],
+      "id": "9cd5c40f-31a4-4af1-b29c-86c5906c7c2b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "={{ $env.MCP_CALENDAR_URL }}",
+        "options": { "timeout": 60000 }
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [1680, 912],
+      "id": "89fb10d8-527e-4d8e-be13-344d214adac4",
+      "name": "Calendar mcp"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "={{ $env.MCP_GMAIL_URL }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [1840, 912],
+      "id": "9fe6f74f-911e-4c74-8ca0-dd7124cdba17",
+      "name": "Gmail MCP"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "={{ $env.MCP_GOOGLE_CONTACTS_URL }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [2016, 912],
+      "id": "91507358-84fc-45f8-be28-5f498f172944",
+      "name": "Google Contact MCP"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "={{ $env.MCP_NOTION_URL }}",
+        "options": { "timeout": 60000 }
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [2192, 912],
+      "id": "91d7910d-4ae4-4918-8926-964fb2b6e97b",
+      "name": "Notion mcp"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('UserNum').item.json.type }}",
+                    "rightValue": "audioMessage",
+                    "operator": { "type": "string", "operation": "equals" },
+                    "id": "723e5a96-07ad-474e-a5e0-327bd558bcdf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra" }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [2928, 512],
+      "id": "672dfb5b-dc91-4883-a133-9b36c9199abc",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "send-presence",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "presence": "recording",
+        "delay": 2200
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [3152, 448],
+      "id": "6006f314-610e-474d-9bc3-67b6f3ee4373",
+      "name": "Enviar presen a",
+      "credentials": {
+        "evolutionApi": { "id": "gBv0uDZoPPTzfCMc", "name": "Evolution account" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $('Control center').isExecuted ?  $('Control center').item.json.output :  $('Support Client').item.json.output }}",
+        "voice": "fable",
+        "options": { "speed": 1.2 }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [3312, 448],
+      "id": "94061286-c1f3-487c-bd60-fbff29c419ce",
+      "name": "Generate audio",
+      "credentials": {
+        "openAiApi": { "id": "HyeSPnEldlY5Godx", "name": "OpenAi account" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [3472, 448],
+      "id": "3c81685a-f561-4677-a54f-778e700ab3e2",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "operation": "send-audio",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "media": "={{ $json.data }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [3632, 448],
+      "id": "ae5c2aba-f588-4065-af6e-cfb611563cbe",
+      "name": "Enviar audio",
+      "credentials": {
+        "evolutionApi": { "id": "gBv0uDZoPPTzfCMc", "name": "Evolution account" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "send-presence",
+        "instanceName": "={{ $json.instance }}",
+        "remoteJid": "={{ $('UserNum').item.json.remoteJID }}",
+        "delay": 2200
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [3376, 688],
+      "id": "33e19b9f-ac50-4ce0-8cd4-4bced1cb71cd",
+      "name": "Enviar presen a1",
+      "credentials": {
+        "evolutionApi": { "id": "gBv0uDZoPPTzfCMc", "name": "Evolution account" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $env.WHATSAPP_INSTANCE_NAME }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "messageText": "={{ $('Control center').isExecuted ?  $('Control center').item.json.output :  $('Support Client').item.json.output }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [3536, 688],
+      "id": "41aee158-a096-40cd-a4b0-5bbbcca5deda",
+      "name": "Enviar texto",
+      "credentials": {
+        "evolutionApi": { "id": "gBv0uDZoPPTzfCMc", "name": "Evolution account" }
+      }
+    },
+
+    {
+      "parameters": {
+        "path": "calendar-mcp-server"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [48, 2240],
+      "id": "4ae46131-56e2-44d1-b9c0-7bc3151dc548",
+      "name": "Calendar mcp server",
+      "webhookId": "YOUR-MCP-CALENDAR-UUID"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Check if a slot is available on my calendar",
+        "resource": "calendar",
+        "calendar": { "__rl": true, "value": "tony.iorio@solarconcept.nc", "mode": "list", "cachedResultName": "tony.iorio@solarconcept.nc" },
+        "timeMin": "={{ $fromAI('Start_Time', '', 'string') }}",
+        "timeMax": "={{ $fromAI('End_Time', '', 'string') }}",
+        "options": {}
+      },
+      "id": "069c34c3-43ed-4fe8-8873-596360bfc896",
+      "name": "Check Availability",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [-80, 2432],
+      "typeVersion": 1.3,
+      "credentials": {
+        "googleCalendarOAuth2Api": { "id": "5s8a0t62VCucVYka", "name": "Tony Calendar account" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get future events on Google Calendar",
+        "operation": "getAll",
+        "calendar": { "__rl": true, "value": "tony.iorio@solarconcept.nc", "mode": "list", "cachedResultName": "tony.iorio@solarconcept.nc" },
+        "returnAll": true,
+        "timeMin": "={{ $fromAI('After', 'Should be a future date and time', 'string') }}",
+        "timeMax": "={{ $fromAI('Before', '', 'string') }}",
+        "options": { "orderBy": "startTime", "recurringEventHandling": "expand" }
+      },
+      "id": "8d86bb1d-1a81-4dcf-ae19-7c19f7e80856",
+      "name": "Get all Events",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [16, 2512],
+      "typeVersion": 1.3,
+      "credentials": {
+        "googleCalendarOAuth2Api": { "id": "5s8a0t62VCucVYka", "name": "Tony Calendar account" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete Calendar Event",
+        "operation": "delete",
+        "calendar": { "__rl": true, "value": "tony.iorio@solarconcept.nc", "mode": "list", "cachedResultName": "tony.iorio@solarconcept.nc" },
+        "eventId": "={{ $fromAI('Event_ID', 'Pass the event id of the event to delete', 'string') }}",
+        "options": {}
+      },
+      "id": "fd2dbf88-ae42-4b73-a55a-86f5b4aa3fc0",
+      "name": "Delete Calendar Event",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [96, 2624],
+      "typeVersion": 1.3,
+      "credentials": {
+        "googleCalendarOAuth2Api": { "id": "5s8a0t62VCucVYka", "name": "Tony Calendar account" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update an event on Google Calendar",
+        "operation": "update",
+        "calendar": { "__rl": true, "value": "tony.iorio@solarconcept.nc", "mode": "list", "cachedResultName": "tony.iorio@solarconcept.nc" },
+        "eventId": "={{ $fromAI('Event_ID', 'Pass the id of the event to reschedule or update', 'string') }}",
+        "useDefaultReminders": "={{ $fromAI('Use_Default_Reminders', '', 'boolean') }}",
+        "updateFields": {
+          "attendeesUi": {
+            "values": {
+              "mode": "replace",
+              "attendees": ["={{ $fromAI('attendees0_Attendees', '', 'string') }}"]
+            }
+          },
+          "end": "={{ $fromAI('End', '', 'string') }}",
+          "sendUpdates": "all",
+          "start": "={{ $fromAI('Start', '', 'string') }}"
+        }
+      },
+      "id": "5ec981f2-d076-45f0-8e85-44c9cb4d9d18",
+      "name": "Reschedule Event",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [224, 2640],
+      "typeVersion": 1.3,
+      "credentials": {
+        "googleCalendarOAuth2Api": { "id": "5s8a0t62VCucVYka", "name": "Tony Calendar account" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get an event in Google Calendar",
+        "operation": "get",
+        "calendar": { "__rl": true, "value": "tony.iorio@solarconcept.nc", "mode": "list", "cachedResultName": "tony.iorio@solarconcept.nc" },
+        "eventId": "={{ $fromAI('Event_ID', 'Pass the event id', 'string') }}",
+        "options": {}
+      },
+      "id": "d9910789-2c6e-45c2-9933-f12e2e197b79",
+      "name": "Get Event",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [304, 2528],
+      "typeVersion": 1.3,
+      "credentials": {
+        "googleCalendarOAuth2Api": { "id": "5s8a0t62VCucVYka", "name": "Tony Calendar account" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create an event on Google Calendar",
+        "calendar": { "__rl": true, "value": "tony.iorio@solarconcept.nc", "mode": "list", "cachedResultName": "tony.iorio@solarconcept.nc" },
+        "start": "={{ $fromAI('Start', '', 'string') }}",
+        "end": "={{ $fromAI('End', '', 'string') }}",
+        "useDefaultReminders": "={{ $fromAI('Use_Default_Reminders', '', 'boolean') }}",
+        "additionalFields": {
+          "description": "={{ $fromAI('Description', '', 'string') }}",
+          "summary": "={{ $fromAI('Summary', '', 'string') }}",
+          "visibility": "default"
+        }
+      },
+      "id": "b3c99dc7-ebb4-4ff7-bef7-c0469bf0fab4",
+      "name": "Create an event",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [400, 2416],
+      "typeVersion": 1.3,
+      "credentials": {
+        "googleCalendarOAuth2Api": { "id": "5s8a0t62VCucVYka", "name": "Tony Calendar account" }
+      }
+    },
+
+    {
+      "parameters": {
+        "path": "gmail-mcp-server"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [928, 2192],
+      "id": "85d217bb-3e03-4ae2-a655-a11fbb5ae7c5",
+      "name": "MCP Server Trigger",
+      "webhookId": "YOUR-MCP-GMAIL-UUID"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI('To', '', 'string') }}",
+        "subject": "={{ $fromAI('Subject', '', 'string') }}",
+        "message": "={{ $fromAI('Message', '', 'string') }}",
+        "options": { "appendAttribution": false }
+      },
+      "id": "315d4bbe-7d64-47ee-8166-a3cd1ab7ef82",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [656, 2400],
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": { "id": "Od5b7CicAnvDYc3A", "name": "Tony" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Reply to an email message.",
+        "operation": "reply",
+        "messageId": "={{ $fromAI('Message_ID', '', 'string') }}",
+        "emailType": "text",
+        "message": "={{ $fromAI('Message', '', 'string') }}",
+        "options": { "appendAttribution": false }
+      },
+      "id": "b9967a02-8ba8-459c-acbd-34c58475fa95",
+      "name": "Reply to an Email",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [752, 2464],
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": { "id": "Od5b7CicAnvDYc3A", "name": "Tony" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "filters": { "q": "={{ $fromAI('Search', '', 'string') }}" }
+      },
+      "id": "b7d5ed3e-e69b-44a5-818e-78eec490fd3b",
+      "name": "Get Emails",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [864, 2528],
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": { "id": "Od5b7CicAnvDYc3A", "name": "Tony" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Add one or more labels to an email message.",
+        "operation": "addLabels",
+        "messageId": "={{ $fromAI('Message_ID', '', 'string') }}",
+        "labelIds": "={{ $fromAI('Label_Names_or_IDs', '', 'string') }}"
+      },
+      "id": "a3d824ff-f2e2-4e00-82f1-67936d8a4761",
+      "name": "Add Label to Email",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [960, 2592],
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": { "id": "Od5b7CicAnvDYc3A", "name": "Tony" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve a list of labels.",
+        "resource": "label",
+        "returnAll": "={{ $fromAI('Return_All', '', 'boolean') }}"
+      },
+      "id": "edbdda7a-4c88-49c2-95fb-e0af7f908693",
+      "name": "Get Labels",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [1056, 2544],
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": { "id": "Od5b7CicAnvDYc3A", "name": "Tony" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create an email draft.",
+        "resource": "draft",
+        "subject": "={{ $fromAI('Subject', '', 'string') }}",
+        "emailType": "html",
+        "message": "={{ $fromAI('Message', '', 'string') }}",
+        "options": { "sendTo": "={{ $fromAI('To_Email', '', 'string') }}" }
+      },
+      "id": "0ec71d9a-54d2-46be-b0ff-43e778eb4d34",
+      "name": "Draft Email",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [1136, 2448],
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": { "id": "Od5b7CicAnvDYc3A", "name": "Tony" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Draft a reply to an email.",
+        "resource": "draft",
+        "subject": "={{ $fromAI('Subject', '', 'string') }}",
+        "emailType": "html",
+        "message": "={{ $fromAI('Message', '', 'string') }}",
+        "options": { "threadId": "={{ $fromAI('Thread_ID', '', 'string') }}" }
+      },
+      "id": "b2de7470-a80e-45d0-b70a-50b43d402703",
+      "name": "Draft Email Reply",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [1232, 2368],
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": { "id": "Od5b7CicAnvDYc3A", "name": "Tony" }
+      }
+    },
+
+    {
+      "parameters": {
+        "path": "google-contacts-mcp-server"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [1488, 2224],
+      "id": "ccd4de5c-3c62-4e61-9c20-9444091bacd6",
+      "name": "Google contact MCP server",
+      "webhookId": "YOUR-MCP-CONTACTS-UUID"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "fields": ["names", "emailAddresses"],
+        "useQuery": "={{ $fromAI('Use_Query', '', 'boolean') }}",
+        "query": "={{ $fromAI('Query', '', 'string') }}",
+        "rawData": true,
+        "options": {}
+      },
+      "id": "8164ba36-2d29-4bde-8309-43102a3f1a75",
+      "name": "Get Contacts",
+      "type": "n8n-nodes-base.googleContactsTool",
+      "position": [1520, 2368],
+      "typeVersion": 1,
+      "credentials": {
+        "googleContactsOAuth2Api": { "id": "65yZ0bOyh7KTOshs", "name": "Tony Google Contacts" }
+      }
+    },
+    {
+      "parameters": {
+        "familyName": "={{ $fromAI('Family_Name', '', 'string') }}",
+        "givenName": "={{ $fromAI('Given_Name', '', 'string') }}",
+        "additionalFields": {
+          "emailsUi": {
+            "emailsValues": [
+              { "type": "home", "value": "={{ $fromAI('emailsValues0_Value', '', 'string') }}" }
+            ]
+          },
+          "biographies": "={{ $fromAI('Notes', '', 'string') }}",
+          "phoneUi": {
+            "phoneValues": [
+              { "type": "home", "value": "={{ $fromAI('phoneValues0_Value', '', 'string') }}" }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleContactsTool",
+      "typeVersion": 1,
+      "position": [1712, 2368],
+      "id": "93e64c93-7eda-4cea-8f14-91926913f50e",
+      "name": "Create a contact in Google Contacts",
+      "credentials": {
+        "googleContactsOAuth2Api": { "id": "65yZ0bOyh7KTOshs", "name": "Tony Google Contacts" }
+      }
+    },
+
+    {
+      "parameters": {
+        "path": "notion-mcp-server"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [2320, 2128],
+      "id": "423ab0e7-e122-4883-8792-19f89b847a97",
+      "name": "Notion MCP",
+      "webhookId": "YOUR-MCP-NOTION-UUID"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create a new page in Notion under a parent page. Use this to create new pages with content.",
+        "pageId": "={{ $fromAI('Parent_Page_ID', 'The ID of the parent page', 'string') }}",
+        "title": "={{ $fromAI('Title', 'Title of the new page', 'string') }}",
+        "blockUi": {
+          "blockValues": [{ "richText": true }]
+        },
+        "options": {}
+      },
+      "id": "1223abe5-d14e-4715-936d-1dadfc2b4106",
+      "name": "Create Page",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2048, 2336],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get a Notion page by its ID. Returns the page properties and metadata.",
+        "operation": "get",
+        "pageId": "={{ $fromAI('Page_ID', 'The ID of the page to retrieve', 'string') }}"
+      },
+      "id": "30051d46-b0ac-47dd-a1ae-3a6ab6265012",
+      "name": "Get Page",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2144, 2400],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update properties of a Notion page (title, status, tags, dates, etc.)",
+        "operation": "update",
+        "pageId": "={{ $fromAI('Page_ID', 'The ID of the page to update', 'string') }}",
+        "propertiesUi": {
+          "propertyValues": []
+        },
+        "options": {}
+      },
+      "id": "33036bdf-3dac-42a4-807f-a74525a11c2d",
+      "name": "Update Page",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2256, 2464],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Archive (delete) a Notion page by its ID",
+        "operation": "archive",
+        "pageId": "={{ $fromAI('Page_ID', 'The ID of the page to archive/delete', 'string') }}"
+      },
+      "id": "370ed01e-3350-4ee3-b385-7755a5a28359",
+      "name": "Delete Page",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2352, 2528],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search for pages and databases in the entire Notion workspace by text query",
+        "operation": "search",
+        "text": "={{ $fromAI('Search_Query', 'The text to search for in Notion', 'string') }}",
+        "options": {
+          "filter": { "filters": {} }
+        }
+      },
+      "id": "af5a914b-0be2-43d4-ade7-f28fb56f5291",
+      "name": "Search Pages",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2448, 2480],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get the schema and structure of a Notion database by its ID",
+        "resource": "database",
+        "databaseId": "={{ $fromAI('Database_ID', 'The ID of the database to retrieve', 'string') }}"
+      },
+      "id": "76b5bb4e-2275-4ab7-859f-e3cb950d408f",
+      "name": "Get Database",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2528, 2384],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create a new entry (row) in a Notion database with a title and properties",
+        "resource": "databasePage",
+        "databaseId": "={{ $fromAI('Database_ID', 'The ID of the database to add the entry to', 'string') }}",
+        "title": "={{ $fromAI('Title', 'Title for the new entry', 'string') }}",
+        "propertiesUi": {
+          "propertyValues": []
+        },
+        "options": {}
+      },
+      "id": "25eb59ee-cdaa-483f-8894-54a99ccbb360",
+      "name": "Create Database Entry",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2624, 2304],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update an existing entry (row) in a Notion database. Modify its properties like status, tags, dates.",
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $fromAI('Page_ID', 'The ID of the database entry to update', 'string') }}",
+        "propertiesUi": {
+          "propertyValues": []
+        },
+        "options": {}
+      },
+      "id": "1e4b5f35-3ebf-4f29-b7e6-096f3e8daa08",
+      "name": "Update Database Entry",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2048, 2592],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Query all entries from a Notion database. Returns up to 100 rows with their properties.",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $fromAI('Database_ID', 'The ID of the database to query', 'string') }}",
+        "limit": 100,
+        "options": {}
+      },
+      "id": "9fccf412-4c6a-4e8a-83c5-7f2d78cc52cb",
+      "name": "Query Database",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2144, 2656],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append content blocks (text, headings, lists, etc.) to an existing Notion page",
+        "resource": "block",
+        "blockId": "={{ $fromAI('Page_ID', 'The ID of the page to add content to', 'string') }}",
+        "blockUi": {
+          "blockValues": [{ "richText": true }]
+        }
+      },
+      "id": "92e0b9f3-a4c3-46f1-8526-e8399528e1cf",
+      "name": "Append Content to Page",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2256, 2720],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get all content blocks from a Notion page. Returns the full page content (paragraphs, headings, lists, etc.)",
+        "resource": "block",
+        "operation": "getAll",
+        "blockId": "={{ $fromAI('Page_ID', 'The ID of the page to read content from', 'string') }}",
+        "returnAll": true
+      },
+      "id": "cdf418de-8a90-44fc-8d64-f8b776ccce15",
+      "name": "Get Page Content",
+      "type": "n8n-nodes-base.notionTool",
+      "position": [2352, 2784],
+      "typeVersion": 2.1,
+      "credentials": {
+        "notionApi": { "id": "FbuRupaJxhbJ2286", "name": "Tony Notion" }
+      }
+    },
+
+    {
+      "parameters": {
+        "content": "## Calendar MCP 📅\nYour scheduling hub.\n- Check availability\n- Create, reschedule, or delete events",
+        "height": 704,
+        "width": 624,
+        "color": 5
+      },
+      "id": "bc8527e2-bebc-4c1d-9f74-36e921e6d90f",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [-128, 2096],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Gmail MCP 📧\nFull email management.\n- Send & draft messages\n- Reply, label, and fetch emails",
+        "height": 640,
+        "width": 768,
+        "color": 3
+      },
+      "id": "f9aa8d31-62f2-4b23-bc61-005542fc12ca",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [608, 2112],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Google Contacts MCP 👥\nAccess and manage your contact list.\n- Fetch contacts for quick communication",
+        "height": 416,
+        "width": 448,
+        "color": 6
+      },
+      "id": "48be4c9d-27be-449b-8937-ad4c3db05be1",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [1424, 2096],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Notion MCP 📝\nComplete Notion workspace management.\n\n**Pages:** Create, read, update, archive, search\n**Databases:** Query, create/update entries, get schema\n**Blocks:** Read & append content to pages\n\nOutils connectes via MCP Client (externe)\net MCP Server (n8n natif) en double approche.",
+        "height": 948,
+        "width": 848,
+        "color": 4
+      },
+      "id": "638522a8-c6dc-4683-9c2f-481cf0abe20c",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [1984, 2080],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Switch", "type": "main", "index": 0 }]]
+    },
+    "Switch": {
+      "main": [
+        [{ "node": "Obter m dia em base64", "type": "main", "index": 0 }],
+        [{ "node": "Edit Fields", "type": "main", "index": 0 }]
+      ]
+    },
+    "Obter m dia em base64": {
+      "main": [[{ "node": "Convert to File", "type": "main", "index": 0 }]]
+    },
+    "Convert to File": {
+      "main": [[{ "node": "Transcribe a recording", "type": "main", "index": 0 }]]
+    },
+    "Transcribe a recording": {
+      "main": [[{ "node": "Control center", "type": "main", "index": 0 }]]
+    },
+    "Edit Fields": {
+      "main": [[{ "node": "Control center", "type": "main", "index": 0 }]]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [[{ "node": "Control center", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Simple Memory": {
+      "ai_memory": [[{ "node": "Control center", "type": "ai_memory", "index": 0 }]]
+    },
+    "Calendar mcp": {
+      "ai_tool": [[{ "node": "Control center", "type": "ai_tool", "index": 0 }]]
+    },
+    "Gmail MCP": {
+      "ai_tool": [[{ "node": "Control center", "type": "ai_tool", "index": 0 }]]
+    },
+    "Google Contact MCP": {
+      "ai_tool": [[{ "node": "Control center", "type": "ai_tool", "index": 0 }]]
+    },
+    "Notion mcp": {
+      "ai_tool": [[{ "node": "Control center", "type": "ai_tool", "index": 0 }]]
+    },
+    "Control center": {
+      "main": [[{ "node": "Switch2", "type": "main", "index": 0 }]]
+    },
+    "Switch2": {
+      "main": [
+        [{ "node": "Enviar presen a", "type": "main", "index": 0 }],
+        [{ "node": "Enviar presen a1", "type": "main", "index": 0 }]
+      ]
+    },
+    "Enviar presen a": {
+      "main": [[{ "node": "Generate audio", "type": "main", "index": 0 }]]
+    },
+    "Generate audio": {
+      "main": [[{ "node": "Extract from File", "type": "main", "index": 0 }]]
+    },
+    "Extract from File": {
+      "main": [[{ "node": "Enviar audio", "type": "main", "index": 0 }]]
+    },
+    "Enviar presen a1": {
+      "main": [[{ "node": "Enviar texto", "type": "main", "index": 0 }]]
+    },
+
+    "Check Availability": {
+      "ai_tool": [[{ "node": "Calendar mcp server", "type": "ai_tool", "index": 0 }]]
+    },
+    "Get all Events": {
+      "ai_tool": [[{ "node": "Calendar mcp server", "type": "ai_tool", "index": 0 }]]
+    },
+    "Delete Calendar Event": {
+      "ai_tool": [[{ "node": "Calendar mcp server", "type": "ai_tool", "index": 0 }]]
+    },
+    "Reschedule Event": {
+      "ai_tool": [[{ "node": "Calendar mcp server", "type": "ai_tool", "index": 0 }]]
+    },
+    "Get Event": {
+      "ai_tool": [[{ "node": "Calendar mcp server", "type": "ai_tool", "index": 0 }]]
+    },
+    "Create an event": {
+      "ai_tool": [[{ "node": "Calendar mcp server", "type": "ai_tool", "index": 0 }]]
+    },
+
+    "Send Email": {
+      "ai_tool": [[{ "node": "MCP Server Trigger", "type": "ai_tool", "index": 0 }]]
+    },
+    "Reply to an Email": {
+      "ai_tool": [[{ "node": "MCP Server Trigger", "type": "ai_tool", "index": 0 }]]
+    },
+    "Get Emails": {
+      "ai_tool": [[{ "node": "MCP Server Trigger", "type": "ai_tool", "index": 0 }]]
+    },
+    "Add Label to Email": {
+      "ai_tool": [[{ "node": "MCP Server Trigger", "type": "ai_tool", "index": 0 }]]
+    },
+    "Get Labels": {
+      "ai_tool": [[{ "node": "MCP Server Trigger", "type": "ai_tool", "index": 0 }]]
+    },
+    "Draft Email": {
+      "ai_tool": [[{ "node": "MCP Server Trigger", "type": "ai_tool", "index": 0 }]]
+    },
+    "Draft Email Reply": {
+      "ai_tool": [[{ "node": "MCP Server Trigger", "type": "ai_tool", "index": 0 }]]
+    },
+
+    "Get Contacts": {
+      "ai_tool": [[{ "node": "Google contact MCP server", "type": "ai_tool", "index": 0 }]]
+    },
+    "Create a contact in Google Contacts": {
+      "ai_tool": [[{ "node": "Google contact MCP server", "type": "ai_tool", "index": 0 }]]
+    },
+
+    "Create Page": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Get Page": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Update Page": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Delete Page": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Search Pages": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Get Database": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Create Database Entry": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Update Database Entry": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Query Database": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Append Content to Page": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    },
+    "Get Page Content": {
+      "ai_tool": [[{ "node": "Notion MCP", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "df9e788538b81bd9afcb9278e4794da7734defb03e200b926f701bd355bdb7e4"
+  },
+  "tags": [
+    { "name": "AI", "id": "1" },
+    { "name": "WhatsApp", "id": "2" },
+    { "name": "MCP", "id": "3" },
+    { "name": "Notion", "id": "4" }
+  ]
+}
