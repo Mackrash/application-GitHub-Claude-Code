@@ -31,7 +31,7 @@
                     "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
                     "rightValue": "audioMessage",
                     "operator": { "type": "string", "operation": "equals" },
-                    "id": "723e5a96-07ad-474e-a5e0-327bd558bcdf"
+                    "id": "cond-audio"
                   }
                 ],
                 "combinator": "and"
@@ -49,16 +49,79 @@
                 },
                 "conditions": [
                   {
-                    "id": "41c0705b-7ce9-4ccb-adb7-1d5af414f3b9",
                     "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
                     "rightValue": "conversation",
-                    "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" }
+                    "operator": { "type": "string", "operation": "equals" },
+                    "id": "cond-text"
                   }
                 ],
                 "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "imageMessage",
+                    "operator": { "type": "string", "operation": "equals" },
+                    "id": "cond-image"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "documentMessage",
+                    "operator": { "type": "string", "operation": "equals" },
+                    "id": "cond-doc"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Document"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "extendedTextMessage",
+                    "operator": { "type": "string", "operation": "equals" },
+                    "id": "cond-extended"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ExtendedText"
             }
           ]
         },
@@ -139,10 +202,70 @@
     },
     {
       "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-image-text",
+              "name": "text",
+              "value": "=[Image recue] {{ $('Webhook').item.json.body.data.message.imageMessage.caption || 'Pas de legende' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [672, 940],
+      "id": "edit-fields-image-001",
+      "name": "Edit Fields (Image)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-doc-text",
+              "name": "text",
+              "value": "=[Document recu : {{ $('Webhook').item.json.body.data.message.documentMessage.fileName || 'fichier' }}] {{ $('Webhook').item.json.body.data.message.documentMessage.caption || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [672, 1160],
+      "id": "edit-fields-doc-001",
+      "name": "Edit Fields (Document)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-ext-text",
+              "name": "text",
+              "value": "={{ $('Webhook').item.json.body.data.message.extendedTextMessage.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [672, 1380],
+      "id": "edit-fields-ext-001",
+      "name": "Edit Fields (Extended)"
+    },
+    {
+      "parameters": {
         "promptType": "define",
         "text": "={{ $json.text }}",
         "options": {
-          "systemMessage": "Tu es l'agent IA de Tony, un assistant intelligent de productivité.\n\nDate et heure actuelles : {{ $now }}\nFuseau horaire : Noumea\n\n## Capacités disponibles\n\n### 📅 Gestion du calendrier (Calendar MCP)\n- Vérifier les disponibilités\n- Créer, modifier, supprimer des événements\n- Récupérer les événements à venir\n\n### 📧 Gestion des emails (Gmail MCP)\n- Lire, envoyer, répondre aux emails\n- Organiser avec des labels\n- Chercher et filtrer des messages\n\n### 👥 Gestion des contacts (Google Contacts MCP)\n- Chercher des contacts\n- Récupérer emails et téléphones\n\n### 📝 Notion (Notion MCP)\n- Créer, lire, modifier, archiver des pages\n- Rechercher dans tout le workspace\n- Créer et requêter des databases\n- Créer, modifier, supprimer des entrées dans les databases\n- Ajouter et lire du contenu (blocs) dans les pages\n- Ajouter et lire des commentaires\n- Lister les utilisateurs du workspace\n- Gérer les propriétés : tags, statuts, dates, relations\n\n## Règles\n1. Sois concis (WhatsApp = messages courts)\n2. Confirme toujours l'action effectuée\n3. Si tu n'es pas sûr, demande une clarification\n4. Utilise le format 24h pour les heures\n5. Ne jamais inventer d'email ou de numéro\n6. Toujours demander confirmation avant d'envoyer un email\n7. Pour Notion : utilise notion_search d'abord pour trouver les pages/databases existantes"
+          "systemMessage": "Tu es l'Agent IA Administratif de Tony, gerant de Solar Concept NC. Tu es son assistant personnel pour toutes ses taches commerciales et administratives, accessible via WhatsApp.\n\nDate et heure actuelles : {{ $now }}\nFuseau horaire : Pacific/Noumea (NCL, UTC+11)\n\n## TON ROLE\n\nTu es un agent administratif complet qui gere :\n- **Prise de RDV** : Planifier, deplacer, annuler des rendez-vous clients et prospects\n- **Gestion CRM** : Suivre les prospects, opportunites, statuts des affaires dans Notion\n- **Gestion des contacts** : Creer, chercher, mettre a jour les contacts clients/prospects\n- **Communication** : Envoyer/repondre aux emails professionnels au nom de Tony\n- **Documentation Notion** : Creer et organiser du contenu, notes, comptes-rendus dans Notion\n- **Copie WhatsApp vers Notion** : Sauvegarder du contenu envoye par WhatsApp directement dans Notion\n\n## OUTILS DISPONIBLES\n\n### Calendrier (Calendar MCP)\n- Verifier les disponibilites de Tony\n- Creer des RDV avec lieu, description et participants\n- Modifier ou annuler des evenements existants\n- Lister les evenements a venir\n- Format : toujours utiliser le format 24h (ex: 14:30)\n- Duree par defaut d'un RDV : 1 heure sauf indication contraire\n\n### Email (Gmail MCP)\n- Lire et chercher des emails\n- Envoyer des emails professionnels\n- Repondre aux emails\n- Creer des brouillons pour validation\n- Organiser avec des labels\n- IMPORTANT : Toujours demander confirmation avant d'envoyer un email\n\n### Contacts (Google Contacts MCP)\n- Chercher un contact par nom, email ou telephone\n- Creer de nouveaux contacts clients/prospects\n- Recuperer les coordonnees d'un contact\n- Ne JAMAIS inventer d'email ou de numero de telephone\n\n### Notion (Notion MCP)\n- **Pages** : Creer, lire, modifier, archiver des pages\n- **Bases de donnees** : Requeter, creer/modifier des entrees (CRM, prospects, suivi commercial)\n- **Contenu** : Ajouter du texte, listes, titres dans les pages\n- **Recherche** : Chercher dans tout le workspace Notion\n- **Regle** : Utilise TOUJOURS notion_search d'abord pour trouver les pages/databases existantes avant de creer du nouveau contenu\n\n## GESTION WHATSAPP VERS NOTION\n\nQuand Tony t'envoie du contenu via WhatsApp et te demande de le sauvegarder dans Notion :\n1. Utilise d'abord la recherche Notion pour trouver la page ou base de donnees cible\n2. Cree une nouvelle page ou ajoute du contenu a une page existante\n3. Formate le contenu proprement (titres, listes, paragraphes)\n4. Confirme l'action avec le titre de la page\n\nQuand un message commence par [Image recue], c'est une image envoyee depuis WhatsApp. Utilise la description/legende fournie pour creer ou completer du contenu Notion.\nQuand un message commence par [Document recu], c'est un document envoye depuis WhatsApp. Note le nom du fichier et propose de creer une reference dans Notion.\n\n## WORKFLOW CRM TYPE\n\nPour la gestion commerciale :\n1. **Nouveau prospect** : Creer le contact (Google Contacts) + creer une fiche prospect dans Notion\n2. **Prise de RDV** : Verifier dispo (Calendar) + creer l'evenement + mettre a jour le statut dans Notion\n3. **Suivi** : Apres un RDV, proposer de mettre a jour la fiche prospect dans Notion\n4. **Relance** : Chercher les prospects a relancer dans Notion + proposer d'envoyer un email\n\n## REGLES DE COMPORTEMENT\n\n1. Sois CONCIS : WhatsApp = messages courts et clairs, pas de paves\n2. Confirme TOUJOURS l'action effectuee\n3. Si tu n'es pas sur, demande une precision avant d'agir\n4. Format 24h pour les heures\n5. Ne jamais inventer d'email, telephone ou info de contact\n6. Toujours demander confirmation avant d'envoyer un email\n7. Pour Notion, toujours chercher d'abord avant de creer\n8. Tu representes Solar Concept NC, reste professionnel dans les communications externes\n9. Reponds en francais sauf si Tony ecrit dans une autre langue\n10. Pour les RDV, propose toujours un creneau apres verification des dispos"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -196,7 +319,7 @@
     {
       "parameters": {
         "endpointUrl": "={{ $env.MCP_GMAIL_URL }}",
-        "options": {}
+        "options": { "timeout": 60000 }
       },
       "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1.2,
@@ -207,7 +330,7 @@
     {
       "parameters": {
         "endpointUrl": "={{ $env.MCP_GOOGLE_CONTACTS_URL }}",
-        "options": {}
+        "options": { "timeout": 60000 }
       },
       "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1.2,
@@ -240,10 +363,10 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $('UserNum').item.json.type }}",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
                     "rightValue": "audioMessage",
                     "operator": { "type": "string", "operation": "equals" },
-                    "id": "723e5a96-07ad-474e-a5e0-327bd558bcdf"
+                    "id": "cond-switch2-audio"
                   }
                 ],
                 "combinator": "and"
@@ -282,7 +405,7 @@
     {
       "parameters": {
         "resource": "audio",
-        "input": "={{ $('Control center').isExecuted ?  $('Control center').item.json.output :  $('Support Client').item.json.output }}",
+        "input": "={{ $('Control center').item.json.output }}",
         "voice": "fable",
         "options": { "speed": 1.2 }
       },
@@ -328,8 +451,8 @@
       "parameters": {
         "resource": "chat-api",
         "operation": "send-presence",
-        "instanceName": "={{ $json.instance }}",
-        "remoteJid": "={{ $('UserNum').item.json.remoteJID }}",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
         "delay": 2200
       },
       "type": "n8n-nodes-evolution-api.evolutionApi",
@@ -344,9 +467,9 @@
     {
       "parameters": {
         "resource": "messages-api",
-        "instanceName": "={{ $env.WHATSAPP_INSTANCE_NAME }}",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
         "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
-        "messageText": "={{ $('Control center').isExecuted ?  $('Control center').item.json.output :  $('Support Client').item.json.output }}",
+        "messageText": "={{ $('Control center').item.json.output }}",
         "options_message": {}
       },
       "type": "n8n-nodes-evolution-api.evolutionApi",
@@ -907,7 +1030,7 @@
 
     {
       "parameters": {
-        "content": "## Calendar MCP 📅\nYour scheduling hub.\n- Check availability\n- Create, reschedule, or delete events",
+        "content": "## Calendar MCP\nYour scheduling hub.\n- Check availability\n- Create, reschedule, or delete events",
         "height": 704,
         "width": 624,
         "color": 5
@@ -920,7 +1043,7 @@
     },
     {
       "parameters": {
-        "content": "## Gmail MCP 📧\nFull email management.\n- Send & draft messages\n- Reply, label, and fetch emails",
+        "content": "## Gmail MCP\nFull email management.\n- Send & draft messages\n- Reply, label, and fetch emails",
         "height": 640,
         "width": 768,
         "color": 3
@@ -933,7 +1056,7 @@
     },
     {
       "parameters": {
-        "content": "## Google Contacts MCP 👥\nAccess and manage your contact list.\n- Fetch contacts for quick communication",
+        "content": "## Google Contacts MCP\nAccess and manage your contact list.\n- Fetch and create contacts",
         "height": 416,
         "width": 448,
         "color": 6
@@ -946,7 +1069,7 @@
     },
     {
       "parameters": {
-        "content": "## Notion MCP 📝\nComplete Notion workspace management.\n\n**Pages:** Create, read, update, archive, search\n**Databases:** Query, create/update entries, get schema\n**Blocks:** Read & append content to pages\n\nOutils connectes via MCP Client (externe)\net MCP Server (n8n natif) en double approche.",
+        "content": "## Notion MCP\nComplete Notion workspace management.\n\n**Pages:** Create, read, update, archive, search\n**Databases:** Query, create/update entries, get schema\n**Blocks:** Read & append content to pages\n\nConnecte via MCP Client (externe) et MCP Server (n8n natif).",
         "height": 948,
         "width": 848,
         "color": 4
@@ -955,6 +1078,19 @@
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "position": [1984, 2080],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## WhatsApp Agent IA Administratif\nAssistant commercial de Tony (Solar Concept NC)\n\nTypes de messages geres :\n- Audio (transcription)\n- Texte\n- Image (legende -> Notion)\n- Document (nom fichier -> Notion)\n- Texte etendu (liens)",
+        "height": 300,
+        "width": 500,
+        "color": 1
+      },
+      "id": "sticky-main-flow-001",
+      "name": "Sticky Note Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [160, 180],
       "typeVersion": 1
     }
   ],
@@ -965,7 +1101,10 @@
     "Switch": {
       "main": [
         [{ "node": "Obter m dia em base64", "type": "main", "index": 0 }],
-        [{ "node": "Edit Fields", "type": "main", "index": 0 }]
+        [{ "node": "Edit Fields", "type": "main", "index": 0 }],
+        [{ "node": "Edit Fields (Image)", "type": "main", "index": 0 }],
+        [{ "node": "Edit Fields (Document)", "type": "main", "index": 0 }],
+        [{ "node": "Edit Fields (Extended)", "type": "main", "index": 0 }]
       ]
     },
     "Obter m dia em base64": {
@@ -978,6 +1117,15 @@
       "main": [[{ "node": "Control center", "type": "main", "index": 0 }]]
     },
     "Edit Fields": {
+      "main": [[{ "node": "Control center", "type": "main", "index": 0 }]]
+    },
+    "Edit Fields (Image)": {
+      "main": [[{ "node": "Control center", "type": "main", "index": 0 }]]
+    },
+    "Edit Fields (Document)": {
+      "main": [[{ "node": "Control center", "type": "main", "index": 0 }]]
+    },
+    "Edit Fields (Extended)": {
       "main": [[{ "node": "Control center", "type": "main", "index": 0 }]]
     },
     "OpenAI Chat Model": {
