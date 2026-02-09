@@ -344,9 +344,9 @@
         <span class="helper-text">Cout moyen installe par Watt-crete</span>
       </div>
       <div class="form-group">
-        <label>Cout batterie (XPF/kWh stockage)</label>
-        <input type="number" id="c1_cout_bat" value="85000" step="1000">
-        <span class="helper-text">Prix par kWh de capacite batterie</span>
+        <label>Montant devis batterie (XPF)</label>
+        <input type="number" id="c1_cout_bat" value="1200000" step="10000">
+        <span class="helper-text">Montant total du devis batterie</span>
       </div>
       <div class="form-group">
         <label>Puissance panneau (Wc)</label>
@@ -406,8 +406,9 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Cout batterie (XPF/kWh stockage)</label>
-        <input type="number" id="c2_cout_bat" value="85000" step="1000">
+        <label>Montant devis batterie (XPF)</label>
+        <input type="number" id="c2_cout_bat" value="1200000" step="10000">
+        <span class="helper-text">Montant total du devis batterie</span>
       </div>
     </div>
 
@@ -470,8 +471,9 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Cout batterie (XPF/kWh stockage)</label>
-        <input type="number" id="c3_cout_bat" value="85000" step="1000">
+        <label>Montant devis batterie (XPF)</label>
+        <input type="number" id="c3_cout_bat" value="1200000" step="10000">
+        <span class="helper-text">Montant total du devis batterie</span>
       </div>
     </div>
 
@@ -930,7 +932,7 @@ function calculateTab1() {
 
   // Financials
   const investPV = pvKwc * 1000 * coutWc;
-  const investBat = batteryKwh * coutBat;
+  const investBat = coutBat; // montant total du devis batterie
   const investTotal = investPV + investBat;
 
   const factureSansPV = totalConsoAnnual * tarif;
@@ -1049,7 +1051,7 @@ function calculateTab2() {
   const factureActuelle = achatAnnuel * tarif - reventeAnnuelle * reventeRate;
   const factureAvecBat = newAchatAnnuel * tarif - newReventeAnnuelle * reventeRate;
   const economie = factureActuelle - factureAvecBat;
-  const investBat = batteryKwh * coutBat;
+  const investBat = coutBat; // montant total du devis batterie
 
   const tauxAutoConsoAvant = (autoConsoAnnuelle / consoAnnuelle * 100);
   const newAutoConsoAnnuelle = newAutoConsoMonthly.reduce((a, b) => a + b, 0);
@@ -1150,7 +1152,7 @@ function calculateTab3() {
   const factureActuelle = achatAnnuel * tarif - reventeAnnuelle * reventeRate;
   const factureAvecBat = newAchatAnnuel * tarif - newReventeAnnuelle * reventeRate;
   const economie = factureActuelle - factureAvecBat;
-  const investBat = batteryKwh * coutBat;
+  const investBat = coutBat; // montant total du devis batterie
 
   const autoConsoAnnuelle = autoConsoActuelle.reduce((a, b) => a + b, 0);
   const newAutoConsoAnnuelle = newAutoConsoMonthly.reduce((a, b) => a + b, 0);
