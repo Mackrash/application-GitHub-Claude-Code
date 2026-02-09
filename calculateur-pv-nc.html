@@ -339,6 +339,15 @@
         </select>
       </div>
       <div class="form-group">
+        <label>Puissance PV installee (kWc)</label>
+        <input type="number" id="c1_puissance_kwc" value="" step="0.5" placeholder="Auto">
+        <span class="helper-text">Vide = calcul auto, sinon votre valeur</span>
+      </div>
+      <div class="form-group">
+        <label>Puissance panneau (Wc)</label>
+        <input type="number" id="c1_puissance_panneau" value="425" step="25">
+      </div>
+      <div class="form-group">
         <label>Cout installation PV (XPF/Wc)</label>
         <input type="number" id="c1_cout_wc" value="350" step="10">
         <span class="helper-text">Cout moyen installe par Watt-crete</span>
@@ -347,10 +356,6 @@
         <label>Montant du devis (XPF)</label>
         <input type="number" id="c1_cout_bat" value="1200000" step="10000">
         <span class="helper-text">Montant total du devis</span>
-      </div>
-      <div class="form-group">
-        <label>Puissance panneau (Wc)</label>
-        <input type="number" id="c1_puissance_panneau" value="425" step="25">
       </div>
     </div>
 
@@ -879,10 +884,11 @@ function calculateTab1() {
   const totalConsoMonthly = consoMonthly.map(c => c + poolMonthly);
   const totalConsoAnnual = totalConsoMonthly.reduce((a, b) => a + b, 0);
 
-  // Estimate PV size to cover ~80% of consumption
+  // PV size: user value or auto-calculate
   const avgDaily = totalConsoAnnual / 365;
   const peakSunHours = s.ensoleillement * (1 - s.pertes / 100);
-  const pvKwc = Math.ceil((avgDaily * 0.8) / peakSunHours * 2) / 2; // round to 0.5
+  const userKwc = parseFloat(document.getElementById('c1_puissance_kwc').value);
+  const pvKwc = userKwc > 0 ? userKwc : Math.ceil((avgDaily * 0.8) / peakSunHours * 2) / 2;
   const nbPanneaux = Math.ceil((pvKwc * 1000) / puissancePanneau);
   const surfacePV = nbPanneaux * 2; // 2m² per panel
 
