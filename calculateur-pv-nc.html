@@ -353,14 +353,14 @@
         <input type="number" id="c1_puissance_panneau" value="425" step="25">
       </div>
       <div class="form-group">
-        <label>Cout installation PV (XPF/Wc)</label>
-        <input type="number" id="c1_cout_wc" value="350" step="10">
-        <span class="helper-text">Cout moyen installe par Watt-crete</span>
+        <label>Devis panneaux (XPF)</label>
+        <input type="number" id="c1_cout_pv" value="2500000" step="10000">
+        <span class="helper-text">Montant total devis PV</span>
       </div>
       <div class="form-group">
-        <label>Montant du devis (XPF)</label>
+        <label>Devis batterie (XPF)</label>
         <input type="number" id="c1_cout_bat" value="1200000" step="10000">
-        <span class="helper-text">Montant total du devis</span>
+        <span class="helper-text">Montant total devis batterie</span>
       </div>
     </div>
 
@@ -537,8 +537,9 @@
         <input type="number" id="c4_puissance" value="36" step="1">
       </div>
       <div class="form-group">
-        <label>Cout installation HT (XPF/Wc)</label>
-        <input type="number" id="c4_cout_wc" value="300" step="10">
+        <label>Devis installation HT (XPF)</label>
+        <input type="number" id="c4_cout_pv" value="10800000" step="100000">
+        <span class="helper-text">Montant total devis HT</span>
       </div>
       <div class="form-group">
         <label>Puissance panneau (Wc)</label>
@@ -890,8 +891,8 @@ function calculateTab1() {
   const profile = PROFILES[currentProfile1];
   const hasPool = document.getElementById('pool1').checked;
   const reventeRate = parseFloat(document.getElementById('c1_revente').value);
-  const coutWc = parseFloat(document.getElementById('c1_cout_wc').value);
-  const coutBat = parseFloat(document.getElementById('c1_cout_bat').value);
+  const coutPV = parseFloat(document.getElementById('c1_cout_pv').value) || 0;
+  const coutBat = parseFloat(document.getElementById('c1_cout_bat').value) || 0;
   const puissancePanneau = parseFloat(document.getElementById('c1_puissance_panneau').value);
   const kva = parseFloat(document.getElementById('c1_kva').value) || 6;
   const tarif = getTarifByKva(kva);
@@ -959,8 +960,8 @@ function calculateTab1() {
   const battSurplusAnnual = battSurplusMonthly.reduce((a, b) => a + b, 0);
 
   // Financials
-  const investPV = pvKwc * 1000 * coutWc;
-  const investBat = coutBat; // montant total du devis batterie
+  const investPV = coutPV; // montant total devis panneaux
+  const investBat = coutBat; // montant total devis batterie
   const investTotal = investPV + investBat;
 
   const factureSansPV = totalConsoAnnual * tarif;
@@ -1226,7 +1227,7 @@ function calculateTab4() {
   const s = getSettings();
   const consoAn = parseFloat(document.getElementById('c4_conso_annuelle').value);
   const pvKwc = parseFloat(document.getElementById('c4_puissance').value);
-  const coutWc = parseFloat(document.getElementById('c4_cout_wc').value);
+  const investHT = parseFloat(document.getElementById('c4_cout_pv').value) || 0;
   const puissancePanneau = parseFloat(document.getElementById('c4_puissance_panneau').value);
   const tarifHT = parseFloat(document.getElementById('c4_tarif_ht').value);
   const reventeRate = parseFloat(document.getElementById('c4_revente').value);
@@ -1236,7 +1237,6 @@ function calculateTab4() {
 
   const nbPanneaux = Math.ceil((pvKwc * 1000) / puissancePanneau);
   const surfacePV = nbPanneaux * 2;
-  const investHT = pvKwc * 1000 * coutWc;
 
   // Monthly production
   const prodMonthly = daysInMonth.map((d, i) => pvKwc * s.ensoleillement * SOLAR_FACTORS[i] * (1 - s.pertes / 100) * d);
