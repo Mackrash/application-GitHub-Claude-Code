@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculateur Photovoltaique - Nouvelle Caledonie</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-light: #e8f0fe;
+    --solar: #f9a825;
+    --solar-light: #fff8e1;
+    --battery: #00897b;
+    --battery-light: #e0f2f1;
+    --grid: #e53935;
+    --grid-light: #ffebee;
+    --enterprise: #5e35b1;
+    --enterprise-light: #ede7f6;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --text: #202124;
+    --text-secondary: #5f6368;
+    --border: #dadce0;
+    --success: #34a853;
+    --warning: #fbbc04;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 0;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: white;
+    padding: 20px 30px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .header h1 { font-size: 1.6em; font-weight: 600; }
+  .header p { opacity: 0.85; font-size: 0.9em; margin-top: 4px; }
+  .tab-bar {
+    display: flex;
+    background: white;
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 180px;
+    padding: 14px 16px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .tab-btn:hover { background: var(--primary-light); }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--primary-light); }
+  .tab-btn.t1.active { color: var(--solar); border-bottom-color: var(--solar); background: var(--solar-light); }
+  .tab-btn.t2.active { color: var(--battery); border-bottom-color: var(--battery); background: var(--battery-light); }
+  .tab-btn.t3.active { color: var(--grid); border-bottom-color: var(--grid); background: var(--grid-light); }
+  .tab-btn.t4.active { color: var(--enterprise); border-bottom-color: var(--enterprise); background: var(--enterprise-light); }
+  .tab-btn.tsettings.active { color: #616161; border-bottom-color: #616161; background: #f5f5f5; }
+  .tab-icon { font-size: 1.2em; }
+  .tab-content { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: 1.15em;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card h2 .icon { font-size: 1.3em; }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group label {
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .form-group input, .form-group select {
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95em;
+    transition: border-color 0.2s;
+    background: white;
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+  }
+  .monthly-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .monthly-grid .form-group label { font-size: 0.75em; }
+  .monthly-grid .form-group input { padding: 8px 10px; font-size: 0.9em; }
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: #1557b0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,115,232,0.3); }
+  .btn-solar { background: var(--solar); color: white; }
+  .btn-solar:hover { background: #f57f17; }
+  .btn-battery { background: var(--battery); color: white; }
+  .btn-battery:hover { background: #00695c; }
+  .btn-grid { background: var(--grid); color: white; }
+  .btn-grid:hover { background: #c62828; }
+  .btn-enterprise { background: var(--enterprise); color: white; }
+  .btn-enterprise:hover { background: #4527a0; }
+  .btn-center { text-align: center; margin-top: 20px; }
+  .results { margin-top: 24px; }
+  .result-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .result-card {
+    padding: 18px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid;
+  }
+  .result-card .value { font-size: 1.8em; font-weight: 700; line-height: 1.2; }
+  .result-card .label { font-size: 0.8em; margin-top: 4px; opacity: 0.8; }
+  .result-card.solar { background: var(--solar-light); border-color: #ffe082; color: #e65100; }
+  .result-card.battery { background: var(--battery-light); border-color: #80cbc4; color: #004d40; }
+  .result-card.savings { background: #e8f5e9; border-color: #a5d6a7; color: #1b5e20; }
+  .result-card.info { background: var(--primary-light); border-color: #90caf9; color: #0d47a1; }
+  .chart-container { position: relative; height: 350px; margin: 20px 0; }
+  .profile-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .profile-btn {
+    padding: 10px 18px;
+    border: 2px solid var(--border);
+    border-radius: 25px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .profile-btn:hover { border-color: var(--solar); background: var(--solar-light); }
+  .profile-btn.active { border-color: var(--solar); background: var(--solar); color: white; }
+  .pool-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 16px;
+    background: #e3f2fd;
+    border-radius: 8px;
+  }
+  .pool-toggle input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+  .pool-toggle label { cursor: pointer; font-weight: 500; }
+  table.amort {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+    margin-top: 16px;
+  }
+  table.amort th {
+    background: var(--primary);
+    color: white;
+    padding: 10px 8px;
+    text-align: center;
+    font-weight: 600;
+    position: sticky; top: 0;
+  }
+  table.amort td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  table.amort tr:nth-child(even) { background: #f8f9fa; }
+  table.amort tr:hover { background: var(--primary-light); }
+  table.amort .positive { color: var(--success); font-weight: 600; }
+  table.amort .negative { color: var(--grid); font-weight: 600; }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .settings-section { padding: 16px; background: #fafafa; border-radius: 8px; border: 1px solid var(--border); }
+  .settings-section h3 { font-size: 0.95em; margin-bottom: 12px; color: var(--primary); }
+  .notion-info {
+    margin-top: 20px;
+    padding: 16px;
+    background: #fff3e0;
+    border-radius: 8px;
+    border: 1px solid #ffe0b2;
+    font-size: 0.9em;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+  }
+  .badge-solar { background: var(--solar-light); color: #e65100; }
+  .badge-nc { background: #e3f2fd; color: #0d47a1; }
+  @media(max-width:768px){
+    .tab-btn { min-width: auto; padding: 10px 8px; font-size: 0.75em; }
+    .tab-btn .tab-label { display: none; }
+    .form-grid, .monthly-grid { grid-template-columns: 1fr 1fr; }
+    .result-cards { grid-template-columns: 1fr 1fr; }
+    .chart-container { height: 280px; }
+  }
+  .hidden { display: none !important; }
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .helper-text { font-size: 0.8em; color: var(--text-secondary); margin-top: 4px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Calculateur Photovoltaique - Nouvelle Caledonie</h1>
+  <p><span class="badge badge-nc">NC</span> Etude solaire complete - Tarifs, batteries, amortissement</p>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn t1 active" onclick="switchTab('tab1')">
+    <span class="tab-icon">&#9728;</span>
+    <span class="tab-label">Installation Complete</span>
+  </button>
+  <button class="tab-btn t2" onclick="switchTab('tab2')">
+    <span class="tab-icon">&#128267;</span>
+    <span class="tab-label">Batterie + Donnees</span>
+  </button>
+  <button class="tab-btn t3" onclick="switchTab('tab3')">
+    <span class="tab-icon">&#128268;</span>
+    <span class="tab-label">Batterie Estimation</span>
+  </button>
+  <button class="tab-btn t4" onclick="switchTab('tab4')">
+    <span class="tab-icon">&#127970;</span>
+    <span class="tab-label">Entreprise</span>
+  </button>
+  <button class="tab-btn tsettings" onclick="switchTab('tabSettings')">
+    <span class="tab-icon">&#9881;</span>
+    <span class="tab-label">Parametres</span>
+  </button>
+</div>
+
+<!-- ===================== TAB 1 : Installation Complete ===================== -->
+<div id="tab1" class="tab-content active">
+  <div class="card">
+    <h2><span class="icon">&#9728;</span> Installation Complete - Etude par consommation</h2>
+    <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
+      Entrez vos consommations mensuelles (kWh) et selectionnez votre profil pour dimensionner l'installation PV et la batterie.
+    </p>
+
+    <h3 style="font-size:0.95em;margin-bottom:10px;">Profil de consommation</h3>
+    <div class="profile-selector">
+      <button class="profile-btn active" data-profile="actif" onclick="selectProfile(this)">Actif (present le soir)</button>
+      <button class="profile-btn" data-profile="retraite" onclick="selectProfile(this)">Retraite (la journee)</button>
+      <button class="profile-btn" data-profile="enfants" onclick="selectProfile(this)">Avec enfants (maman a la maison)</button>
+    </div>
+    <div class="pool-toggle">
+      <input type="checkbox" id="pool1">
+      <label for="pool1">Option Piscine (consommation supplementaire en journee ~350 kWh/mois)</label>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 style="font-size:0.95em;margin-bottom:10px;">Consommation mensuelle (kWh)</h3>
+    <div class="monthly-grid">
+      <div class="form-group"><label>Janvier</label><input type="number" id="c1_jan" placeholder="kWh" value="800"></div>
+      <div class="form-group"><label>Fevrier</label><input type="number" id="c1_fev" placeholder="kWh" value="850"></div>
+      <div class="form-group"><label>Mars</label><input type="number" id="c1_mar" placeholder="kWh" value="750"></div>
+      <div class="form-group"><label>Avril</label><input type="number" id="c1_avr" placeholder="kWh" value="650"></div>
+      <div class="form-group"><label>Mai</label><input type="number" id="c1_mai" placeholder="kWh" value="550"></div>
+      <div class="form-group"><label>Juin</label><input type="number" id="c1_jun" placeholder="kWh" value="500"></div>
+      <div class="form-group"><label>Juillet</label><input type="number" id="c1_jul" placeholder="kWh" value="480"></div>
+      <div class="form-group"><label>Aout</label><input type="number" id="c1_aou" placeholder="kWh" value="520"></div>
+      <div class="form-group"><label>Septembre</label><input type="number" id="c1_sep" placeholder="kWh" value="600"></div>
+      <div class="form-group"><label>Octobre</label><input type="number" id="c1_oct" placeholder="kWh" value="680"></div>
+      <div class="form-group"><label>Novembre</label><input type="number" id="c1_nov" placeholder="kWh" value="750"></div>
+      <div class="form-group"><label>Decembre</label><input type="number" id="c1_dec" placeholder="kWh" value="820"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Abonnement (kVA)</label>
+        <input type="number" id="c1_kva" value="6" step="0.1" min="1">
+        <span class="helper-text">Tarif auto selon kVA</span>
+      </div>
+      <div class="form-group">
+        <label>Tarif de revente (XPF/kWh)</label>
+        <select id="c1_revente">
+          <option value="21">21 XPF/kWh</option>
+          <option value="15" selected>15 XPF/kWh</option>
+          <option value="0">0 XPF/kWh (pas de revente)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Puissance PV installee (kWc)</label>
+        <input type="number" id="c1_puissance_kwc" value="" step="0.5" placeholder="Auto">
+        <span class="helper-text">Vide = calcul auto, sinon votre valeur</span>
+      </div>
+      <div class="form-group">
+        <label>Puissance panneau (Wc)</label>
+        <input type="number" id="c1_puissance_panneau" value="425" step="25">
+      </div>
+      <div class="form-group">
+        <label>Devis panneaux (XPF)</label>
+        <input type="number" id="c1_cout_pv" value="2500000" step="10000">
+        <span class="helper-text">Montant total devis PV</span>
+      </div>
+      <div class="form-group">
+        <label>Devis batterie (XPF)</label>
+        <input type="number" id="c1_cout_bat" value="1200000" step="10000">
+        <span class="helper-text">Montant total devis batterie</span>
+      </div>
+    </div>
+
+    <div class="btn-center">
+      <button class="btn btn-solar" onclick="calculateTab1()">&#9728; Calculer l'installation</button>
+    </div>
+  </div>
+
+  <div id="results1" class="results hidden">
+    <div class="card">
+      <h2><span class="icon">&#128200;</span> Resultats - Dimensionnement</h2>
+      <div id="resultCards1" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart1_conso"></canvas></div>
+      <div class="chart-container"><canvas id="chart1_repartition"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128176;</span> Economies et Facture</h2>
+      <div id="resultCards1b" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart1_facture"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128197;</span> Tableau d'amortissement</h2>
+      <div id="amortTable1"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 2 : Batterie + Donnees completes ===================== -->
+<div id="tab2" class="tab-content">
+  <div class="card">
+    <h2><span class="icon">&#128267;</span> Ajout Batterie - Donnees Completes</h2>
+    <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
+      Vous avez deja des panneaux et toutes les donnees. Calculez la taille de batterie optimale.
+    </p>
+    <div class="monthly-grid">
+      <div class="form-group"><label>Mois</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
+      <div class="form-group"><label>Conso totale (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
+      <div class="form-group"><label>Production PV (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
+      <div class="form-group"><label>Revente (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
+      <div class="form-group"><label>Achat reseau (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
+    </div>
+    <div id="tab2MonthlyInputs"></div>
+
+    <div class="divider"></div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Abonnement (kVA)</label>
+        <input type="number" id="c2_kva" value="6" step="0.1" min="1">
+        <span class="helper-text">Tarif auto selon kVA</span>
+      </div>
+      <div class="form-group">
+        <label>Tarif de revente (XPF/kWh)</label>
+        <select id="c2_revente">
+          <option value="21">21 XPF/kWh</option>
+          <option value="15" selected>15 XPF/kWh</option>
+          <option value="0">0 XPF/kWh</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Montant du devis (XPF)</label>
+        <input type="number" id="c2_cout_bat" value="1200000" step="10000">
+        <span class="helper-text">Montant total du devis</span>
+      </div>
+    </div>
+
+    <div class="btn-center">
+      <button class="btn btn-battery" onclick="calculateTab2()">&#128267; Dimensionner la batterie</button>
+    </div>
+  </div>
+
+  <div id="results2" class="results hidden">
+    <div class="card">
+      <h2><span class="icon">&#128200;</span> Resultats - Batterie optimale</h2>
+      <div id="resultCards2" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart2_flux"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128176;</span> Economies avec batterie</h2>
+      <div id="resultCards2b" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart2_eco"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128197;</span> Amortissement batterie</h2>
+      <div id="amortTable2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 3 : Batterie Estimation ===================== -->
+<div id="tab3" class="tab-content">
+  <div class="card">
+    <h2><span class="icon">&#128268;</span> Ajout Batterie - Estimation (donnees partielles)</h2>
+    <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
+      Vous n'avez que les donnees d'achat reseau et de revente. On estime la consommation totale et la production.
+    </p>
+    <h3 style="font-size:0.95em;margin-bottom:10px;">Profil de consommation</h3>
+    <div class="profile-selector">
+      <button class="profile-btn active" data-profile="actif" onclick="selectProfile3(this)">Actif</button>
+      <button class="profile-btn" data-profile="retraite" onclick="selectProfile3(this)">Retraite</button>
+      <button class="profile-btn" data-profile="enfants" onclick="selectProfile3(this)">Avec enfants</button>
+    </div>
+    <div class="pool-toggle">
+      <input type="checkbox" id="pool3">
+      <label for="pool3">Option Piscine</label>
+    </div>
+    <div class="divider"></div>
+    <h3 style="font-size:0.95em;margin-bottom:10px;">Donnees mensuelles</h3>
+    <div id="tab3MonthlyInputs"></div>
+
+    <div class="divider"></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Abonnement (kVA)</label>
+        <input type="number" id="c3_kva" value="6" step="0.1" min="1">
+        <span class="helper-text">Tarif auto selon kVA</span>
+      </div>
+      <div class="form-group">
+        <label>Puissance PV installee (kWc)</label>
+        <input type="number" id="c3_puissance_pv" value="6" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>Tarif de revente (XPF/kWh)</label>
+        <select id="c3_revente">
+          <option value="21">21 XPF/kWh</option>
+          <option value="15" selected>15 XPF/kWh</option>
+          <option value="0">0 XPF/kWh</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Montant du devis (XPF)</label>
+        <input type="number" id="c3_cout_bat" value="1200000" step="10000">
+        <span class="helper-text">Montant total du devis</span>
+      </div>
+    </div>
+
+    <div class="btn-center">
+      <button class="btn btn-grid" onclick="calculateTab3()">&#128268; Estimer la batterie</button>
+    </div>
+  </div>
+
+  <div id="results3" class="results hidden">
+    <div class="card">
+      <h2><span class="icon">&#128200;</span> Estimation - Batterie</h2>
+      <div id="resultCards3" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart3_estimation"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128176;</span> Economies estimees</h2>
+      <div id="resultCards3b" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart3_eco"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128197;</span> Amortissement batterie</h2>
+      <div id="amortTable3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 4 : Entreprise ===================== -->
+<div id="tab4" class="tab-content">
+  <div class="card">
+    <h2><span class="icon">&#127970;</span> Entreprise - Panneaux seuls (calcul HT)</h2>
+    <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
+      Dimensionnement panneaux solaires pour une entreprise. Amortissement calcule en HT.
+    </p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Consommation annuelle (kWh)</label>
+        <input type="number" id="c4_conso_annuelle" value="50000" step="1000">
+      </div>
+      <div class="form-group">
+        <label>Puissance souhaitee (kWc)</label>
+        <input type="number" id="c4_puissance" value="36" step="1">
+      </div>
+      <div class="form-group">
+        <label>Devis installation HT (XPF)</label>
+        <input type="number" id="c4_cout_pv" value="10800000" step="100000">
+        <span class="helper-text">Montant total devis HT</span>
+      </div>
+      <div class="form-group">
+        <label>Puissance panneau (Wc)</label>
+        <input type="number" id="c4_puissance_panneau" value="425" step="25">
+      </div>
+      <div class="form-group">
+        <label>Tarif achat electricite HT (XPF/kWh)</label>
+        <input type="number" id="c4_tarif_ht" value="29.62" step="0.1">
+        <span class="helper-text">Tarif professionnel EEC</span>
+      </div>
+      <div class="form-group">
+        <label>Tarif de revente (XPF/kWh)</label>
+        <select id="c4_revente">
+          <option value="21">21 XPF/kWh</option>
+          <option value="15" selected>15 XPF/kWh</option>
+          <option value="0">0 XPF/kWh</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Part autoconsommation (%)</label>
+        <input type="number" id="c4_autocons" value="70" min="0" max="100" step="5">
+        <span class="helper-text">% de la production consommee sur place</span>
+      </div>
+      <div class="form-group">
+        <label>Hausse tarif elec annuelle (%)</label>
+        <input type="number" id="c4_hausse" value="3" step="0.5">
+      </div>
+    </div>
+
+    <div class="btn-center">
+      <button class="btn btn-enterprise" onclick="calculateTab4()">&#127970; Calculer l'amortissement HT</button>
+    </div>
+  </div>
+
+  <div id="results4" class="results hidden">
+    <div class="card">
+      <h2><span class="icon">&#128200;</span> Resultats Entreprise</h2>
+      <div id="resultCards4" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart4_prod"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128176;</span> Analyse financiere HT</h2>
+      <div id="resultCards4b" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart4_amort"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128197;</span> Tableau d'amortissement HT</h2>
+      <div id="amortTable4"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB Parametres ===================== -->
+<div id="tabSettings" class="tab-content">
+  <div class="card">
+    <h2><span class="icon">&#9881;</span> Parametres - Tarifs Nouvelle Caledonie</h2>
+    <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
+      Ces tarifs sont pre-remplis avec les valeurs en vigueur (oct. 2025). Modifiez-les si necessaire, ils seront memorises.
+    </p>
+    <div class="settings-grid">
+      <div class="settings-section">
+        <h3>Tarifs achat electricite (XPF/kWh TTC)</h3>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Domestique &le; 3.3 kVA</label>
+          <input type="number" id="s_tarif_dom_low" value="37.91" step="0.01">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Domestique &gt; 3.3 kVA</label>
+          <input type="number" id="s_tarif_dom_high" value="42.24" step="0.01">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Professionnel HT</label>
+          <input type="number" id="s_tarif_pro" value="29.62" step="0.01">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Tarifs revente surplus (XPF/kWh)</h3>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Tarif revente haut</label>
+          <input type="number" id="s_revente_high" value="21" step="0.5">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Tarif revente standard</label>
+          <input type="number" id="s_revente_std" value="15" step="0.5">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Parametres solaires NC</h3>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Ensoleillement moyen (kWh/kWc/jour)</label>
+          <input type="number" id="s_ensoleillement" value="4.2" step="0.1">
+          <span class="helper-text">Noumea et Grand Sud : ~4.2 kWh/kWc/j</span>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Pertes systeme (%)</label>
+          <input type="number" id="s_pertes" value="15" step="1">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Degradation panneaux/an (%)</label>
+          <input type="number" id="s_degradation" value="0.5" step="0.1">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Parametres financiers</h3>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Hausse tarif electricite / an (%)</label>
+          <input type="number" id="s_hausse_tarif" value="5" step="0.5">
+          <span class="helper-text">NC : ~10% prevu 2025, ~5% ensuite</span>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Duree de vie installation (ans)</label>
+          <input type="number" id="s_duree_vie" value="25" step="1">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Duree de vie batterie (ans)</label>
+          <input type="number" id="s_duree_bat" value="10" step="1">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Deduction fiscale max (XPF/an)</label>
+          <input type="number" id="s_deduction" value="1000000" step="100000">
+          <span class="helper-text">Plafond NC travaux verts</span>
+        </div>
+      </div>
+    </div>
+    <div class="btn-center">
+      <button class="btn btn-primary" onclick="saveSettings()">Sauvegarder les parametres</button>
+    </div>
+
+    <div class="notion-info">
+      <strong>Integration Notion :</strong> Ce fichier HTML peut etre integre dans Notion via un bloc <code>/embed</code>.
+      Hebergez ce fichier (ex: GitHub Pages, Netlify, ou sur votre serveur) puis collez l'URL dans un bloc embed Notion.
+      Alternativement, utilisez le widget <code>/embed</code> dans Notion et collez l'URL du fichier.
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== GLOBAL STATE & SETTINGS =====================
+const MONTHS = ['Jan','Fev','Mar','Avr','Mai','Jun','Jul','Aou','Sep','Oct','Nov','Dec'];
+const MONTHS_FULL = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+
+// Monthly solar irradiation factor for NC (relative to average, southern hemisphere tropical)
+const SOLAR_FACTORS = [1.18, 1.12, 1.08, 0.95, 0.85, 0.78, 0.80, 0.88, 0.98, 1.08, 1.15, 1.18];
+
+// Profile consumption distribution: [day%, evening/night%]
+const PROFILES = {
+  actif:   { dayRatio: 0.25, eveningRatio: 0.75, label: 'Actif' },
+  retraite:{ dayRatio: 0.55, eveningRatio: 0.45, label: 'Retraite' },
+  enfants: { dayRatio: 0.50, eveningRatio: 0.50, label: 'Avec enfants' }
+};
+const POOL_EXTRA_KWH = 350; // per month
+
+let charts = {};
+
+function getSettings() {
+  const saved = localStorage.getItem('pv_nc_settings');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return {
+    tarif_dom_low: 37.91,
+    tarif_dom_high: 42.24,
+    tarif_pro: 29.62,
+    revente_high: 21,
+    revente_std: 15,
+    ensoleillement: 4.2,
+    pertes: 15,
+    degradation: 0.5,
+    hausse_tarif: 5,
+    duree_vie: 25,
+    duree_bat: 10,
+    deduction: 1000000
+  };
+}
+
+function loadSettingsUI() {
+  const s = getSettings();
+  document.getElementById('s_tarif_dom_low').value = s.tarif_dom_low;
+  document.getElementById('s_tarif_dom_high').value = s.tarif_dom_high;
+  document.getElementById('s_tarif_pro').value = s.tarif_pro;
+  document.getElementById('s_revente_high').value = s.revente_high;
+  document.getElementById('s_revente_std').value = s.revente_std;
+  document.getElementById('s_ensoleillement').value = s.ensoleillement;
+  document.getElementById('s_pertes').value = s.pertes;
+  document.getElementById('s_degradation').value = s.degradation;
+  document.getElementById('s_hausse_tarif').value = s.hausse_tarif;
+  document.getElementById('s_duree_vie').value = s.duree_vie;
+  document.getElementById('s_duree_bat').value = s.duree_bat;
+  document.getElementById('s_deduction').value = s.deduction;
+}
+
+function saveSettings() {
+  const s = {
+    tarif_dom_low: parseFloat(document.getElementById('s_tarif_dom_low').value),
+    tarif_dom_high: parseFloat(document.getElementById('s_tarif_dom_high').value),
+    tarif_pro: parseFloat(document.getElementById('s_tarif_pro').value),
+    revente_high: parseFloat(document.getElementById('s_revente_high').value),
+    revente_std: parseFloat(document.getElementById('s_revente_std').value),
+    ensoleillement: parseFloat(document.getElementById('s_ensoleillement').value),
+    pertes: parseFloat(document.getElementById('s_pertes').value),
+    degradation: parseFloat(document.getElementById('s_degradation').value),
+    hausse_tarif: parseFloat(document.getElementById('s_hausse_tarif').value),
+    duree_vie: parseInt(document.getElementById('s_duree_vie').value),
+    duree_bat: parseInt(document.getElementById('s_duree_bat').value),
+    deduction: parseFloat(document.getElementById('s_deduction').value)
+  };
+  localStorage.setItem('pv_nc_settings', JSON.stringify(s));
+  alert('Parametres sauvegardes !');
+}
+
+// ===================== TAB NAVIGATION =====================
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  const idx = ['tab1','tab2','tab3','tab4','tabSettings'].indexOf(tabId);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+}
+
+// ===================== PROFILE SELECTION =====================
+let currentProfile1 = 'actif';
+let currentProfile3 = 'actif';
+
+function selectProfile(btn) {
+  document.querySelectorAll('#tab1 .profile-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentProfile1 = btn.dataset.profile;
+}
+function selectProfile3(btn) {
+  document.querySelectorAll('#tab3 .profile-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentProfile3 = btn.dataset.profile;
+}
+
+// ===================== FORMATTING =====================
+function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
+function fmtDec(n, d=1) { return n.toLocaleString('fr-FR', {minimumFractionDigits:d, maximumFractionDigits:d}); }
+
+// ===================== CHART HELPERS =====================
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function createBarChart(canvasId, labels, datasets, title, yLabel) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: title, font: { size: 14 } }, legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true, title: { display: true, text: yLabel } } }
+    }
+  });
+}
+
+function createLineChart(canvasId, labels, datasets, title, yLabel) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: title, font: { size: 14 } }, legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true, title: { display: true, text: yLabel } } }
+    }
+  });
+}
+
+function createDoughnutChart(canvasId, labels, data, colors, title) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: title, font: { size: 14 } }, legend: { position: 'bottom' } }
+    }
+  });
+}
+
+function createStackedBarChart(canvasId, labels, datasets, title, yLabel) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: title, font: { size: 14 } }, legend: { position: 'bottom' } },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true, title: { display: true, text: yLabel } }
+      }
+    }
+  });
+}
+
+// ===================== AMORT TABLE HELPER =====================
+function buildAmortTable(containerId, investTotal, annualSaving, hausse, dureeVie, deductionFiscale = 0) {
+  let html = '<table class="amort"><thead><tr>';
+  html += '<th>Annee</th><th>Economie (XPF)</th><th>Cumul eco. (XPF)</th><th>Investissement (XPF)</th><th>Bilan cumule (XPF)</th><th>ROI</th>';
+  html += '</tr></thead><tbody>';
+
+  let cumSaving = 0;
+  let breakEvenYear = null;
+  // Apply fiscal deduction in year 1 only
+  const deduction = Math.min(deductionFiscale, investTotal);
+
+  for (let y = 1; y <= dureeVie; y++) {
+    const savingThisYear = annualSaving * Math.pow(1 + hausse / 100, y - 1);
+    cumSaving += savingThisYear;
+    const effectiveInvest = investTotal - (y === 1 ? deduction : 0);
+    const netInvest = investTotal - deduction;
+    const bilan = cumSaving - netInvest;
+    const roi = ((cumSaving / netInvest) * 100).toFixed(0);
+    const bilanClass = bilan >= 0 ? 'positive' : 'negative';
+
+    if (bilan >= 0 && breakEvenYear === null) breakEvenYear = y;
+
+    html += `<tr>`;
+    html += `<td>${y}</td>`;
+    html += `<td>${fmt(savingThisYear)}</td>`;
+    html += `<td>${fmt(cumSaving)}</td>`;
+    html += `<td>${y === 1 ? fmt(netInvest) : '-'}</td>`;
+    html += `<td class="${bilanClass}">${fmt(bilan)}</td>`;
+    html += `<td>${roi}%</td>`;
+    html += `</tr>`;
+  }
+  html += '</tbody></table>';
+
+  if (breakEvenYear) {
+    html = `<p style="margin-bottom:12px;font-weight:600;color:var(--success);">Retour sur investissement atteint en annee ${breakEvenYear}</p>` + html;
+  }
+  document.getElementById(containerId).innerHTML = html;
+  return breakEvenYear;
+}
+
+// ===================== TARIF PAR kVA =====================
+function getTarifByKva(kva) {
+  const s = getSettings();
+  return kva <= 3.3 ? s.tarif_dom_low : s.tarif_dom_high;
+}
+
+// ===================== TAB 1 : Installation Complete =====================
+function calculateTab1() {
+  const s = getSettings();
+  const profile = PROFILES[currentProfile1];
+  const hasPool = document.getElementById('pool1').checked;
+  const reventeRate = parseFloat(document.getElementById('c1_revente').value);
+  const coutPV = parseFloat(document.getElementById('c1_cout_pv').value) || 0;
+  const coutBat = parseFloat(document.getElementById('c1_cout_bat').value) || 0;
+  const puissancePanneau = parseFloat(document.getElementById('c1_puissance_panneau').value);
+  const kva = parseFloat(document.getElementById('c1_kva').value) || 6;
+  const tarif = getTarifByKva(kva);
+
+  // Get monthly consumption
+  const ids = ['c1_jan','c1_fev','c1_mar','c1_avr','c1_mai','c1_jun','c1_jul','c1_aou','c1_sep','c1_oct','c1_nov','c1_dec'];
+  const consoMonthly = ids.map(id => parseFloat(document.getElementById(id).value) || 0);
+  const consoAnnual = consoMonthly.reduce((a, b) => a + b, 0);
+
+  // Add pool consumption if applicable
+  const poolMonthly = hasPool ? POOL_EXTRA_KWH : 0;
+  const totalConsoMonthly = consoMonthly.map(c => c + poolMonthly);
+  const totalConsoAnnual = totalConsoMonthly.reduce((a, b) => a + b, 0);
+
+  // PV size: user value or auto-calculate
+  const avgDaily = totalConsoAnnual / 365;
+  const peakSunHours = s.ensoleillement * (1 - s.pertes / 100);
+  const userKwc = parseFloat(document.getElementById('c1_puissance_kwc').value);
+  const pvKwc = userKwc > 0 ? userKwc : Math.ceil((avgDaily * 0.8) / peakSunHours * 2) / 2;
+  const nbPanneaux = Math.ceil((pvKwc * 1000) / puissancePanneau);
+  const surfacePV = nbPanneaux * 2; // 2m² per panel
+
+  // Monthly PV production
+  const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+  const prodMonthly = daysInMonth.map((d, i) => pvKwc * s.ensoleillement * SOLAR_FACTORS[i] * (1 - s.pertes / 100) * d);
+  const prodAnnual = prodMonthly.reduce((a, b) => a + b, 0);
+
+  // Self-consumption calculation based on profile
+  const autoConsoMonthly = totalConsoMonthly.map((conso, i) => {
+    const prod = prodMonthly[i];
+    const dayConsumption = conso * profile.dayRatio;
+    const directUse = Math.min(prod, dayConsumption);
+    return directUse;
+  });
+  const autoConsoAnnual = autoConsoMonthly.reduce((a, b) => a + b, 0);
+  const surplusMonthly = prodMonthly.map((p, i) => Math.max(0, p - autoConsoMonthly[i]));
+  const surplusAnnual = surplusMonthly.reduce((a, b) => a + b, 0);
+
+  // Grid purchase (what's not covered by PV)
+  const gridMonthly = totalConsoMonthly.map((c, i) => c - autoConsoMonthly[i]);
+  const gridAnnual = gridMonthly.reduce((a, b) => a + b, 0);
+
+  // Battery sizing: cover evening consumption from surplus
+  const eveningConsoDaily = avgDaily * profile.eveningRatio;
+  const avgSurplusDaily = surplusAnnual / 365;
+  const batteryKwh = Math.ceil(Math.min(eveningConsoDaily * 0.8, avgSurplusDaily) * 1.2); // 80% evening, 20% overhead for DoD
+  const batteryUsable = batteryKwh * 0.9; // 90% DoD
+
+  // With battery: how much more self-consumption?
+  const battAutoConsoMonthly = totalConsoMonthly.map((conso, i) => {
+    const prod = prodMonthly[i];
+    const dayConsumption = conso * profile.dayRatio;
+    const directUse = Math.min(prod, dayConsumption);
+    const surplus = Math.max(0, prod - directUse);
+    const eveningConso = conso * profile.eveningRatio;
+    const fromBattery = Math.min(surplus, batteryUsable * daysInMonth[i] / daysInMonth[i], eveningConso);
+    const battDaily = Math.min(surplus / daysInMonth[i], batteryUsable);
+    return directUse + battDaily * daysInMonth[i];
+  });
+  const battAutoConsoAnnual = battAutoConsoMonthly.reduce((a, b) => a + b, 0);
+
+  const battGridMonthly = totalConsoMonthly.map((c, i) => Math.max(0, c - battAutoConsoMonthly[i]));
+  const battGridAnnual = battGridMonthly.reduce((a, b) => a + b, 0);
+  const battSurplusMonthly = prodMonthly.map((p, i) => Math.max(0, p - battAutoConsoMonthly[i]));
+  const battSurplusAnnual = battSurplusMonthly.reduce((a, b) => a + b, 0);
+
+  // Financials
+  const investPV = coutPV; // montant total devis panneaux
+  const investBat = coutBat; // montant total devis batterie
+  const investTotal = investPV + investBat;
+
+  const factureSansPV = totalConsoAnnual * tarif;
+  const factureAvecPV = battGridAnnual * tarif - battSurplusAnnual * reventeRate;
+  const economiePV = factureSansPV - factureAvecPV;
+  const tauxAutoConsommation = (battAutoConsoAnnual / totalConsoAnnual * 100);
+
+  // Results display
+  document.getElementById('results1').classList.remove('hidden');
+
+  document.getElementById('resultCards1').innerHTML = `
+    <div class="result-card solar"><div class="value">${fmtDec(pvKwc)} kWc</div><div class="label">Puissance PV recommandee</div></div>
+    <div class="result-card solar"><div class="value">${nbPanneaux}</div><div class="label">Panneaux (${puissancePanneau}Wc) - ${surfacePV} m2</div></div>
+    <div class="result-card battery"><div class="value">${batteryKwh} kWh</div><div class="label">Capacite batterie</div></div>
+    <div class="result-card info"><div class="value">${fmt(prodAnnual)}</div><div class="label">Production annuelle (kWh)</div></div>
+    <div class="result-card savings"><div class="value">${fmtDec(tauxAutoConsommation)}%</div><div class="label">Taux autoconsommation</div></div>
+    <div class="result-card info"><div class="value">${fmt(investTotal)}</div><div class="label">Investissement total (XPF)</div></div>
+  `;
+
+  // Chart: monthly consumption vs production
+  createBarChart('chart1_conso', MONTHS, [
+    { label: 'Consommation (kWh)', data: totalConsoMonthly, backgroundColor: 'rgba(229,57,53,0.7)', borderColor: '#e53935', borderWidth: 1 },
+    { label: 'Production PV (kWh)', data: prodMonthly.map(p => Math.round(p)), backgroundColor: 'rgba(249,168,37,0.7)', borderColor: '#f9a825', borderWidth: 1 },
+    { label: 'Autoconsommation + batterie (kWh)', data: battAutoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)', borderColor: '#00897b', borderWidth: 1 }
+  ], 'Consommation vs Production mensuelle', 'kWh');
+
+  // Doughnut: energy repartition
+  createDoughnutChart('chart1_repartition',
+    ['Autoconso directe + batterie', 'Surplus revendu', 'Achat reseau'],
+    [Math.round(battAutoConsoAnnual), Math.round(battSurplusAnnual), Math.round(battGridAnnual)],
+    ['#00897b', '#f9a825', '#e53935'],
+    'Repartition energetique annuelle (kWh)'
+  );
+
+  // Financial results
+  document.getElementById('resultCards1b').innerHTML = `
+    <div class="result-card savings"><div class="value">${fmt(economiePV)}</div><div class="label">Economie annuelle (XPF)</div></div>
+    <div class="result-card info"><div class="value">${fmt(factureSansPV)}</div><div class="label">Facture sans PV (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(factureAvecPV)}</div><div class="label">Facture avec PV (XPF/an)</div></div>
+    <div class="result-card battery"><div class="value">${fmt(battSurplusAnnual * reventeRate)}</div><div class="label">Revenu revente (XPF/an)</div></div>
+  `;
+
+  // Facture comparison chart
+  const factMois = totalConsoMonthly.map(c => Math.round(c * tarif));
+  const factPVMois = battGridMonthly.map((g, i) => Math.round(g * tarif - battSurplusMonthly[i] * reventeRate));
+  createBarChart('chart1_facture', MONTHS, [
+    { label: 'Facture sans PV (XPF)', data: factMois, backgroundColor: 'rgba(229,57,53,0.6)', borderColor: '#e53935', borderWidth: 1 },
+    { label: 'Facture avec PV+batterie (XPF)', data: factPVMois, backgroundColor: 'rgba(52,168,83,0.6)', borderColor: '#34a853', borderWidth: 1 }
+  ], 'Comparaison facture mensuelle (XPF)', 'XPF');
+
+  // Amortization table
+  const deduction = Math.min(s.deduction, investTotal);
+  buildAmortTable('amortTable1', investTotal, economiePV, s.hausse_tarif, s.duree_vie, deduction);
+}
+
+// ===================== TAB 2 : Battery with full data =====================
+function generateTab2Inputs() {
+  const container = document.getElementById('tab2MonthlyInputs');
+  let html = '';
+  MONTHS_FULL.forEach((m, i) => {
+    html += `<div class="monthly-grid" style="margin-bottom:6px;">
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Mois</label><span style="font-weight:500;padding:8px 0;font-size:0.9em;">${m}</span></div>
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Conso (kWh)</label><input type="number" id="c2_conso_${i}" value="0"></div>
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Prod PV (kWh)</label><input type="number" id="c2_prod_${i}" value="0"></div>
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Revente (kWh)</label><input type="number" id="c2_revente_${i}" value="0"></div>
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Achat (kWh)</label><input type="number" id="c2_achat_${i}" value="0"></div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function calculateTab2() {
+  const s = getSettings();
+  const kva = parseFloat(document.getElementById('c2_kva').value) || 6;
+  const tarif = getTarifByKva(kva);
+  const reventeRate = parseFloat(document.getElementById('c2_revente').value);
+  const coutBat = parseFloat(document.getElementById('c2_cout_bat').value);
+  const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+  const conso = [], prod = [], revente = [], achat = [];
+  for (let i = 0; i < 12; i++) {
+    conso.push(parseFloat(document.getElementById(`c2_conso_${i}`).value) || 0);
+    prod.push(parseFloat(document.getElementById(`c2_prod_${i}`).value) || 0);
+    revente.push(parseFloat(document.getElementById(`c2_revente_${i}`).value) || 0);
+    achat.push(parseFloat(document.getElementById(`c2_achat_${i}`).value) || 0);
+  }
+
+  // Autoconsommation actuelle = Production - Revente
+  const autoConsoActuelle = prod.map((p, i) => p - revente[i]);
+  const autoConsoAnnuelle = autoConsoActuelle.reduce((a, b) => a + b, 0);
+
+  // Surplus journalier moyen que la batterie pourrait capter
+  const surplusDailyAvg = revente.map((r, i) => r / daysInMonth[i]);
+  const achatDailyAvg = achat.map((a, i) => a / daysInMonth[i]);
+
+  // La batterie optimale : capter le surplus pour reduire l'achat
+  const batteryCapacity = surplusDailyAvg.map((surplus, i) => Math.min(surplus, achatDailyAvg[i]));
+  const avgBatteryNeed = batteryCapacity.reduce((a, b) => a + b, 0) / 12;
+  const batteryKwh = Math.ceil(avgBatteryNeed * 1.15); // 15% marge DoD
+
+  // Avec batterie: nouvelle autoconsommation
+  const newAutoConsoMonthly = autoConsoActuelle.map((ac, i) => {
+    const battCapt = Math.min(revente[i] / daysInMonth[i], batteryKwh * 0.9) * daysInMonth[i];
+    return ac + Math.min(battCapt, achat[i]);
+  });
+
+  const newReventeMonthly = prod.map((p, i) => Math.max(0, p - newAutoConsoMonthly[i]));
+  const newAchatMonthly = conso.map((c, i) => Math.max(0, c - newAutoConsoMonthly[i]));
+
+  const consoAnnuelle = conso.reduce((a, b) => a + b, 0);
+  const prodAnnuelle = prod.reduce((a, b) => a + b, 0);
+  const reventeAnnuelle = revente.reduce((a, b) => a + b, 0);
+  const achatAnnuel = achat.reduce((a, b) => a + b, 0);
+  const newReventeAnnuelle = newReventeMonthly.reduce((a, b) => a + b, 0);
+  const newAchatAnnuel = newAchatMonthly.reduce((a, b) => a + b, 0);
+
+  const factureActuelle = achatAnnuel * tarif - reventeAnnuelle * reventeRate;
+  const factureAvecBat = newAchatAnnuel * tarif - newReventeAnnuelle * reventeRate;
+  const economie = factureActuelle - factureAvecBat;
+  const investBat = coutBat; // montant total du devis batterie
+
+  const tauxAutoConsoAvant = (autoConsoAnnuelle / consoAnnuelle * 100);
+  const newAutoConsoAnnuelle = newAutoConsoMonthly.reduce((a, b) => a + b, 0);
+  const tauxAutoConsoApres = (newAutoConsoAnnuelle / consoAnnuelle * 100);
+
+  document.getElementById('results2').classList.remove('hidden');
+
+  document.getElementById('resultCards2').innerHTML = `
+    <div class="result-card battery"><div class="value">${batteryKwh} kWh</div><div class="label">Batterie recommandee</div></div>
+    <div class="result-card info"><div class="value">${fmtDec(tauxAutoConsoAvant)}%</div><div class="label">Autoconso. avant batterie</div></div>
+    <div class="result-card savings"><div class="value">${fmtDec(tauxAutoConsoApres)}%</div><div class="label">Autoconso. avec batterie</div></div>
+    <div class="result-card info"><div class="value">${fmt(investBat)}</div><div class="label">Investissement batterie (XPF)</div></div>
+  `;
+
+  createStackedBarChart('chart2_flux', MONTHS, [
+    { label: 'Autoconso directe', data: autoConsoActuelle.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)' },
+    { label: 'Via batterie', data: newAutoConsoMonthly.map((n, i) => Math.round(Math.max(0, n - autoConsoActuelle[i]))), backgroundColor: 'rgba(249,168,37,0.7)' },
+    { label: 'Achat reseau restant', data: newAchatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.5)' },
+    { label: 'Surplus revendu', data: newReventeMonthly.map(r => Math.round(r)), backgroundColor: 'rgba(26,115,232,0.5)' }
+  ], 'Flux energetiques mensuels avec batterie (kWh)', 'kWh');
+
+  document.getElementById('resultCards2b').innerHTML = `
+    <div class="result-card info"><div class="value">${fmt(factureActuelle)}</div><div class="label">Facture actuelle (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(factureAvecBat)}</div><div class="label">Facture avec batterie (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(economie)}</div><div class="label">Economie annuelle (XPF)</div></div>
+  `;
+
+  const factMoisAvant = achat.map((a, i) => Math.round(a * tarif - revente[i] * reventeRate));
+  const factMoisApres = newAchatMonthly.map((a, i) => Math.round(a * tarif - newReventeMonthly[i] * reventeRate));
+  createBarChart('chart2_eco', MONTHS, [
+    { label: 'Facture avant batterie (XPF)', data: factMoisAvant, backgroundColor: 'rgba(229,57,53,0.6)' },
+    { label: 'Facture avec batterie (XPF)', data: factMoisApres, backgroundColor: 'rgba(52,168,83,0.6)' }
+  ], 'Impact batterie sur la facture mensuelle (XPF)', 'XPF');
+
+  buildAmortTable('amortTable2', investBat, economie, s.hausse_tarif, s.duree_bat, 0);
+}
+
+// ===================== TAB 3 : Battery estimation (partial data) =====================
+function generateTab3Inputs() {
+  const container = document.getElementById('tab3MonthlyInputs');
+  let html = '';
+  MONTHS_FULL.forEach((m, i) => {
+    html += `<div class="monthly-grid" style="margin-bottom:6px;">
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Mois</label><span style="font-weight:500;padding:8px 0;font-size:0.9em;">${m}</span></div>
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Achat reseau (kWh)</label><input type="number" id="c3_achat_${i}" value="0"></div>
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Revente surplus (kWh)</label><input type="number" id="c3_revente_${i}" value="0"></div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function calculateTab3() {
+  const s = getSettings();
+  const profile = PROFILES[currentProfile3];
+  const hasPool = document.getElementById('pool3').checked;
+  const kva = parseFloat(document.getElementById('c3_kva').value) || 6;
+  const tarif = getTarifByKva(kva);
+  const reventeRate = parseFloat(document.getElementById('c3_revente').value);
+  const coutBat = parseFloat(document.getElementById('c3_cout_bat').value);
+  const pvKwc = parseFloat(document.getElementById('c3_puissance_pv').value);
+  const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+  const achat = [], reventeMois = [];
+  for (let i = 0; i < 12; i++) {
+    achat.push(parseFloat(document.getElementById(`c3_achat_${i}`).value) || 0);
+    reventeMois.push(parseFloat(document.getElementById(`c3_revente_${i}`).value) || 0);
+  }
+
+  // Estimate total production from kWc
+  const prodEstMonthly = daysInMonth.map((d, i) => pvKwc * s.ensoleillement * SOLAR_FACTORS[i] * (1 - s.pertes / 100) * d);
+
+  // Autoconsommation actuelle = Production estimee - Revente mesuree
+  const autoConsoActuelle = prodEstMonthly.map((p, i) => Math.max(0, p - reventeMois[i]));
+
+  // Consommation totale estimee = Achat + Autoconsommation
+  const consoEstMonthly = achat.map((a, i) => a + autoConsoActuelle[i] + (hasPool ? POOL_EXTRA_KWH * profile.dayRatio * 0.1 : 0));
+
+  // Battery sizing
+  const surplusDailyAvg = reventeMois.map((r, i) => r / daysInMonth[i]);
+  const achatDailyAvg = achat.map((a, i) => a / daysInMonth[i]);
+  const batteryCapacity = surplusDailyAvg.map((surplus, i) => Math.min(surplus, achatDailyAvg[i]));
+  const avgBatteryNeed = batteryCapacity.reduce((a, b) => a + b, 0) / 12;
+  const batteryKwh = Math.max(1, Math.ceil(avgBatteryNeed * 1.15));
+
+  // With battery
+  const newAutoConsoMonthly = autoConsoActuelle.map((ac, i) => {
+    const battCapt = Math.min(reventeMois[i] / daysInMonth[i], batteryKwh * 0.9) * daysInMonth[i];
+    return ac + Math.min(battCapt, achat[i]);
+  });
+  const newAchatMonthly = consoEstMonthly.map((c, i) => Math.max(0, c - newAutoConsoMonthly[i]));
+  const newReventeMonthly = prodEstMonthly.map((p, i) => Math.max(0, p - newAutoConsoMonthly[i]));
+
+  const consoAnnuelle = consoEstMonthly.reduce((a, b) => a + b, 0);
+  const achatAnnuel = achat.reduce((a, b) => a + b, 0);
+  const reventeAnnuelle = reventeMois.reduce((a, b) => a + b, 0);
+  const newAchatAnnuel = newAchatMonthly.reduce((a, b) => a + b, 0);
+  const newReventeAnnuelle = newReventeMonthly.reduce((a, b) => a + b, 0);
+
+  const factureActuelle = achatAnnuel * tarif - reventeAnnuelle * reventeRate;
+  const factureAvecBat = newAchatAnnuel * tarif - newReventeAnnuelle * reventeRate;
+  const economie = factureActuelle - factureAvecBat;
+  const investBat = coutBat; // montant total du devis batterie
+
+  const autoConsoAnnuelle = autoConsoActuelle.reduce((a, b) => a + b, 0);
+  const newAutoConsoAnnuelle = newAutoConsoMonthly.reduce((a, b) => a + b, 0);
+  const tauxAvant = consoAnnuelle > 0 ? (autoConsoAnnuelle / consoAnnuelle * 100) : 0;
+  const tauxApres = consoAnnuelle > 0 ? (newAutoConsoAnnuelle / consoAnnuelle * 100) : 0;
+
+  document.getElementById('results3').classList.remove('hidden');
+
+  document.getElementById('resultCards3').innerHTML = `
+    <div class="result-card battery"><div class="value">${batteryKwh} kWh</div><div class="label">Batterie estimee</div></div>
+    <div class="result-card info"><div class="value">${fmt(consoAnnuelle)}</div><div class="label">Conso totale estimee (kWh/an)</div></div>
+    <div class="result-card info"><div class="value">${fmtDec(tauxAvant)}%</div><div class="label">Autoconso. avant batterie</div></div>
+    <div class="result-card savings"><div class="value">${fmtDec(tauxApres)}%</div><div class="label">Autoconso. avec batterie</div></div>
+  `;
+
+  createBarChart('chart3_estimation', MONTHS, [
+    { label: 'Conso estimee (kWh)', data: consoEstMonthly.map(c => Math.round(c)), backgroundColor: 'rgba(229,57,53,0.6)' },
+    { label: 'Production estimee (kWh)', data: prodEstMonthly.map(p => Math.round(p)), backgroundColor: 'rgba(249,168,37,0.6)' },
+    { label: 'Autoconso avec bat (kWh)', data: newAutoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.6)' }
+  ], 'Estimation energetique mensuelle (kWh)', 'kWh');
+
+  document.getElementById('resultCards3b').innerHTML = `
+    <div class="result-card info"><div class="value">${fmt(factureActuelle)}</div><div class="label">Facture actuelle (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(factureAvecBat)}</div><div class="label">Facture avec batterie (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(economie)}</div><div class="label">Economie annuelle (XPF)</div></div>
+    <div class="result-card battery"><div class="value">${fmt(investBat)}</div><div class="label">Investissement (XPF)</div></div>
+  `;
+
+  const factMoisAvant = achat.map((a, i) => Math.round(a * tarif - reventeMois[i] * reventeRate));
+  const factMoisApres = newAchatMonthly.map((a, i) => Math.round(a * tarif - newReventeMonthly[i] * reventeRate));
+  createBarChart('chart3_eco', MONTHS, [
+    { label: 'Facture avant batterie (XPF)', data: factMoisAvant, backgroundColor: 'rgba(229,57,53,0.6)' },
+    { label: 'Facture avec batterie (XPF)', data: factMoisApres, backgroundColor: 'rgba(52,168,83,0.6)' }
+  ], 'Impact batterie sur la facture (XPF)', 'XPF');
+
+  buildAmortTable('amortTable3', investBat, economie, s.hausse_tarif, s.duree_bat, 0);
+}
+
+// ===================== TAB 4 : Entreprise =====================
+function calculateTab4() {
+  const s = getSettings();
+  const consoAn = parseFloat(document.getElementById('c4_conso_annuelle').value);
+  const pvKwc = parseFloat(document.getElementById('c4_puissance').value);
+  const investHT = parseFloat(document.getElementById('c4_cout_pv').value) || 0;
+  const puissancePanneau = parseFloat(document.getElementById('c4_puissance_panneau').value);
+  const tarifHT = parseFloat(document.getElementById('c4_tarif_ht').value);
+  const reventeRate = parseFloat(document.getElementById('c4_revente').value);
+  const partAutoConso = parseFloat(document.getElementById('c4_autocons').value) / 100;
+  const hausse = parseFloat(document.getElementById('c4_hausse').value);
+  const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+  const nbPanneaux = Math.ceil((pvKwc * 1000) / puissancePanneau);
+  const surfacePV = nbPanneaux * 2;
+
+  // Monthly production
+  const prodMonthly = daysInMonth.map((d, i) => pvKwc * s.ensoleillement * SOLAR_FACTORS[i] * (1 - s.pertes / 100) * d);
+  const prodAnnuelle = prodMonthly.reduce((a, b) => a + b, 0);
+
+  // Distribution conso mensuelle (proportionnelle aux jours ouvrables)
+  const totalDays = daysInMonth.reduce((a, b) => a + b, 0);
+  const consoMonthly = daysInMonth.map(d => consoAn * d / totalDays);
+
+  // Autoconsommation
+  const autoConsoMonthly = prodMonthly.map((p, i) => Math.min(p * partAutoConso, consoMonthly[i]));
+  const surplusMonthly = prodMonthly.map((p, i) => p - autoConsoMonthly[i]);
+  const achatMonthly = consoMonthly.map((c, i) => c - autoConsoMonthly[i]);
+
+  const autoConsoAnnuelle = autoConsoMonthly.reduce((a, b) => a + b, 0);
+  const surplusAnnuel = surplusMonthly.reduce((a, b) => a + b, 0);
+  const achatAnnuel = achatMonthly.reduce((a, b) => a + b, 0);
+
+  // Financials HT
+  const factureSansPV = consoAn * tarifHT;
+  const factureAvecPV = achatAnnuel * tarifHT - surplusAnnuel * reventeRate;
+  const economieHT = factureSansPV - factureAvecPV;
+
+  document.getElementById('results4').classList.remove('hidden');
+
+  document.getElementById('resultCards4').innerHTML = `
+    <div class="result-card solar"><div class="value">${fmtDec(pvKwc)} kWc</div><div class="label">Puissance PV</div></div>
+    <div class="result-card solar"><div class="value">${nbPanneaux}</div><div class="label">Panneaux - ${surfacePV} m2</div></div>
+    <div class="result-card info"><div class="value">${fmt(prodAnnuelle)}</div><div class="label">Production annuelle (kWh)</div></div>
+    <div class="result-card savings"><div class="value">${fmtDec(autoConsoAnnuelle / prodAnnuelle * 100)}%</div><div class="label">Taux autoconsommation</div></div>
+  `;
+
+  createStackedBarChart('chart4_prod', MONTHS, [
+    { label: 'Autoconsommation (kWh)', data: autoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)' },
+    { label: 'Surplus revendu (kWh)', data: surplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(249,168,37,0.7)' },
+    { label: 'Achat reseau (kWh)', data: achatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.5)' }
+  ], 'Repartition energetique mensuelle - Entreprise (kWh)', 'kWh');
+
+  document.getElementById('resultCards4b').innerHTML = `
+    <div class="result-card info"><div class="value">${fmt(investHT)}</div><div class="label">Investissement HT (XPF)</div></div>
+    <div class="result-card info"><div class="value">${fmt(factureSansPV)}</div><div class="label">Facture sans PV HT (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(factureAvecPV)}</div><div class="label">Facture avec PV HT (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(economieHT)}</div><div class="label">Economie annuelle HT (XPF)</div></div>
+  `;
+
+  // Amortization chart
+  const years = [];
+  const cumSavings = [];
+  let cumSav = 0;
+  for (let y = 1; y <= s.duree_vie; y++) {
+    years.push('An ' + y);
+    cumSav += economieHT * Math.pow(1 + hausse / 100, y - 1);
+    cumSavings.push(Math.round(cumSav));
+  }
+
+  createLineChart('chart4_amort', years, [
+    { label: 'Economies cumulees HT (XPF)', data: cumSavings, borderColor: '#34a853', backgroundColor: 'rgba(52,168,83,0.1)', fill: true, tension: 0.3 },
+    { label: 'Investissement HT (XPF)', data: years.map(() => investHT), borderColor: '#e53935', borderDash: [6, 4], pointRadius: 0 }
+  ], 'Amortissement entreprise HT - Economies cumulees vs Investissement', 'XPF');
+
+  // No fiscal deduction for enterprise in this simplified model (already HT)
+  buildAmortTable('amortTable4', investHT, economieHT, hausse, s.duree_vie, 0);
+}
+
+// ===================== INIT =====================
+function init() {
+  loadSettingsUI();
+  generateTab2Inputs();
+  generateTab3Inputs();
+
+  // Load saved settings into revente dropdowns
+  const s = getSettings();
+  document.getElementById('c4_tarif_ht').value = s.tarif_pro;
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
