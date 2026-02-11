@@ -504,42 +504,42 @@
     <div class="form-grid">
       <div class="form-group">
         <label>Abonnement (kVA)</label>
-        <input type="number" id="c1_kva" value="6" step="0.1" min="1">
+        <input type="number" id="c1_kva" value="6.6" step="0.1" min="1">
         <span class="helper-text">Tarif auto selon kVA</span>
       </div>
       <div class="form-group">
         <label>Tarif de revente (XPF/kWh)</label>
         <select id="c1_revente">
           <option value="21">21 XPF/kWh</option>
-          <option value="15" selected>15 XPF/kWh</option>
-          <option value="0">0 XPF/kWh (pas de revente)</option>
+          <option value="15">15 XPF/kWh</option>
+          <option value="0" selected>0 XPF/kWh (pas de revente)</option>
         </select>
       </div>
       <div class="form-group">
         <label>Puissance PV installee (kWc)</label>
-        <input type="number" id="c1_puissance_kwc" value="" step="0.5" placeholder="Auto">
+        <input type="number" id="c1_puissance_kwc" value="6.3" step="0.5" placeholder="Auto">
         <span class="helper-text">Vide = calcul auto, sinon votre valeur</span>
       </div>
       <div class="form-group">
         <label>Puissance panneau (Wc)</label>
-        <input type="number" id="c1_puissance_panneau" value="425" step="25">
+        <input type="number" id="c1_puissance_panneau" value="450" step="25">
       </div>
       <div class="form-group">
         <label>Montant du devis (XPF)</label>
-        <input type="number" id="c1_montant_devis" value="2500000" step="10000">
+        <input type="number" id="c1_montant_devis" value="1650000" step="10000">
       </div>
       <div class="form-group">
         <label>Modele de batterie</label>
         <select id="c1_modele_bat" onchange="updateBatteryDisplay('c1')">
           <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
           <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
-          <option value="maestro">Maestro - 14,3 kWh (51.2V / 280Ah)</option>
+          <option value="maestro" selected>Maestro - 14,3 kWh (51.2V / 280Ah)</option>
         </select>
       </div>
       <div class="form-group">
         <label>Nombre de batteries</label>
         <input type="number" id="c1_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c1')">
-        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c1_bat_capacity_display">4,08 kWh</strong></span>
+        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c1_bat_capacity_display">12,16 kWh</strong></span>
       </div>
     </div>
 
@@ -598,20 +598,20 @@
     <div class="form-grid">
       <div class="form-group">
         <label>Abonnement (kVA)</label>
-        <input type="number" id="c2_kva" value="6" step="0.1" min="1">
+        <input type="number" id="c2_kva" value="6.6" step="0.1" min="1">
         <span class="helper-text">Tarif auto selon kVA</span>
       </div>
       <div class="form-group">
         <label>Tarif de revente (XPF/kWh)</label>
         <select id="c2_revente">
           <option value="21">21 XPF/kWh</option>
-          <option value="15" selected>15 XPF/kWh</option>
-          <option value="0">0 XPF/kWh</option>
+          <option value="15">15 XPF/kWh</option>
+          <option value="0" selected>0 XPF/kWh</option>
         </select>
       </div>
       <div class="form-group">
         <label>Montant du devis (XPF)</label>
-        <input type="number" id="c2_cout_bat" value="1200000" step="10000">
+        <input type="number" id="c2_cout_bat" value="1650000" step="10000">
         <span class="helper-text">Montant total du devis</span>
       </div>
       <div class="form-group">
@@ -619,13 +619,13 @@
         <select id="c2_modele_bat" onchange="updateBatteryDisplay('c2')">
           <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
           <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
-          <option value="maestro">Maestro - 14,3 kWh (51.2V / 280Ah)</option>
+          <option value="maestro" selected>Maestro - 14,3 kWh (51.2V / 280Ah)</option>
         </select>
       </div>
       <div class="form-group">
         <label>Nombre de batteries</label>
         <input type="number" id="c2_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c2')">
-        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c2_bat_capacity_display">4,08 kWh</strong></span>
+        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c2_bat_capacity_display">12,16 kWh</strong></span>
       </div>
     </div>
 
@@ -673,24 +673,24 @@
     <div class="form-grid">
       <div class="form-group">
         <label>Abonnement (kVA)</label>
-        <input type="number" id="c3_kva" value="6" step="0.1" min="1">
+        <input type="number" id="c3_kva" value="6.6" step="0.1" min="1">
         <span class="helper-text">Tarif auto selon kVA</span>
       </div>
       <div class="form-group">
         <label>Puissance PV installee (kWc)</label>
-        <input type="number" id="c3_puissance_pv" value="6" step="0.5">
+        <input type="number" id="c3_puissance_pv" value="6.3" step="0.5">
       </div>
       <div class="form-group">
         <label>Tarif de revente (XPF/kWh)</label>
         <select id="c3_revente">
           <option value="21">21 XPF/kWh</option>
-          <option value="15" selected>15 XPF/kWh</option>
-          <option value="0">0 XPF/kWh</option>
+          <option value="15">15 XPF/kWh</option>
+          <option value="0" selected>0 XPF/kWh</option>
         </select>
       </div>
       <div class="form-group">
         <label>Montant du devis (XPF)</label>
-        <input type="number" id="c3_cout_bat" value="1200000" step="10000">
+        <input type="number" id="c3_cout_bat" value="1650000" step="10000">
         <span class="helper-text">Montant total du devis</span>
       </div>
       <div class="form-group">
@@ -698,13 +698,13 @@
         <select id="c3_modele_bat" onchange="updateBatteryDisplay('c3')">
           <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
           <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
-          <option value="maestro">Maestro - 14,3 kWh (51.2V / 280Ah)</option>
+          <option value="maestro" selected>Maestro - 14,3 kWh (51.2V / 280Ah)</option>
         </select>
       </div>
       <div class="form-group">
         <label>Nombre de batteries</label>
         <input type="number" id="c3_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c3')">
-        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c3_bat_capacity_display">4,08 kWh</strong></span>
+        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c3_bat_capacity_display">12,16 kWh</strong></span>
       </div>
     </div>
 
@@ -754,7 +754,7 @@
       </div>
       <div class="form-group">
         <label>Puissance panneau (Wc)</label>
-        <input type="number" id="c4_puissance_panneau" value="425" step="25">
+        <input type="number" id="c4_puissance_panneau" value="450" step="25">
       </div>
       <div class="form-group">
         <label>Tarif achat electricite HT (XPF/kWh)</label>
@@ -765,8 +765,8 @@
         <label>Tarif de revente (XPF/kWh)</label>
         <select id="c4_revente">
           <option value="21">21 XPF/kWh</option>
-          <option value="15" selected>15 XPF/kWh</option>
-          <option value="0">0 XPF/kWh</option>
+          <option value="15">15 XPF/kWh</option>
+          <option value="0" selected>0 XPF/kWh</option>
         </select>
       </div>
       <div class="form-group">
