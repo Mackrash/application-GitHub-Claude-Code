@@ -353,14 +353,22 @@
         <input type="number" id="c1_puissance_panneau" value="425" step="25">
       </div>
       <div class="form-group">
-        <label>Devis panneaux (XPF)</label>
-        <input type="number" id="c1_cout_pv" value="2500000" step="10000">
-        <span class="helper-text">Montant total devis PV</span>
+        <label>Montant du devis (XPF)</label>
+        <input type="number" id="c1_montant_devis" value="2500000" step="10000">
+        <span class="helper-text">Montant total du devis (panneaux + batterie)</span>
       </div>
       <div class="form-group">
-        <label>Devis batterie (XPF)</label>
-        <input type="number" id="c1_cout_bat" value="1200000" step="10000">
-        <span class="helper-text">Montant total devis batterie</span>
+        <label>Modele de batterie</label>
+        <select id="c1_modele_bat" onchange="updateBatteryDisplay('c1')">
+          <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
+          <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
+          <option value="maestro">Maestro - 14,3 kWh (51.2V / 280Ah)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nombre de batteries</label>
+        <input type="number" id="c1_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c1')">
+        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c1_bat_capacity_display">4,08 kWh</strong></span>
       </div>
     </div>
 
@@ -424,6 +432,19 @@
         <label>Montant du devis (XPF)</label>
         <input type="number" id="c2_cout_bat" value="1200000" step="10000">
         <span class="helper-text">Montant total du devis</span>
+      </div>
+      <div class="form-group">
+        <label>Modele de batterie</label>
+        <select id="c2_modele_bat" onchange="updateBatteryDisplay('c2')">
+          <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
+          <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
+          <option value="maestro">Maestro - 14,3 kWh (51.2V / 280Ah)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nombre de batteries</label>
+        <input type="number" id="c2_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c2')">
+        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c2_bat_capacity_display">4,08 kWh</strong></span>
       </div>
     </div>
 
@@ -494,6 +515,19 @@
         <label>Montant du devis (XPF)</label>
         <input type="number" id="c3_cout_bat" value="1200000" step="10000">
         <span class="helper-text">Montant total du devis</span>
+      </div>
+      <div class="form-group">
+        <label>Modele de batterie</label>
+        <select id="c3_modele_bat" onchange="updateBatteryDisplay('c3')">
+          <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
+          <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
+          <option value="maestro">Maestro - 14,3 kWh (51.2V / 280Ah)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nombre de batteries</label>
+        <input type="number" id="c3_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c3')">
+        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c3_bat_capacity_display">4,08 kWh</strong></span>
       </div>
     </div>
 
@@ -692,6 +726,14 @@ const PROFILES = {
 };
 const POOL_EXTRA_KWH = 350; // per month
 
+// Battery models (specs from product catalog)
+const BATTERY_MODELS = {
+  elite:    { name: 'Elite 100 (EL48100A)',  voltage: 48,   ah: 100, wh: 4800,  label: 'Elite 100 - 4,8 kWh' },
+  prestige: { name: 'Prestige (PR48208A)',   voltage: 51.2, ah: 208, wh: 10650, label: 'Prestige - 10,65 kWh' },
+  maestro:  { name: 'Maestro (MA48280A)',    voltage: 51.2, ah: 280, wh: 14336, label: 'Maestro - 14,3 kWh' }
+};
+const BATTERY_DOD = 0.85; // Depth of Discharge 85%
+
 let charts = {};
 
 function getSettings() {
@@ -772,6 +814,18 @@ function selectProfile3(btn) {
   document.querySelectorAll('#tab3 .profile-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentProfile3 = btn.dataset.profile;
+}
+
+// ===================== BATTERY DISPLAY HELPER =====================
+function updateBatteryDisplay(prefix) {
+  const modelId = document.getElementById(prefix + '_modele_bat').value;
+  const qty = parseInt(document.getElementById(prefix + '_nb_bat').value) || 1;
+  const model = BATTERY_MODELS[modelId];
+  const usableKwh = (model.wh * qty / 1000) * BATTERY_DOD;
+  const display = document.getElementById(prefix + '_bat_capacity_display');
+  if (display) {
+    display.textContent = fmtDec(usableKwh) + ' kWh';
+  }
 }
 
 // ===================== FORMATTING =====================
@@ -891,8 +945,9 @@ function calculateTab1() {
   const profile = PROFILES[currentProfile1];
   const hasPool = document.getElementById('pool1').checked;
   const reventeRate = parseFloat(document.getElementById('c1_revente').value);
-  const coutPV = parseFloat(document.getElementById('c1_cout_pv').value) || 0;
-  const coutBat = parseFloat(document.getElementById('c1_cout_bat').value) || 0;
+  const montantDevis = parseFloat(document.getElementById('c1_montant_devis').value) || 0;
+  const modelebat = document.getElementById('c1_modele_bat').value;
+  const nbBat = parseInt(document.getElementById('c1_nb_bat').value) || 1;
   const puissancePanneau = parseFloat(document.getElementById('c1_puissance_panneau').value);
   const kva = parseFloat(document.getElementById('c1_kva').value) || 6;
   const tarif = getTarifByKva(kva);
@@ -935,11 +990,11 @@ function calculateTab1() {
   const gridMonthly = totalConsoMonthly.map((c, i) => c - autoConsoMonthly[i]);
   const gridAnnual = gridMonthly.reduce((a, b) => a + b, 0);
 
-  // Battery sizing: cover evening consumption from surplus
-  const eveningConsoDaily = avgDaily * profile.eveningRatio;
-  const avgSurplusDaily = surplusAnnual / 365;
-  const batteryKwh = Math.ceil(Math.min(eveningConsoDaily * 0.8, avgSurplusDaily) * 1.2); // 80% evening, 20% overhead for DoD
-  const batteryUsable = batteryKwh * 0.9; // 90% DoD
+  // Battery capacity from selected model
+  const batModel = BATTERY_MODELS[modelebat];
+  const batteryNominalKwh = (batModel.wh * nbBat) / 1000;
+  const batteryKwh = batteryNominalKwh;
+  const batteryUsable = batteryNominalKwh * BATTERY_DOD; // DoD 85%
 
   // With battery: how much more self-consumption?
   const battAutoConsoMonthly = totalConsoMonthly.map((conso, i) => {
@@ -960,9 +1015,7 @@ function calculateTab1() {
   const battSurplusAnnual = battSurplusMonthly.reduce((a, b) => a + b, 0);
 
   // Financials
-  const investPV = coutPV; // montant total devis panneaux
-  const investBat = coutBat; // montant total devis batterie
-  const investTotal = investPV + investBat;
+  const investTotal = montantDevis; // montant total du devis
 
   const factureSansPV = totalConsoAnnual * tarif;
   const factureAvecPV = battGridAnnual * tarif - battSurplusAnnual * reventeRate;
@@ -975,10 +1028,10 @@ function calculateTab1() {
   document.getElementById('resultCards1').innerHTML = `
     <div class="result-card solar"><div class="value">${fmtDec(pvKwc)} kWc</div><div class="label">Puissance PV recommandee</div></div>
     <div class="result-card solar"><div class="value">${nbPanneaux}</div><div class="label">Panneaux (${puissancePanneau}Wc) - ${surfacePV} m2</div></div>
-    <div class="result-card battery"><div class="value">${batteryKwh} kWh</div><div class="label">Capacite batterie</div></div>
+    <div class="result-card battery"><div class="value">${fmtDec(batteryUsable)} kWh</div><div class="label">${nbBat}x ${batModel.name} (utile DoD 85%)</div></div>
     <div class="result-card info"><div class="value">${fmt(prodAnnual)}</div><div class="label">Production annuelle (kWh)</div></div>
     <div class="result-card savings"><div class="value">${fmtDec(tauxAutoConsommation)}%</div><div class="label">Taux autoconsommation</div></div>
-    <div class="result-card info"><div class="value">${fmt(investTotal)}</div><div class="label">Investissement total (XPF)</div></div>
+    <div class="result-card info"><div class="value">${fmt(investTotal)}</div><div class="label">Montant du devis (XPF)</div></div>
   `;
 
   // Chart: monthly consumption vs production
@@ -1053,18 +1106,17 @@ function calculateTab2() {
   const autoConsoActuelle = prod.map((p, i) => p - revente[i]);
   const autoConsoAnnuelle = autoConsoActuelle.reduce((a, b) => a + b, 0);
 
-  // Surplus journalier moyen que la batterie pourrait capter
-  const surplusDailyAvg = revente.map((r, i) => r / daysInMonth[i]);
-  const achatDailyAvg = achat.map((a, i) => a / daysInMonth[i]);
-
-  // La batterie optimale : capter le surplus pour reduire l'achat
-  const batteryCapacity = surplusDailyAvg.map((surplus, i) => Math.min(surplus, achatDailyAvg[i]));
-  const avgBatteryNeed = batteryCapacity.reduce((a, b) => a + b, 0) / 12;
-  const batteryKwh = Math.ceil(avgBatteryNeed * 1.15); // 15% marge DoD
+  // Battery capacity from selected model
+  const modelebat2 = document.getElementById('c2_modele_bat').value;
+  const nbBat2 = parseInt(document.getElementById('c2_nb_bat').value) || 1;
+  const batModel2 = BATTERY_MODELS[modelebat2];
+  const batteryNominalKwh = (batModel2.wh * nbBat2) / 1000;
+  const batteryKwh = batteryNominalKwh;
+  const batteryUsable = batteryNominalKwh * BATTERY_DOD; // DoD 85%
 
   // Avec batterie: nouvelle autoconsommation
   const newAutoConsoMonthly = autoConsoActuelle.map((ac, i) => {
-    const battCapt = Math.min(revente[i] / daysInMonth[i], batteryKwh * 0.9) * daysInMonth[i];
+    const battCapt = Math.min(revente[i] / daysInMonth[i], batteryUsable) * daysInMonth[i];
     return ac + Math.min(battCapt, achat[i]);
   });
 
@@ -1090,7 +1142,7 @@ function calculateTab2() {
   document.getElementById('results2').classList.remove('hidden');
 
   document.getElementById('resultCards2').innerHTML = `
-    <div class="result-card battery"><div class="value">${batteryKwh} kWh</div><div class="label">Batterie recommandee</div></div>
+    <div class="result-card battery"><div class="value">${fmtDec(batteryUsable)} kWh</div><div class="label">${nbBat2}x ${batModel2.name} (utile DoD 85%)</div></div>
     <div class="result-card info"><div class="value">${fmtDec(tauxAutoConsoAvant)}%</div><div class="label">Autoconso. avant batterie</div></div>
     <div class="result-card savings"><div class="value">${fmtDec(tauxAutoConsoApres)}%</div><div class="label">Autoconso. avec batterie</div></div>
     <div class="result-card info"><div class="value">${fmt(investBat)}</div><div class="label">Investissement batterie (XPF)</div></div>
@@ -1159,16 +1211,17 @@ function calculateTab3() {
   // Consommation totale estimee = Achat + Autoconsommation
   const consoEstMonthly = achat.map((a, i) => a + autoConsoActuelle[i] + (hasPool ? POOL_EXTRA_KWH * profile.dayRatio * 0.1 : 0));
 
-  // Battery sizing
-  const surplusDailyAvg = reventeMois.map((r, i) => r / daysInMonth[i]);
-  const achatDailyAvg = achat.map((a, i) => a / daysInMonth[i]);
-  const batteryCapacity = surplusDailyAvg.map((surplus, i) => Math.min(surplus, achatDailyAvg[i]));
-  const avgBatteryNeed = batteryCapacity.reduce((a, b) => a + b, 0) / 12;
-  const batteryKwh = Math.max(1, Math.ceil(avgBatteryNeed * 1.15));
+  // Battery capacity from selected model
+  const modelebat3 = document.getElementById('c3_modele_bat').value;
+  const nbBat3 = parseInt(document.getElementById('c3_nb_bat').value) || 1;
+  const batModel3 = BATTERY_MODELS[modelebat3];
+  const batteryNominalKwh = (batModel3.wh * nbBat3) / 1000;
+  const batteryKwh = batteryNominalKwh;
+  const batteryUsable = batteryNominalKwh * BATTERY_DOD; // DoD 85%
 
   // With battery
   const newAutoConsoMonthly = autoConsoActuelle.map((ac, i) => {
-    const battCapt = Math.min(reventeMois[i] / daysInMonth[i], batteryKwh * 0.9) * daysInMonth[i];
+    const battCapt = Math.min(reventeMois[i] / daysInMonth[i], batteryUsable) * daysInMonth[i];
     return ac + Math.min(battCapt, achat[i]);
   });
   const newAchatMonthly = consoEstMonthly.map((c, i) => Math.max(0, c - newAutoConsoMonthly[i]));
@@ -1193,7 +1246,7 @@ function calculateTab3() {
   document.getElementById('results3').classList.remove('hidden');
 
   document.getElementById('resultCards3').innerHTML = `
-    <div class="result-card battery"><div class="value">${batteryKwh} kWh</div><div class="label">Batterie estimee</div></div>
+    <div class="result-card battery"><div class="value">${fmtDec(batteryUsable)} kWh</div><div class="label">${nbBat3}x ${batModel3.name} (utile DoD 85%)</div></div>
     <div class="result-card info"><div class="value">${fmt(consoAnnuelle)}</div><div class="label">Conso totale estimee (kWh/an)</div></div>
     <div class="result-card info"><div class="value">${fmtDec(tauxAvant)}%</div><div class="label">Autoconso. avant batterie</div></div>
     <div class="result-card savings"><div class="value">${fmtDec(tauxApres)}%</div><div class="label">Autoconso. avec batterie</div></div>
@@ -1310,6 +1363,11 @@ function init() {
   // Load saved settings into revente dropdowns
   const s = getSettings();
   document.getElementById('c4_tarif_ht').value = s.tarif_pro;
+
+  // Initialize battery capacity displays
+  updateBatteryDisplay('c1');
+  updateBatteryDisplay('c2');
+  updateBatteryDisplay('c3');
 }
 
 document.addEventListener('DOMContentLoaded', init);
