@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculateur Photovoltaique - Nouvelle Caledonie</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root {
     --primary: #f05326;
@@ -69,7 +68,7 @@
     gap: 8px;
     flex-shrink: 0;
   }
-  .btn-print, .btn-pdf {
+  .btn-print {
     padding: 8px 16px;
     border: 2px solid rgba(255,255,255,0.4);
     border-radius: 8px;
@@ -83,7 +82,7 @@
     align-items: center;
     gap: 6px;
   }
-  .btn-print:hover, .btn-pdf:hover {
+  .btn-print:hover {
     background: var(--primary);
     border-color: var(--primary);
   }
@@ -335,7 +334,6 @@
     <p><span class="badge badge-nc">NC</span> Etude solaire complete - Tarifs, batteries, amortissement</p>
   </div>
   <div class="header-actions">
-    <button class="btn-pdf" onclick="exportPDF()" title="Exporter en PDF">&#128196; PDF</button>
     <button class="btn-print" onclick="window.print()" title="Imprimer">&#128424; Imprimer</button>
   </div>
 </div>
@@ -1575,71 +1573,6 @@ function init() {
   updateBatteryDisplay('c1');
   updateBatteryDisplay('c2');
   updateBatteryDisplay('c3');
-}
-
-// ===================== PDF EXPORT =====================
-function exportPDF() {
-  // Find the active tab content
-  const activeTab = document.querySelector('.tab-content.active');
-  if (!activeTab) { alert('Aucun onglet actif.'); return; }
-
-  // Check if results are visible in the active tab
-  const results = activeTab.querySelector('.results:not(.hidden)');
-  const targetElement = results || activeTab;
-
-  // Create a wrapper with header for PDF
-  const wrapper = document.createElement('div');
-  wrapper.style.padding = '10px';
-  wrapper.style.background = 'white';
-
-  // Add logo header
-  const headerClone = document.createElement('div');
-  headerClone.style.display = 'flex';
-  headerClone.style.alignItems = 'center';
-  headerClone.style.justifyContent = 'space-between';
-  headerClone.style.marginBottom = '16px';
-  headerClone.style.paddingBottom = '12px';
-  headerClone.style.borderBottom = '3px solid #f05326';
-  headerClone.innerHTML = `
-    <div style="display:flex;align-items:center;gap:16px;">
-      <img src="https://www.solarconcept.nc/wp-content/uploads/2022/08/LOGO-transparent.png" style="height:40px;" crossorigin="anonymous">
-      <img src="https://www.omegapower.nc/wp-content/uploads/2020/01/Typo-Omega-var-400.png" style="height:40px;" crossorigin="anonymous">
-    </div>
-    <div style="text-align:right;color:#34314b;">
-      <strong style="font-size:1.1em;">Calculateur Photovoltaique NC</strong><br>
-      ${document.getElementById('clientName').value ? `<span style="font-size:0.9em;font-weight:600;">Client : ${document.getElementById('clientName').value}</span><br>` : ''}
-      <span style="font-size:0.8em;color:#5f6368;">Etude generee le ${new Date().toLocaleDateString('fr-FR')}</span>
-    </div>
-  `;
-  wrapper.appendChild(headerClone);
-
-  // Clone the content
-  const contentClone = targetElement.cloneNode(true);
-  contentClone.style.display = 'block';
-  // Remove buttons from clone
-  contentClone.querySelectorAll('.btn, .btn-center, .profile-selector, .pool-toggle').forEach(el => el.remove());
-  wrapper.appendChild(contentClone);
-
-  // Temporarily add wrapper to document for rendering
-  document.body.appendChild(wrapper);
-
-  const opt = {
-    margin: [8, 8, 8, 8],
-    filename: 'etude-photovoltaique-nc-' + new Date().toISOString().slice(0,10) + '.pdf',
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  html2pdf().set(opt).from(wrapper).save().then(() => {
-    document.body.removeChild(wrapper);
-  }).catch(() => {
-    document.body.removeChild(wrapper);
-    // Fallback to print
-    alert('Export PDF echoue. Utilisation de l\'impression du navigateur.');
-    window.print();
-  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
