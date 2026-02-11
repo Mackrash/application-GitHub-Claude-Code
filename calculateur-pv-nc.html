@@ -638,10 +638,6 @@
       <button class="profile-btn" data-profile="retraite" onclick="selectProfile3(this)">Retraite</button>
       <button class="profile-btn" data-profile="enfants" onclick="selectProfile3(this)">Avec enfants</button>
     </div>
-    <div class="pool-toggle">
-      <input type="checkbox" id="pool3">
-      <label for="pool3">Option Piscine</label>
-    </div>
     <div class="divider"></div>
     <h3 style="font-size:0.95em;margin-bottom:10px;">Donnees mensuelles</h3>
     <div id="tab3MonthlyInputs"></div>
@@ -1461,7 +1457,6 @@ function generateTab3Inputs() {
 function calculateTab3() {
   const s = getSettings();
   const profile = PROFILES[currentProfile3];
-  const hasPool = document.getElementById('pool3').checked;
   const kva = parseFloat(document.getElementById('c3_kva').value) || 6;
   const tarif = getTarifByKva(kva);
   const reventeRate = parseFloat(document.getElementById('c3_revente').value);
@@ -1482,7 +1477,7 @@ function calculateTab3() {
   const autoConsoActuelle = prodEstMonthly.map((p, i) => Math.max(0, p - reventeMois[i]));
 
   // Consommation totale estimee = Achat + Autoconsommation
-  const consoEstMonthly = achat.map((a, i) => a + autoConsoActuelle[i] + (hasPool ? POOL_EXTRA_KWH * profile.dayRatio * 0.1 : 0));
+  const consoEstMonthly = achat.map((a, i) => a + autoConsoActuelle[i]);
 
   // Battery capacity from selected model
   const modelebat3 = document.getElementById('c3_modele_bat').value;
