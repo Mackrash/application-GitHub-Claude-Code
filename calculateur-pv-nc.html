@@ -340,6 +340,11 @@
   </div>
 </div>
 
+<div style="background:#f8f6fc;border-bottom:2px solid var(--border);padding:12px 30px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+  <label for="clientName" style="font-weight:600;font-size:0.95em;color:var(--text);white-space:nowrap;">Nom du client :</label>
+  <input type="text" id="clientName" placeholder="Entrez le nom du client" style="flex:1;min-width:200px;max-width:500px;padding:8px 14px;border:2px solid var(--border);border-radius:8px;font-size:0.95em;font-family:inherit;color:var(--text);transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+</div>
+
 <div class="tab-bar">
   <button class="tab-btn t1 active" onclick="switchTab('tab1')">
     <span class="tab-icon">&#9728;</span>
@@ -1602,6 +1607,7 @@ function exportPDF() {
     </div>
     <div style="text-align:right;color:#34314b;">
       <strong style="font-size:1.1em;">Calculateur Photovoltaique NC</strong><br>
+      ${document.getElementById('clientName').value ? `<span style="font-size:0.9em;font-weight:600;">Client : ${document.getElementById('clientName').value}</span><br>` : ''}
       <span style="font-size:0.8em;color:#5f6368;">Etude generee le ${new Date().toLocaleDateString('fr-FR')}</span>
     </div>
   `;
