@@ -644,7 +644,7 @@
     </p>
     <div class="settings-grid">
       <div class="settings-section">
-        <h3>Tarifs achat electricite (XPF/kWh TTC)</h3>
+        <h3>Tarifs achat electricite (XPF/kWh)</h3>
         <div class="form-group" style="margin-bottom:12px;">
           <label>Domestique &le; 3.3 kVA</label>
           <input type="number" id="s_tarif_dom_low" value="37.91" step="0.01">
@@ -683,6 +683,29 @@
         <div class="form-group" style="margin-bottom:12px;">
           <label>Degradation panneaux/an (%)</label>
           <input type="number" id="s_degradation" value="0.5" step="0.1">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Composants de facturation</h3>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Prime fixe (XPF/kVA/mois)</label>
+          <input type="number" id="s_prime_fixe" value="608.42" step="0.01">
+          <span class="helper-text">Abonnement fixe par kVA souscrit</span>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Taxe communale (%)</label>
+          <input type="number" id="s_taxe_communale" value="9" step="0.1">
+          <span class="helper-text">Appliquee sur energie + prime fixe</span>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Redevance comptage (XPF/mois)</label>
+          <input type="number" id="s_redevance_comptage" value="703" step="1">
+          <span class="helper-text">Frais fixe mensuel compteur</span>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>TGC sur energie (%)</label>
+          <input type="number" id="s_tgc" value="3" step="0.1">
+          <span class="helper-text">Taxe generale sur la consommation</span>
         </div>
       </div>
       <div class="settings-section">
@@ -746,16 +769,16 @@ const BATTERY_DOD = 0.85; // Depth of Discharge 85%
 let charts = {};
 
 function getSettings() {
-  const saved = localStorage.getItem('pv_nc_settings');
-  if (saved) {
-    try { return JSON.parse(saved); } catch(e) {}
-  }
-  return {
+  const defaults = {
     tarif_dom_low: 37.91,
     tarif_dom_high: 42.24,
     tarif_pro: 29.62,
     revente_high: 21,
     revente_std: 15,
+    prime_fixe: 608.42,
+    taxe_communale: 9,
+    redevance_comptage: 703,
+    tgc: 3,
     ensoleillement: 4.2,
     pertes: 15,
     degradation: 0.5,
@@ -764,6 +787,11 @@ function getSettings() {
     duree_bat: 10,
     deduction: 1000000
   };
+  const saved = localStorage.getItem('pv_nc_settings');
+  if (saved) {
+    try { return Object.assign({}, defaults, JSON.parse(saved)); } catch(e) {}
+  }
+  return defaults;
 }
 
 function loadSettingsUI() {
@@ -773,6 +801,10 @@ function loadSettingsUI() {
   document.getElementById('s_tarif_pro').value = s.tarif_pro;
   document.getElementById('s_revente_high').value = s.revente_high;
   document.getElementById('s_revente_std').value = s.revente_std;
+  document.getElementById('s_prime_fixe').value = s.prime_fixe;
+  document.getElementById('s_taxe_communale').value = s.taxe_communale;
+  document.getElementById('s_redevance_comptage').value = s.redevance_comptage;
+  document.getElementById('s_tgc').value = s.tgc;
   document.getElementById('s_ensoleillement').value = s.ensoleillement;
   document.getElementById('s_pertes').value = s.pertes;
   document.getElementById('s_degradation').value = s.degradation;
@@ -789,6 +821,10 @@ function saveSettings() {
     tarif_pro: parseFloat(document.getElementById('s_tarif_pro').value),
     revente_high: parseFloat(document.getElementById('s_revente_high').value),
     revente_std: parseFloat(document.getElementById('s_revente_std').value),
+    prime_fixe: parseFloat(document.getElementById('s_prime_fixe').value),
+    taxe_communale: parseFloat(document.getElementById('s_taxe_communale').value),
+    redevance_comptage: parseFloat(document.getElementById('s_redevance_comptage').value),
+    tgc: parseFloat(document.getElementById('s_tgc').value),
     ensoleillement: parseFloat(document.getElementById('s_ensoleillement').value),
     pertes: parseFloat(document.getElementById('s_pertes').value),
     degradation: parseFloat(document.getElementById('s_degradation').value),
@@ -948,6 +984,35 @@ function getTarifByKva(kva) {
   return kva <= 3.3 ? s.tarif_dom_low : s.tarif_dom_high;
 }
 
+// ===================== CALCUL FACTURE COMPLETE =====================
+// Calcule une facture mensuelle domestique complete avec tous les composants
+function calcFactureMois(consoKwh, kva, tarifKwh, reventeKwh, reventeRate, s) {
+  const energie = consoKwh * tarifKwh;
+  const primefixe = kva * s.prime_fixe;
+  const soustotal = energie + primefixe;
+  const taxeCom = soustotal * s.taxe_communale / 100;
+  const tgc = energie * s.tgc / 100;
+  const redevance = s.redevance_comptage;
+  const revenuRevente = reventeKwh * reventeRate;
+  return soustotal + taxeCom + tgc + redevance - revenuRevente;
+}
+
+// Calcule la facture annuelle a partir de tableaux mensuels
+function calcFactureAnnuelle(consoMensuel, kva, tarifKwh, reventeMensuel, reventeRate, s) {
+  let total = 0;
+  for (let i = 0; i < 12; i++) {
+    total += calcFactureMois(consoMensuel[i], kva, tarifKwh, reventeMensuel[i], reventeRate, s);
+  }
+  return total;
+}
+
+// Charges fixes mensuelles (prime fixe + redevance + taxes sur prime fixe) - ne changent PAS avec le PV
+function chargesFixesMois(kva, s) {
+  const primefixe = kva * s.prime_fixe;
+  const taxeComPrime = primefixe * s.taxe_communale / 100;
+  return primefixe + taxeComPrime + s.redevance_comptage;
+}
+
 // ===================== TAB 1 : Installation Complete =====================
 function calculateTab1() {
   const s = getSettings();
@@ -1029,15 +1094,16 @@ function calculateTab1() {
 
   // Financials
   const investTotal = montantDevis; // montant total du devis
+  const zeroRevente = new Array(12).fill(0);
 
-  const factureSansPV = totalConsoAnnual * tarif;
-  const factureAvecPV = battGridAnnual * tarif - battSurplusAnnual * reventeRate;
+  const factureSansPV = calcFactureAnnuelle(totalConsoMonthly, kva, tarif, zeroRevente, reventeRate, s);
+  const factureAvecPV = calcFactureAnnuelle(battGridMonthly, kva, tarif, battSurplusMonthly, reventeRate, s);
   const economiePV = factureSansPV - factureAvecPV;
   const tauxAutoConsommation = (battAutoConsoAnnual / totalConsoAnnual * 100);
 
   // Monthly bills
-  const factMois = totalConsoMonthly.map(c => Math.round(c * tarif));
-  const factPVMois = battGridMonthly.map((g, i) => Math.round(g * tarif - battSurplusMonthly[i] * reventeRate));
+  const factMois = totalConsoMonthly.map(c => Math.round(calcFactureMois(c, kva, tarif, 0, reventeRate, s)));
+  const factPVMois = battGridMonthly.map((g, i) => Math.round(calcFactureMois(g, kva, tarif, battSurplusMonthly[i], reventeRate, s)));
   const factMoyAvant = Math.round(factureSansPV / 12);
   const factMoyApres = Math.round(factureAvecPV / 12);
 
@@ -1198,8 +1264,8 @@ function calculateTab2() {
   const newReventeAnnuelle = newReventeMonthly.reduce((a, b) => a + b, 0);
   const newAchatAnnuel = newAchatMonthly.reduce((a, b) => a + b, 0);
 
-  const factureActuelle = achatAnnuel * tarif - reventeAnnuelle * reventeRate;
-  const factureAvecBat = newAchatAnnuel * tarif - newReventeAnnuelle * reventeRate;
+  const factureActuelle = calcFactureAnnuelle(achat, kva, tarif, revente, reventeRate, s);
+  const factureAvecBat = calcFactureAnnuelle(newAchatMonthly, kva, tarif, newReventeMonthly, reventeRate, s);
   const economie = factureActuelle - factureAvecBat;
   const investBat = coutBat; // montant total du devis batterie
 
@@ -1229,8 +1295,8 @@ function calculateTab2() {
     <div class="result-card savings"><div class="value">${fmt(economie)}</div><div class="label">Economie annuelle (XPF)</div></div>
   `;
 
-  const factMoisAvant = achat.map((a, i) => Math.round(a * tarif - revente[i] * reventeRate));
-  const factMoisApres = newAchatMonthly.map((a, i) => Math.round(a * tarif - newReventeMonthly[i] * reventeRate));
+  const factMoisAvant = achat.map((a, i) => Math.round(calcFactureMois(a, kva, tarif, revente[i], reventeRate, s)));
+  const factMoisApres = newAchatMonthly.map((a, i) => Math.round(calcFactureMois(a, kva, tarif, newReventeMonthly[i], reventeRate, s)));
   createBarChart('chart2_eco', MONTHS, [
     { label: 'Facture avant batterie (XPF)', data: factMoisAvant, backgroundColor: 'rgba(229,57,53,0.6)' },
     { label: 'Facture avec batterie (XPF)', data: factMoisApres, backgroundColor: 'rgba(52,168,83,0.6)' }
@@ -1301,8 +1367,8 @@ function calculateTab3() {
   const newAchatAnnuel = newAchatMonthly.reduce((a, b) => a + b, 0);
   const newReventeAnnuelle = newReventeMonthly.reduce((a, b) => a + b, 0);
 
-  const factureActuelle = achatAnnuel * tarif - reventeAnnuelle * reventeRate;
-  const factureAvecBat = newAchatAnnuel * tarif - newReventeAnnuelle * reventeRate;
+  const factureActuelle = calcFactureAnnuelle(achat, kva, tarif, reventeMois, reventeRate, s);
+  const factureAvecBat = calcFactureAnnuelle(newAchatMonthly, kva, tarif, newReventeMonthly, reventeRate, s);
   const economie = factureActuelle - factureAvecBat;
   const investBat = coutBat; // montant total du devis batterie
 
@@ -1333,8 +1399,8 @@ function calculateTab3() {
     <div class="result-card battery"><div class="value">${fmt(investBat)}</div><div class="label">Investissement (XPF)</div></div>
   `;
 
-  const factMoisAvant = achat.map((a, i) => Math.round(a * tarif - reventeMois[i] * reventeRate));
-  const factMoisApres = newAchatMonthly.map((a, i) => Math.round(a * tarif - newReventeMonthly[i] * reventeRate));
+  const factMoisAvant = achat.map((a, i) => Math.round(calcFactureMois(a, kva, tarif, reventeMois[i], reventeRate, s)));
+  const factMoisApres = newAchatMonthly.map((a, i) => Math.round(calcFactureMois(a, kva, tarif, newReventeMonthly[i], reventeRate, s)));
   createBarChart('chart3_eco', MONTHS, [
     { label: 'Facture avant batterie (XPF)', data: factMoisAvant, backgroundColor: 'rgba(229,57,53,0.6)' },
     { label: 'Facture avec batterie (XPF)', data: factMoisApres, backgroundColor: 'rgba(52,168,83,0.6)' }
@@ -1376,9 +1442,10 @@ function calculateTab4() {
   const surplusAnnuel = surplusMonthly.reduce((a, b) => a + b, 0);
   const achatAnnuel = achatMonthly.reduce((a, b) => a + b, 0);
 
-  // Financials HT
-  const factureSansPV = consoAn * tarifHT;
-  const factureAvecPV = achatAnnuel * tarifHT - surplusAnnuel * reventeRate;
+  // Financials HT (entreprise : on ajoute TGC sur energie)
+  const tgcRate = s.tgc / 100;
+  const factureSansPV = consoAn * tarifHT * (1 + tgcRate);
+  const factureAvecPV = achatAnnuel * tarifHT * (1 + tgcRate) - surplusAnnuel * reventeRate;
   const economieHT = factureSansPV - factureAvecPV;
 
   document.getElementById('results4').classList.remove('hidden');
