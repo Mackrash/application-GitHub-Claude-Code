@@ -995,16 +995,20 @@ function calculateTab1() {
   const batteryKwh = batteryNominalKwh;
   const batteryUsable = batteryNominalKwh * BATTERY_DOD; // DoD 85%
 
-  // With battery: how much more self-consumption?
+  // With battery: how much more self-consumption? (split direct vs battery)
+  const directUseMonthly = [];
+  const batteryUseMonthly = [];
   const battAutoConsoMonthly = totalConsoMonthly.map((conso, i) => {
     const prod = prodMonthly[i];
     const dayConsumption = conso * profile.dayRatio;
     const directUse = Math.min(prod, dayConsumption);
     const surplus = Math.max(0, prod - directUse);
     const eveningConso = conso * profile.eveningRatio;
-    const fromBattery = Math.min(surplus, batteryUsable * daysInMonth[i] / daysInMonth[i], eveningConso);
     const battDaily = Math.min(surplus / daysInMonth[i], batteryUsable);
-    return directUse + battDaily * daysInMonth[i];
+    const fromBattery = Math.min(battDaily * daysInMonth[i], eveningConso);
+    directUseMonthly.push(Math.round(directUse));
+    batteryUseMonthly.push(Math.round(fromBattery));
+    return directUse + fromBattery;
   });
   const battAutoConsoAnnual = battAutoConsoMonthly.reduce((a, b) => a + b, 0);
 
@@ -1033,12 +1037,13 @@ function calculateTab1() {
     <div class="result-card info"><div class="value">${fmt(investTotal)}</div><div class="label">Montant du devis (XPF)</div></div>
   `;
 
-  // Chart: monthly consumption vs production
-  createBarChart('chart1_conso', MONTHS, [
-    { label: 'Consommation (kWh)', data: totalConsoMonthly, backgroundColor: 'rgba(229,57,53,0.7)', borderColor: '#e53935', borderWidth: 1 },
-    { label: 'Production PV (kWh)', data: prodMonthly.map(p => Math.round(p)), backgroundColor: 'rgba(249,168,37,0.7)', borderColor: '#f9a825', borderWidth: 1 },
-    { label: 'Autoconsommation + batterie (kWh)', data: battAutoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)', borderColor: '#00897b', borderWidth: 1 }
-  ], 'Consommation vs Production mensuelle', 'kWh');
+  // Chart: stacked energy repartition
+  createStackedBarChart('chart1_conso', MONTHS, [
+    { label: 'Autoconso directe PV', data: directUseMonthly, backgroundColor: 'rgba(0,137,123,0.8)' },
+    { label: 'Via batterie', data: batteryUseMonthly, backgroundColor: 'rgba(249,168,37,0.8)' },
+    { label: 'Achat reseau', data: battGridMonthly.map(g => Math.round(g)), backgroundColor: 'rgba(229,57,53,0.6)' },
+    { label: 'Surplus revendu', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.5)' }
+  ], 'Repartition energetique mensuelle (kWh)', 'kWh');
 
   // Doughnut: energy repartition
   createDoughnutChart('chart1_repartition',
