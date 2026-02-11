@@ -378,15 +378,25 @@
 
   <div id="results1" class="results hidden">
     <div class="card">
-      <h2><span class="icon">&#128200;</span> Resultats - Dimensionnement</h2>
+      <h2><span class="icon">&#9728;</span> Dimensionnement</h2>
       <div id="resultCards1" class="result-cards"></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128176;</span> Avant / Apres - Facture</h2>
+      <div id="resultCards1b" class="result-cards"></div>
+      <div class="chart-container"><canvas id="chart1_facture"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">&#128200;</span> Repartition energetique</h2>
       <div class="chart-container"><canvas id="chart1_conso"></canvas></div>
       <div class="chart-container"><canvas id="chart1_repartition"></canvas></div>
     </div>
     <div class="card">
-      <h2><span class="icon">&#128176;</span> Economies et Facture</h2>
-      <div id="resultCards1b" class="result-cards"></div>
-      <div class="chart-container"><canvas id="chart1_facture"></canvas></div>
+      <h2><span class="icon">&#128181;</span> ROI par tranche d'imposition NC</h2>
+      <p style="margin-bottom:12px;color:var(--text-secondary);font-size:0.85em;">
+        La deduction fiscale NC permet de deduire l'investissement de votre revenu imposable (plafond parametrable). Le ROI varie selon votre tranche marginale.
+      </p>
+      <div id="trancheTable1"></div>
     </div>
     <div class="card">
       <h2><span class="icon">&#128197;</span> Tableau d'amortissement</h2>
@@ -1025,19 +1035,50 @@ function calculateTab1() {
   const economiePV = factureSansPV - factureAvecPV;
   const tauxAutoConsommation = (battAutoConsoAnnual / totalConsoAnnual * 100);
 
+  // Monthly bills
+  const factMois = totalConsoMonthly.map(c => Math.round(c * tarif));
+  const factPVMois = battGridMonthly.map((g, i) => Math.round(g * tarif - battSurplusMonthly[i] * reventeRate));
+  const factMoyAvant = Math.round(factureSansPV / 12);
+  const factMoyApres = Math.round(factureAvecPV / 12);
+
   // Results display
   document.getElementById('results1').classList.remove('hidden');
 
+  // --- Dimensionnement ---
   document.getElementById('resultCards1').innerHTML = `
-    <div class="result-card solar"><div class="value">${fmtDec(pvKwc)} kWc</div><div class="label">Puissance PV recommandee</div></div>
-    <div class="result-card solar"><div class="value">${nbPanneaux}</div><div class="label">Panneaux (${puissancePanneau}Wc) - ${surfacePV} m2</div></div>
+    <div class="result-card solar"><div class="value">${fmtDec(pvKwc)} kWc</div><div class="label">Puissance PV (${nbPanneaux} panneaux ${puissancePanneau}Wc - ${surfacePV} m2)</div></div>
     <div class="result-card battery"><div class="value">${fmtDec(batteryUsable)} kWh</div><div class="label">${nbBat}x ${batModel.name} (utile DoD 85%)</div></div>
-    <div class="result-card info"><div class="value">${fmt(prodAnnual)}</div><div class="label">Production annuelle (kWh)</div></div>
+    <div class="result-card info"><div class="value">${fmt(prodAnnual)} kWh</div><div class="label">Production annuelle</div></div>
     <div class="result-card savings"><div class="value">${fmtDec(tauxAutoConsommation)}%</div><div class="label">Taux autoconsommation</div></div>
-    <div class="result-card info"><div class="value">${fmt(investTotal)}</div><div class="label">Montant du devis (XPF)</div></div>
   `;
 
-  // Chart: stacked energy repartition
+  // --- Avant / Apres ---
+  document.getElementById('resultCards1b').innerHTML = `
+    <div class="result-card info" style="border-color:#ef9a9a;background:#ffebee;">
+      <div class="value" style="color:#c62828;">${fmt(investTotal)} XPF</div>
+      <div class="label" style="color:#c62828;">Investissement (devis)</div>
+    </div>
+    <div class="result-card info" style="border-color:#ef9a9a;background:#ffcdd2;">
+      <div class="value" style="color:#b71c1c;">${fmt(factMoyAvant)} XPF</div>
+      <div class="label" style="color:#b71c1c;">Facture moyenne / mois AVANT</div>
+    </div>
+    <div class="result-card savings" style="border-color:#a5d6a7;background:#c8e6c9;">
+      <div class="value" style="color:#1b5e20;">${fmt(factMoyApres)} XPF</div>
+      <div class="label" style="color:#1b5e20;">Facture moyenne / mois APRES</div>
+    </div>
+    <div class="result-card savings" style="border-color:#81c784;background:#a5d6a7;">
+      <div class="value" style="color:#1b5e20;">${fmt(economiePV)} XPF</div>
+      <div class="label" style="color:#1b5e20;">Economie annuelle</div>
+    </div>
+  `;
+
+  // Chart: facture mensuelle avant/apres
+  createBarChart('chart1_facture', MONTHS, [
+    { label: 'Facture AVANT (XPF)', data: factMois, backgroundColor: 'rgba(229,57,53,0.7)', borderColor: '#e53935', borderWidth: 1 },
+    { label: 'Facture APRES PV+batterie (XPF)', data: factPVMois, backgroundColor: 'rgba(52,168,83,0.7)', borderColor: '#34a853', borderWidth: 1 }
+  ], 'Facture mensuelle : AVANT vs APRES (XPF)', 'XPF');
+
+  // --- Repartition energetique ---
   createStackedBarChart('chart1_conso', MONTHS, [
     { label: 'Autoconso directe PV', data: directUseMonthly, backgroundColor: 'rgba(0,137,123,0.8)' },
     { label: 'Via batterie', data: batteryUseMonthly, backgroundColor: 'rgba(249,168,37,0.8)' },
@@ -1045,7 +1086,6 @@ function calculateTab1() {
     { label: 'Surplus revendu', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.5)' }
   ], 'Repartition energetique mensuelle (kWh)', 'kWh');
 
-  // Doughnut: energy repartition
   createDoughnutChart('chart1_repartition',
     ['Autoconso directe + batterie', 'Surplus revendu', 'Achat reseau'],
     [Math.round(battAutoConsoAnnual), Math.round(battSurplusAnnual), Math.round(battGridAnnual)],
@@ -1053,24 +1093,48 @@ function calculateTab1() {
     'Repartition energetique annuelle (kWh)'
   );
 
-  // Financial results
-  document.getElementById('resultCards1b').innerHTML = `
-    <div class="result-card savings"><div class="value">${fmt(economiePV)}</div><div class="label">Economie annuelle (XPF)</div></div>
-    <div class="result-card info"><div class="value">${fmt(factureSansPV)}</div><div class="label">Facture sans PV (XPF/an)</div></div>
-    <div class="result-card savings"><div class="value">${fmt(factureAvecPV)}</div><div class="label">Facture avec PV (XPF/an)</div></div>
-    <div class="result-card battery"><div class="value">${fmt(battSurplusAnnual * reventeRate)}</div><div class="label">Revenu revente (XPF/an)</div></div>
-  `;
+  // --- ROI par tranche d'imposition NC ---
+  const tranchesNC = [
+    { taux: 0,  label: '0%',  desc: '0 - 980 000 XPF' },
+    { taux: 4,  label: '4%',  desc: '980 001 - 1 470 000 XPF' },
+    { taux: 12, label: '12%', desc: '1 470 001 - 2 694 000 XPF' },
+    { taux: 25, label: '25%', desc: '2 694 001 - 3 918 000 XPF' },
+    { taux: 30, label: '30%', desc: '3 918 001 - 4 653 000 XPF' },
+    { taux: 33, label: '33%', desc: '4 653 001 - 5 388 000 XPF' },
+    { taux: 40, label: '40%', desc: '> 5 388 000 XPF' }
+  ];
 
-  // Facture comparison chart
-  const factMois = totalConsoMonthly.map(c => Math.round(c * tarif));
-  const factPVMois = battGridMonthly.map((g, i) => Math.round(g * tarif - battSurplusMonthly[i] * reventeRate));
-  createBarChart('chart1_facture', MONTHS, [
-    { label: 'Facture sans PV (XPF)', data: factMois, backgroundColor: 'rgba(229,57,53,0.6)', borderColor: '#e53935', borderWidth: 1 },
-    { label: 'Facture avec PV+batterie (XPF)', data: factPVMois, backgroundColor: 'rgba(52,168,83,0.6)', borderColor: '#34a853', borderWidth: 1 }
-  ], 'Comparaison facture mensuelle (XPF)', 'XPF');
+  const deductionMax = Math.min(s.deduction, investTotal);
 
-  // Amortization table
-  const deduction = Math.min(s.deduction, investTotal);
+  let trancheHtml = '<table class="amort"><thead><tr>';
+  trancheHtml += '<th>Tranche</th><th>Revenu imposable</th><th>Deduction fiscale (XPF)</th><th>Invest. net (XPF)</th><th>ROI (annees)</th>';
+  trancheHtml += '</tr></thead><tbody>';
+
+  tranchesNC.forEach(tr => {
+    const deductionFiscale = Math.round(deductionMax * tr.taux / 100);
+    const investNet = investTotal - deductionFiscale;
+    // Calcul ROI avec hausse tarif
+    let cumSaving = 0;
+    let roiYear = null;
+    for (let y = 1; y <= s.duree_vie; y++) {
+      cumSaving += economiePV * Math.pow(1 + s.hausse_tarif / 100, y - 1);
+      if (cumSaving >= investNet && roiYear === null) { roiYear = y; break; }
+    }
+    const roiText = roiYear ? `${roiYear} an${roiYear > 1 ? 's' : ''}` : `> ${s.duree_vie} ans`;
+    const roiClass = roiYear && roiYear <= 10 ? 'positive' : (roiYear ? '' : 'negative');
+    trancheHtml += `<tr>`;
+    trancheHtml += `<td style="font-weight:600;">${tr.label}</td>`;
+    trancheHtml += `<td style="font-size:0.85em;">${tr.desc}</td>`;
+    trancheHtml += `<td>${fmt(deductionFiscale)}</td>`;
+    trancheHtml += `<td>${fmt(investNet)}</td>`;
+    trancheHtml += `<td class="${roiClass}" style="font-weight:700;">${roiText}</td>`;
+    trancheHtml += `</tr>`;
+  });
+  trancheHtml += '</tbody></table>';
+  document.getElementById('trancheTable1').innerHTML = trancheHtml;
+
+  // --- Amortissement (avec deduction par defaut) ---
+  const deduction = deductionMax;
   buildAmortTable('amortTable1', investTotal, economiePV, s.hausse_tarif, s.duree_vie, deduction);
 }
 
