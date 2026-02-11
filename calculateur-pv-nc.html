@@ -231,14 +231,6 @@
   }
   .settings-section { padding: 16px; background: #fafafa; border-radius: 8px; border: 1px solid var(--border); }
   .settings-section h3 { font-size: 0.95em; margin-bottom: 12px; color: var(--primary); }
-  .notion-info {
-    margin-top: 20px;
-    padding: 16px;
-    background: #fff3e0;
-    border-radius: 8px;
-    border: 1px solid #ffe0b2;
-    font-size: 0.9em;
-  }
   .badge {
     display: inline-block;
     padding: 3px 10px;
@@ -733,12 +725,6 @@
     <div class="btn-center">
       <button class="btn btn-primary" onclick="saveSettings()">Sauvegarder les parametres</button>
     </div>
-
-    <div class="notion-info">
-      <strong>Integration Notion :</strong> Ce fichier HTML peut etre integre dans Notion via un bloc <code>/embed</code>.
-      Hebergez ce fichier (ex: GitHub Pages, Netlify, ou sur votre serveur) puis collez l'URL dans un bloc embed Notion.
-      Alternativement, utilisez le widget <code>/embed</code> dans Notion et collez l'URL du fichier.
-    </div>
   </div>
 </div>
 
@@ -1149,11 +1135,11 @@ function calculateTab1() {
     { label: 'Autoconso directe PV', data: directUseMonthly, backgroundColor: 'rgba(0,137,123,0.8)' },
     { label: 'Via batterie', data: batteryUseMonthly, backgroundColor: 'rgba(249,168,37,0.8)' },
     { label: 'Achat reseau', data: battGridMonthly.map(g => Math.round(g)), backgroundColor: 'rgba(229,57,53,0.6)' },
-    { label: 'Surplus revendu', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.5)' }
+    { label: 'Reinjection reseau', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.5)' }
   ], 'Repartition energetique mensuelle (kWh)', 'kWh');
 
   createDoughnutChart('chart1_repartition',
-    ['Autoconso directe + batterie', 'Surplus revendu', 'Achat reseau'],
+    ['Autoconso directe + batterie', 'Reinjection reseau', 'Achat reseau'],
     [Math.round(battAutoConsoAnnual), Math.round(battSurplusAnnual), Math.round(battGridAnnual)],
     ['#00897b', '#f9a825', '#e53935'],
     'Repartition energetique annuelle (kWh)'
@@ -1286,7 +1272,7 @@ function calculateTab2() {
     { label: 'Autoconso directe', data: autoConsoActuelle.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)' },
     { label: 'Via batterie', data: newAutoConsoMonthly.map((n, i) => Math.round(Math.max(0, n - autoConsoActuelle[i]))), backgroundColor: 'rgba(249,168,37,0.7)' },
     { label: 'Achat reseau restant', data: newAchatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.5)' },
-    { label: 'Surplus revendu', data: newReventeMonthly.map(r => Math.round(r)), backgroundColor: 'rgba(26,115,232,0.5)' }
+    { label: 'Reinjection reseau', data: newReventeMonthly.map(r => Math.round(r)), backgroundColor: 'rgba(26,115,232,0.5)' }
   ], 'Flux energetiques mensuels avec batterie (kWh)', 'kWh');
 
   document.getElementById('resultCards2b').innerHTML = `
@@ -1459,7 +1445,7 @@ function calculateTab4() {
 
   createStackedBarChart('chart4_prod', MONTHS, [
     { label: 'Autoconsommation (kWh)', data: autoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)' },
-    { label: 'Surplus revendu (kWh)', data: surplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(249,168,37,0.7)' },
+    { label: 'Reinjection reseau (kWh)', data: surplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(249,168,37,0.7)' },
     { label: 'Achat reseau (kWh)', data: achatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.5)' }
   ], 'Repartition energetique mensuelle - Entreprise (kWh)', 'kWh');
 
