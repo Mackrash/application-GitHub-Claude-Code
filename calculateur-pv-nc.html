@@ -348,36 +348,50 @@
   .print-modal-cancel:hover { background: #ccc; }
 
   @media print {
-    body { background: white !important; padding: 0 !important; }
+    body { background: white !important; padding: 0 !important; margin: 0 !important; }
     .header { background: white !important; color: var(--primary-dark) !important; box-shadow: none !important; border-bottom: 3px solid var(--primary); padding: 10px 20px !important; }
     .header-logos img { height: 40px; }
     .header-actions { display: none !important; }
     .tab-bar { display: none !important; }
     .print-modal-overlay { display: none !important; }
     .tab-content { display: none !important; }
-    .tab-content.print-this { display: block !important; padding: 10px !important; }
+    .tab-content.print-this { display: block !important; padding: 5px !important; }
     .tab-content .hidden { display: none !important; }
-    .card { box-shadow: none !important; border: 1px solid #ddd; page-break-inside: avoid; margin-bottom: 12px; padding: 14px; }
+    .card { box-shadow: none !important; border: 1px solid #ddd; margin-bottom: 6px !important; padding: 8px !important; page-break-inside: auto !important; }
     .btn, .btn-center, .profile-selector, .pool-toggle { display: none !important; }
-    .form-grid, .monthly-grid { font-size: 0.85em; }
-    .monthly-grid { gap: 4px !important; margin-bottom: 1px !important; }
-    .monthly-grid .form-group input { padding: 2px 4px !important; font-size: 0.75em !important; height: auto !important; min-height: 0 !important; }
-    .monthly-grid .form-group span { padding: 2px 0 !important; font-size: 0.75em !important; }
-    .monthly-grid .form-group label { font-size: 0.65em !important; margin-bottom: 0 !important; }
+    .divider { margin: 6px 0 !important; }
+
+    /* Monthly inputs compact */
+    .form-grid, .monthly-grid { font-size: 0.8em; }
+    .monthly-grid { gap: 3px !important; margin-bottom: 0px !important; }
+    .monthly-grid .form-group input { padding: 1px 3px !important; font-size: 0.7em !important; height: auto !important; min-height: 0 !important; border-radius: 3px !important; }
+    .monthly-grid .form-group span { padding: 1px 0 !important; font-size: 0.7em !important; }
+    .monthly-grid .form-group label { font-size: 0.6em !important; margin-bottom: 0 !important; }
     .monthly-grid .form-group { margin-bottom: 0 !important; }
-    #tab2MonthlyInputs, #tab3MonthlyInputs { margin-bottom: 4px; }
-    .chart-container { height: 200px !important; margin: 8px 0 !important; page-break-inside: avoid; }
-    .result-cards { gap: 8px !important; margin-bottom: 10px !important; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; }
-    .result-card { padding: 10px !important; border-radius: 6px !important; }
-    .result-card .value { font-size: 1.3em !important; }
-    .result-card .label { font-size: 0.7em !important; margin-top: 2px !important; }
-    table.amort { font-size: 0.75em; }
+    #tab2MonthlyInputs, #tab3MonthlyInputs { margin-bottom: 2px; }
+    .form-grid { gap: 6px !important; }
+    .form-group input, .form-group select { padding: 4px 6px !important; font-size: 0.8em !important; }
+
+    /* Charts compact */
+    .chart-container { height: 180px !important; max-height: 180px !important; margin: 6px 0 !important; overflow: hidden !important; page-break-inside: avoid; }
+    .chart-container canvas { max-height: 180px !important; width: 100% !important; }
+
+    /* Result cards compact */
+    .result-cards { gap: 6px !important; margin-bottom: 8px !important; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important; }
+    .result-card { padding: 6px 8px !important; border-radius: 6px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .result-card .value { font-size: 1.1em !important; }
+    .result-card .label { font-size: 0.65em !important; margin-top: 1px !important; }
+
+    /* Amort table */
+    table.amort { font-size: 0.7em; }
     table.amort th { background: var(--primary-dark) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .result-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .card { margin-bottom: 8px !important; padding: 10px !important; }
-    .divider { margin: 8px 0 !important; }
+
     .no-print { display: none !important; }
     #printClientHeader { display: block !important; }
+
+    h2 { font-size: 1em !important; margin-bottom: 6px !important; }
+    h3 { font-size: 0.85em !important; margin-bottom: 4px !important; }
+    p { margin-bottom: 6px !important; }
   }
 
   @media(max-width:600px) {
@@ -1673,6 +1687,11 @@ function printTab(tabId) {
   // Mark only the selected tab for printing
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('print-this'));
   document.getElementById(tabId).classList.add('print-this');
+  // Resize all Chart.js canvases for print
+  document.querySelectorAll('#' + tabId + ' .chart-container canvas').forEach(c => {
+    const chart = Chart.getChart(c);
+    if (chart) { chart.resize(c.parentElement.clientWidth, 180); }
+  });
   window.print();
 }
 // Close modal on overlay click
