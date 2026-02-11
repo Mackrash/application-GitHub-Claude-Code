@@ -372,9 +372,9 @@
     .form-grid { gap: 6px !important; }
     .form-group input, .form-group select { padding: 4px 6px !important; font-size: 0.8em !important; }
 
-    /* Charts compact */
-    .chart-container { height: 180px !important; max-height: 180px !important; margin: 6px 0 !important; overflow: hidden !important; page-break-inside: avoid; }
-    .chart-container canvas { max-height: 180px !important; width: 100% !important; }
+    /* Charts */
+    .chart-container { height: 260px !important; max-height: 260px !important; margin: 8px 0 !important; overflow: hidden !important; page-break-inside: avoid; }
+    .chart-container canvas { max-height: 260px !important; width: 100% !important; }
 
     /* Result cards compact */
     .result-cards { gap: 6px !important; margin-bottom: 8px !important; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important; }
@@ -1692,7 +1692,7 @@ function printTab(tabId) {
   // Resize all Chart.js canvases for print
   document.querySelectorAll('#' + tabId + ' .chart-container canvas').forEach(c => {
     const chart = Chart.getChart(c);
-    if (chart) { chart.resize(c.parentElement.clientWidth, 180); }
+    if (chart) { chart.resize(c.parentElement.clientWidth, 260); }
   });
   window.print();
 }
