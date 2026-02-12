@@ -215,6 +215,109 @@
   .result-card.battery { background: var(--battery-light); border-color: #80cbc4; color: #004d40; }
   .result-card.savings { background: #e8f5e9; border-color: #a5d6a7; color: #1b5e20; }
   .result-card.info { background: var(--primary-light); border-color: #90caf9; color: #0d47a1; }
+
+  /* Battery infographic */
+  .battery-chart {
+    margin: 20px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, #f8f6fc 0%, #fff0eb 100%);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+  .battery-chart-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.05em;
+    color: var(--primary-dark);
+    margin-bottom: 24px;
+  }
+  .battery-chart-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+  }
+  .battery-shape {
+    position: relative;
+    width: 110px;
+    height: 260px;
+    flex-shrink: 0;
+  }
+  .battery-cap {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 12px;
+    background: var(--primary-dark);
+    border-radius: 6px 6px 0 0;
+  }
+  .battery-body {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 4px solid var(--primary-dark);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+    background: #eae6f0;
+  }
+  .battery-seg {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    min-height: 4px;
+    transition: height 0.4s ease;
+  }
+  .battery-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .battery-legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .battery-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .battery-legend-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .battery-legend-label {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .battery-legend-value {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .battery-legend-pct {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--primary);
+    margin-left: 4px;
+  }
+
   .chart-container { position: relative; height: 350px; margin: 20px 0; }
   .profile-selector {
     display: flex;
@@ -421,6 +524,11 @@
     .recap-abonnement td:last-child { font-weight: 700 !important; }
     .recap-abonnement tr:last-child td { border-bottom: none !important; }
 
+    /* === BATTERY CHART (print) === */
+    .battery-chart { background: white !important; border: 1px solid #ddd !important; page-break-inside: avoid; }
+    .battery-shape { width: 90px !important; height: 200px !important; }
+    .battery-legend-value { font-size: 1em !important; }
+
     /* === PAGE 3 : AMORTISSEMENT (saut de page avant) === */
     .print-page-start { page-break-before: always; }
 
@@ -435,6 +543,10 @@
     .header-logos { justify-content: center; }
     .header-logos img { height: 50px; }
     .header-actions { justify-content: center; }
+    .battery-chart-body { flex-direction: column; gap: 20px; }
+    .battery-shape { width: 80px; height: 180px; }
+    .battery-legend { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+    .battery-legend-item { min-width: 45%; }
   }
 </style>
 </head>
@@ -598,7 +710,7 @@
     <div class="card">
       <h2><span class="icon">&#128200;</span> Repartition energetique</h2>
       <div class="chart-container"><canvas id="chart1_conso"></canvas></div>
-      <div class="chart-container"><canvas id="chart1_repartition"></canvas></div>
+      <div id="batteryChart1"></div>
     </div>
     <div class="card">
       <h2><span class="icon">&#128181;</span> ROI par tranche d'imposition NC</h2>
@@ -676,6 +788,7 @@
     <div class="card">
       <h2><span class="icon">&#128200;</span> Resultats - Batterie optimale</h2>
       <div id="resultCards2" class="result-cards"></div>
+      <div id="batteryChart2"></div>
       <div class="chart-container"><canvas id="chart2_flux"></canvas></div>
     </div>
     <div class="card">
@@ -756,6 +869,7 @@
     <div class="card">
       <h2><span class="icon">&#128200;</span> Estimation - Batterie</h2>
       <div id="resultCards3" class="result-cards"></div>
+      <div id="batteryChart3"></div>
       <div class="chart-container"><canvas id="chart3_estimation"></canvas></div>
     </div>
     <div class="card">
@@ -1122,6 +1236,31 @@ function createDoughnutChart(canvasId, labels, data, colors, title) {
   });
 }
 
+function renderBatteryChart(containerId, segments, title) {
+  const total = segments.reduce((s, seg) => s + Math.abs(seg.value), 0);
+  if (total <= 0) return;
+  const segsHtml = segments.map(seg => {
+    const pct = (Math.abs(seg.value) / total * 100);
+    const label = pct >= 12 ? Math.round(pct) + '%' : '';
+    return '<div class="battery-seg" style="height:' + Math.max(pct, 2) + '%;background:' + seg.color + ';">' + label + '</div>';
+  }).join('');
+  const legendHtml = segments.map(seg => {
+    const pct = (Math.abs(seg.value) / total * 100).toFixed(1);
+    return '<div class="battery-legend-item">' +
+      '<div class="battery-dot" style="background:' + seg.color + ';"></div>' +
+      '<div class="battery-legend-text">' +
+        '<div class="battery-legend-label">' + seg.label + '</div>' +
+        '<div class="battery-legend-value">' + fmt(Math.round(Math.abs(seg.value))) + ' kWh <span class="battery-legend-pct">(' + pct + '%)</span></div>' +
+      '</div></div>';
+  }).join('');
+  document.getElementById(containerId).innerHTML =
+    '<div class="battery-chart"><div class="battery-chart-title">' + title + '</div>' +
+    '<div class="battery-chart-body">' +
+      '<div class="battery-shape"><div class="battery-cap"></div><div class="battery-body">' + segsHtml + '</div></div>' +
+      '<div class="battery-legend">' + legendHtml + '</div>' +
+    '</div></div>';
+}
+
 function createStackedBarChart(canvasId, labels, datasets, title, yLabel) {
   destroyChart(canvasId);
   const ctx = document.getElementById(canvasId).getContext('2d');
@@ -1372,12 +1511,14 @@ function calculateTab1() {
     { label: 'Reinjection reseau', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.5)' }
   ], 'Estimatif - Repartition energetique mensuelle (kWh)', 'kWh');
 
-  createDoughnutChart('chart1_repartition',
-    ['Autoconso directe + batterie', 'Reinjection reseau', 'Achat reseau'],
-    [Math.round(battAutoConsoAnnual), Math.round(battSurplusAnnual), Math.round(battGridAnnual)],
-    ['#00897b', '#f9a825', '#e53935'],
-    'Estimatif - Repartition energetique annuelle (kWh)'
-  );
+  const directUseAnnual = directUseMonthly.reduce((a, b) => a + b, 0);
+  const batteryUseAnnual = batteryUseMonthly.reduce((a, b) => a + b, 0);
+  renderBatteryChart('batteryChart1', [
+    { label: 'Autoconsommation directe', value: directUseAnnual, color: '#00897b' },
+    { label: 'Via batterie', value: batteryUseAnnual, color: '#f05326' },
+    { label: 'Achat reseau', value: battGridAnnual, color: '#e53935' },
+    { label: 'Reinjection reseau', value: battSurplusAnnual, color: '#34314b' }
+  ], 'Repartition energetique annuelle');
 
   // --- ROI par tranche d'imposition NC ---
   const tranchesNC = [
@@ -1520,6 +1661,15 @@ function calculateTab2() {
     <div class="result-card info"><div class="value">${fmt(investBat)}</div><div class="label">Investissement batterie (XPF)</div></div>
   `;
 
+  const autoConsoDirecteAnnuel2 = autoConsoActuelle.reduce((a, b) => a + b, 0);
+  const viaBatterieAnnuel2 = newAutoConsoMonthly.reduce((a, b) => a + b, 0) - autoConsoDirecteAnnuel2;
+  renderBatteryChart('batteryChart2', [
+    { label: 'Autoconsommation directe', value: autoConsoDirecteAnnuel2, color: '#00897b' },
+    { label: 'Via batterie', value: viaBatterieAnnuel2, color: '#f05326' },
+    { label: 'Achat reseau', value: newAchatAnnuel, color: '#e53935' },
+    { label: 'Reinjection reseau', value: newReventeAnnuelle, color: '#34314b' }
+  ], 'Repartition energetique annuelle avec batterie');
+
   createStackedBarChart('chart2_flux', MONTHS, [
     { label: 'Autoconso directe', data: autoConsoActuelle.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)' },
     { label: 'Via batterie', data: newAutoConsoMonthly.map((n, i) => Math.round(Math.max(0, n - autoConsoActuelle[i]))), backgroundColor: 'rgba(249,168,37,0.7)' },
@@ -1641,6 +1791,15 @@ function calculateTab3() {
     <div class="result-card info"><div class="value">${fmtDec(tauxAvant)}%</div><div class="label">Autoconso. avant batterie</div></div>
     <div class="result-card savings"><div class="value">${fmtDec(tauxApres)}%</div><div class="label">Autoconso. avec batterie</div></div>
   `;
+
+  const autoConsoDirecteAnnuel3 = autoConsoActuelle.reduce((a, b) => a + b, 0);
+  const viaBatterieAnnuel3 = newAutoConsoAnnuelle - autoConsoDirecteAnnuel3;
+  renderBatteryChart('batteryChart3', [
+    { label: 'Autoconsommation directe', value: autoConsoDirecteAnnuel3, color: '#00897b' },
+    { label: 'Via batterie', value: viaBatterieAnnuel3, color: '#f05326' },
+    { label: 'Achat reseau', value: newAchatAnnuel, color: '#e53935' },
+    { label: 'Reinjection reseau', value: newReventeAnnuelle, color: '#34314b' }
+  ], 'Repartition energetique annuelle estimee');
 
   createBarChart('chart3_estimation', MONTHS, [
     { label: 'Conso estimee (kWh)', data: consoEstMonthly.map(c => Math.round(c)), backgroundColor: 'rgba(229,57,53,0.6)' },
