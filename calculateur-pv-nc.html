@@ -272,6 +272,8 @@
     display: flex;
     flex-direction: column-reverse;
     background: #eae6f0;
+    gap: 3px;
+    padding: 3px;
   }
   .battery-seg {
     width: 100%;
@@ -1251,7 +1253,7 @@ function renderBatteryChart(containerId, segments, title) {
   const segsHtml = segments.map(seg => {
     const pct = (Math.abs(seg.value) / total * 100);
     const label = pct >= 12 ? Math.round(pct) + '%' : '';
-    return '<div class="battery-seg" style="height:' + Math.max(pct, 2) + '%;background:' + seg.color + ';">' + label + '</div>';
+    return '<div class="battery-seg" style="flex:' + Math.max(pct, 2) + ';background:' + seg.color + ';border-radius:4px;">' + label + '</div>';
   }).join('');
   const legendHtml = segments.map(seg => {
     const pct = (Math.abs(seg.value) / total * 100).toFixed(1);
