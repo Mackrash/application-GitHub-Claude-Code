@@ -1255,7 +1255,7 @@ function renderBatteryChart(containerId, segments, title) {
     const label = pct >= 12 ? Math.round(pct) + '%' : '';
     return '<div class="battery-seg" style="flex:' + Math.max(pct, 2) + ';background:' + seg.color + ';border-radius:4px;">' + label + '</div>';
   }).join('');
-  const legendHtml = segments.map(seg => {
+  const legendHtml = segments.slice().reverse().map(seg => {
     const pct = (Math.abs(seg.value) / total * 100).toFixed(1);
     return '<div class="battery-legend-item">' +
       '<div class="battery-dot" style="background:' + seg.color + ';"></div>' +
