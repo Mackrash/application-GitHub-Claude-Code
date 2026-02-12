@@ -500,7 +500,7 @@
 
 <!-- ===================== TAB 1 : Installation Complete ===================== -->
 <div id="tab1" class="tab-content active">
-  <div class="card">
+  <div class="card no-print">
     <h2><span class="icon">&#9728;</span> Installation Complete - Etude par consommation</h2>
     <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
       Entrez vos consommations mensuelles (kWh) et selectionnez votre profil pour dimensionner l'installation PV et la batterie.
@@ -585,6 +585,7 @@
   </div>
 
   <div id="results1" class="results hidden">
+    <div id="recapAbonnement1" class="card recap-abonnement" style="display:none;"></div>
     <div class="card">
       <h2><span class="icon">&#9728;</span> Dimensionnement</h2>
       <div id="resultCards1" class="result-cards"></div>
@@ -606,7 +607,7 @@
       </p>
       <div id="trancheTable1"></div>
     </div>
-    <div class="card">
+    <div class="card print-page-start">
       <h2><span class="icon">&#128197;</span> Tableau d'amortissement</h2>
       <div id="amortTable1"></div>
     </div>
@@ -1309,6 +1310,25 @@ function calculateTab1() {
 
   // Results display
   document.getElementById('results1').classList.remove('hidden');
+
+  // Recap Abonnement (print only)
+  const clientNameVal1 = document.getElementById('clientName').value;
+  document.getElementById('recapAbonnement1').innerHTML = `
+    <h2><span class="icon">&#128203;</span> Recap Abonnement</h2>
+    <table>
+      ${clientNameVal1 ? `<tr><td>Client</td><td>${clientNameVal1}</td></tr>` : ''}
+      <tr><td>Abonnement</td><td>${fmtDec(kva)} kVA</td></tr>
+      <tr><td>Tarif electricite</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
+      <tr><td>Tarif revente</td><td>${reventeRate} XPF/kWh</td></tr>
+      <tr><td>Puissance PV</td><td>${fmtDec(pvKwc)} kWc (${nbPanneaux} panneaux ${puissancePanneau}Wc)</td></tr>
+      <tr><td>Batterie</td><td>${nbBat}x ${batModel.name}</td></tr>
+      <tr><td>Capacite utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
+      <tr><td>Montant devis</td><td>${fmt(investTotal)} XPF</td></tr>
+      <tr><td>Facture actuelle</td><td>${fmt(factureSansPV)} XPF/an</td></tr>
+      <tr><td>Facture avec PV + batterie</td><td>${fmt(factureAvecPV)} XPF/an</td></tr>
+      <tr><td>Economie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economiePV)} XPF</td></tr>
+    </table>
+  `;
 
   // --- Dimensionnement ---
   document.getElementById('resultCards1').innerHTML = `
