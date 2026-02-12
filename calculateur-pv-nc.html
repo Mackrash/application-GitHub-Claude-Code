@@ -1514,19 +1514,19 @@ function calculateTab1() {
 
   // --- Repartition energetique ---
   createStackedBarChart('chart1_conso', MONTHS, [
-    { label: 'Autoconso directe PV', data: directUseMonthly, backgroundColor: 'rgba(0,137,123,0.8)' },
-    { label: 'Via batterie', data: batteryUseMonthly, backgroundColor: 'rgba(249,168,37,0.8)' },
-    { label: 'Achat reseau', data: battGridMonthly.map(g => Math.round(g)), backgroundColor: 'rgba(229,57,53,0.6)' },
-    { label: 'Reinjection reseau', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.5)' }
+    { label: 'Autoconsommation PV', data: directUseMonthly, backgroundColor: 'rgba(249,168,37,0.8)' },
+    { label: 'Via batterie', data: batteryUseMonthly, backgroundColor: 'rgba(67,160,71,0.8)' },
+    { label: 'Achat reseau', data: battGridMonthly.map(g => Math.round(g)), backgroundColor: 'rgba(229,57,53,0.7)' },
+    { label: 'Reinjection reseau', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.7)' }
   ], 'Estimatif - Repartition energetique mensuelle (kWh)', 'kWh');
 
   const directUseAnnual = directUseMonthly.reduce((a, b) => a + b, 0);
   const batteryUseAnnual = batteryUseMonthly.reduce((a, b) => a + b, 0);
   renderBatteryChart('batteryChart1', [
-    { label: 'Autoconsommation directe', value: directUseAnnual, color: '#00897b' },
-    { label: 'Via batterie', value: batteryUseAnnual, color: '#f05326' },
+    { label: 'Autoconsommation PV', value: directUseAnnual, color: '#f9a825' },
+    { label: 'Via batterie', value: batteryUseAnnual, color: '#43a047' },
     { label: 'Achat reseau', value: battGridAnnual, color: '#e53935' },
-    { label: 'Reinjection reseau', value: battSurplusAnnual, color: '#34314b' }
+    { label: 'Reinjection reseau', value: battSurplusAnnual, color: '#1a73e8' }
   ], 'Repartition energetique annuelle');
 
   // --- ROI par tranche d'imposition NC ---
@@ -1673,17 +1673,17 @@ function calculateTab2() {
   const autoConsoDirecteAnnuel2 = autoConsoActuelle.reduce((a, b) => a + b, 0);
   const viaBatterieAnnuel2 = newAutoConsoMonthly.reduce((a, b) => a + b, 0) - autoConsoDirecteAnnuel2;
   renderBatteryChart('batteryChart2', [
-    { label: 'Autoconsommation directe', value: autoConsoDirecteAnnuel2, color: '#00897b' },
-    { label: 'Via batterie', value: viaBatterieAnnuel2, color: '#f05326' },
+    { label: 'Autoconsommation PV', value: autoConsoDirecteAnnuel2, color: '#f9a825' },
+    { label: 'Via batterie', value: viaBatterieAnnuel2, color: '#43a047' },
     { label: 'Achat reseau', value: newAchatAnnuel, color: '#e53935' },
-    { label: 'Reinjection reseau', value: newReventeAnnuelle, color: '#34314b' }
+    { label: 'Reinjection reseau', value: newReventeAnnuelle, color: '#1a73e8' }
   ], 'Repartition energetique annuelle avec batterie');
 
   createStackedBarChart('chart2_flux', MONTHS, [
-    { label: 'Autoconso directe', data: autoConsoActuelle.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)' },
-    { label: 'Via batterie', data: newAutoConsoMonthly.map((n, i) => Math.round(Math.max(0, n - autoConsoActuelle[i]))), backgroundColor: 'rgba(249,168,37,0.7)' },
-    { label: 'Achat reseau restant', data: newAchatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.5)' },
-    { label: 'Reinjection reseau', data: newReventeMonthly.map(r => Math.round(r)), backgroundColor: 'rgba(26,115,232,0.5)' }
+    { label: 'Autoconsommation PV', data: autoConsoActuelle.map(a => Math.round(a)), backgroundColor: 'rgba(249,168,37,0.8)' },
+    { label: 'Via batterie', data: newAutoConsoMonthly.map((n, i) => Math.round(Math.max(0, n - autoConsoActuelle[i]))), backgroundColor: 'rgba(67,160,71,0.8)' },
+    { label: 'Achat reseau', data: newAchatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.7)' },
+    { label: 'Reinjection reseau', data: newReventeMonthly.map(r => Math.round(r)), backgroundColor: 'rgba(26,115,232,0.7)' }
   ], 'Estimatif - Flux energetiques mensuels avec batterie (kWh)', 'kWh');
 
   document.getElementById('resultCards2b').innerHTML = `
@@ -1804,10 +1804,10 @@ function calculateTab3() {
   const autoConsoDirecteAnnuel3 = autoConsoActuelle.reduce((a, b) => a + b, 0);
   const viaBatterieAnnuel3 = newAutoConsoAnnuelle - autoConsoDirecteAnnuel3;
   renderBatteryChart('batteryChart3', [
-    { label: 'Autoconsommation directe', value: autoConsoDirecteAnnuel3, color: '#00897b' },
-    { label: 'Via batterie', value: viaBatterieAnnuel3, color: '#f05326' },
+    { label: 'Autoconsommation PV', value: autoConsoDirecteAnnuel3, color: '#f9a825' },
+    { label: 'Via batterie', value: viaBatterieAnnuel3, color: '#43a047' },
     { label: 'Achat reseau', value: newAchatAnnuel, color: '#e53935' },
-    { label: 'Reinjection reseau', value: newReventeAnnuelle, color: '#34314b' }
+    { label: 'Reinjection reseau', value: newReventeAnnuelle, color: '#1a73e8' }
   ], 'Repartition energetique annuelle estimee');
 
   createBarChart('chart3_estimation', MONTHS, [
@@ -1882,9 +1882,9 @@ function calculateTab4() {
   `;
 
   createStackedBarChart('chart4_prod', MONTHS, [
-    { label: 'Autoconsommation (kWh)', data: autoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.7)' },
-    { label: 'Reinjection reseau (kWh)', data: surplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(249,168,37,0.7)' },
-    { label: 'Achat reseau (kWh)', data: achatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.5)' }
+    { label: 'Autoconsommation PV', data: autoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(249,168,37,0.8)' },
+    { label: 'Reinjection reseau', data: surplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.7)' },
+    { label: 'Achat reseau', data: achatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.7)' }
   ], 'Estimatif - Repartition energetique mensuelle - Entreprise (kWh)', 'kWh');
 
   document.getElementById('resultCards4b').innerHTML = `
