@@ -536,8 +536,12 @@
     .recap-abonnement tr:last-child td { border-bottom: none !important; }
 
     /* === BATTERY CHART (print) === */
-    .battery-chart { background: white !important; border: 1px solid #ddd !important; page-break-inside: avoid; }
+    .battery-chart { background: white !important; border: 1px solid #ddd !important; page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .battery-shape { width: 90px !important; height: 200px !important; }
+    .battery-body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .battery-seg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .battery-dot { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .battery-cap { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .battery-legend-value { font-size: 1em !important; }
 
     /* === PAGE 3 : AMORTISSEMENT (saut de page avant) === */
