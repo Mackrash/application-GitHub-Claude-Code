@@ -392,6 +392,11 @@
     table.amort th { background: var(--primary-dark) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
     .no-print { display: none !important; }
+    .recap-abonnement { display: block !important; }
+    .recap-abonnement table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+    .recap-abonnement td { padding: 4px 8px; border-bottom: 1px solid #e0dce8; }
+    .recap-abonnement td:first-child { font-weight: 600; color: var(--text-secondary); width: 40%; }
+    .recap-abonnement td:last-child { font-weight: 600; }
     #printClientHeader { display: block !important; }
 
     h2 { font-size: 1em !important; margin-bottom: 6px !important; }
@@ -584,7 +589,7 @@
 
 <!-- ===================== TAB 2 : Batterie + Donnees completes ===================== -->
 <div id="tab2" class="tab-content">
-  <div class="card">
+  <div class="card no-print">
     <h2><span class="icon">&#128267;</span> Ajout Batterie - Donnees Completes</h2>
     <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
       Vous avez deja des panneaux et toutes les donnees. Calculez la taille de batterie optimale.
@@ -640,14 +645,15 @@
   </div>
 
   <div id="results2" class="results hidden">
+    <div id="recapAbonnement2" class="card recap-abonnement" style="display:none;"></div>
     <div class="card">
       <h2><span class="icon">&#128200;</span> Resultats - Batterie optimale</h2>
-      <div id="resultCards2" class="result-cards"></div>
+      <div id="resultCards2" class="result-cards no-print"></div>
       <div class="chart-container"><canvas id="chart2_flux"></canvas></div>
     </div>
     <div class="card">
       <h2><span class="icon">&#128176;</span> Economies avec batterie</h2>
-      <div id="resultCards2b" class="result-cards"></div>
+      <div id="resultCards2b" class="result-cards no-print"></div>
       <div class="chart-container"><canvas id="chart2_eco"></canvas></div>
     </div>
     <div class="card">
@@ -659,7 +665,7 @@
 
 <!-- ===================== TAB 3 : Batterie Estimation ===================== -->
 <div id="tab3" class="tab-content">
-  <div class="card">
+  <div class="card no-print">
     <h2><span class="icon">&#128268;</span> Ajout Batterie - Estimation (donnees partielles)</h2>
     <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
       Vous n'avez que les donnees d'achat reseau et de revente. On estime la consommation totale et la production.
@@ -719,14 +725,15 @@
   </div>
 
   <div id="results3" class="results hidden">
+    <div id="recapAbonnement3" class="card recap-abonnement" style="display:none;"></div>
     <div class="card">
       <h2><span class="icon">&#128200;</span> Estimation - Batterie</h2>
-      <div id="resultCards3" class="result-cards"></div>
+      <div id="resultCards3" class="result-cards no-print"></div>
       <div class="chart-container"><canvas id="chart3_estimation"></canvas></div>
     </div>
     <div class="card">
       <h2><span class="icon">&#128176;</span> Economies estimees</h2>
-      <div id="resultCards3b" class="result-cards"></div>
+      <div id="resultCards3b" class="result-cards no-print"></div>
       <div class="chart-container"><canvas id="chart3_eco"></canvas></div>
     </div>
     <div class="card">
@@ -1442,6 +1449,22 @@ function calculateTab2() {
 
   document.getElementById('results2').classList.remove('hidden');
 
+  // Recap Abonnement (print only)
+  document.getElementById('recapAbonnement2').innerHTML = `
+    <h2><span class="icon">&#128203;</span> Recap Abonnement</h2>
+    <table>
+      <tr><td>Abonnement</td><td>${fmtDec(kva)} kVA</td></tr>
+      <tr><td>Tarif electricite</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
+      <tr><td>Tarif revente</td><td>${reventeRate} XPF/kWh</td></tr>
+      <tr><td>Batterie</td><td>${nbBat2}x ${batModel2.name}</td></tr>
+      <tr><td>Capacite utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
+      <tr><td>Montant devis</td><td>${fmt(investBat)} XPF</td></tr>
+      <tr><td>Facture actuelle</td><td>${fmt(factureActuelle)} XPF/an</td></tr>
+      <tr><td>Facture avec batterie</td><td>${fmt(factureAvecBat)} XPF/an</td></tr>
+      <tr><td>Economie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economie)} XPF</td></tr>
+    </table>
+  `;
+
   document.getElementById('resultCards2').innerHTML = `
     <div class="result-card battery"><div class="value">${fmtDec(batteryUsable)} kWh</div><div class="label">${nbBat2}x ${batModel2.name} (utile DoD 85%)</div></div>
     <div class="result-card info"><div class="value">${fmtDec(tauxAutoConsoAvant)}%</div><div class="label">Autoconso. avant batterie</div></div>
@@ -1544,6 +1567,23 @@ function calculateTab3() {
   const tauxApres = consoAnnuelle > 0 ? (newAutoConsoAnnuelle / consoAnnuelle * 100) : 0;
 
   document.getElementById('results3').classList.remove('hidden');
+
+  // Recap Abonnement (print only)
+  document.getElementById('recapAbonnement3').innerHTML = `
+    <h2><span class="icon">&#128203;</span> Recap Abonnement</h2>
+    <table>
+      <tr><td>Abonnement</td><td>${fmtDec(kva)} kVA</td></tr>
+      <tr><td>Tarif electricite</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
+      <tr><td>Puissance PV</td><td>${fmtDec(pvKwc)} kWc</td></tr>
+      <tr><td>Tarif revente</td><td>${reventeRate} XPF/kWh</td></tr>
+      <tr><td>Batterie</td><td>${nbBat3}x ${batModel3.name}</td></tr>
+      <tr><td>Capacite utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
+      <tr><td>Montant devis</td><td>${fmt(investBat)} XPF</td></tr>
+      <tr><td>Facture actuelle</td><td>${fmt(factureActuelle)} XPF/an</td></tr>
+      <tr><td>Facture avec batterie</td><td>${fmt(factureAvecBat)} XPF/an</td></tr>
+      <tr><td>Economie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economie)} XPF</td></tr>
+    </table>
+  `;
 
   document.getElementById('resultCards3').innerHTML = `
     <div class="result-card battery"><div class="value">${fmtDec(batteryUsable)} kWh</div><div class="label">${nbBat3}x ${batModel3.name} (utile DoD 85%)</div></div>
