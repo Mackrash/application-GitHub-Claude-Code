@@ -1476,9 +1476,11 @@ function calculateTab2() {
   document.getElementById('results2').classList.remove('hidden');
 
   // Recap Abonnement (print only)
+  const clientNameVal2 = document.getElementById('clientName').value;
   document.getElementById('recapAbonnement2').innerHTML = `
     <h2><span class="icon">&#128203;</span> Recap Abonnement</h2>
     <table>
+      ${clientNameVal2 ? `<tr><td>Client</td><td>${clientNameVal2}</td></tr>` : ''}
       <tr><td>Abonnement</td><td>${fmtDec(kva)} kVA</td></tr>
       <tr><td>Tarif electricite</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
       <tr><td>Tarif revente</td><td>${reventeRate} XPF/kWh</td></tr>
@@ -1595,9 +1597,11 @@ function calculateTab3() {
   document.getElementById('results3').classList.remove('hidden');
 
   // Recap Abonnement (print only)
+  const clientNameVal3 = document.getElementById('clientName').value;
   document.getElementById('recapAbonnement3').innerHTML = `
     <h2><span class="icon">&#128203;</span> Recap Abonnement</h2>
     <table>
+      ${clientNameVal3 ? `<tr><td>Client</td><td>${clientNameVal3}</td></tr>` : ''}
       <tr><td>Abonnement</td><td>${fmtDec(kva)} kVA</td></tr>
       <tr><td>Tarif electricite</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
       <tr><td>Puissance PV</td><td>${fmtDec(pvKwc)} kWc</td></tr>
