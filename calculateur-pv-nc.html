@@ -66,8 +66,14 @@
   .header p { opacity: 0.85; font-size: 0.9em; margin-top: 4px; }
   .header-actions {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
     flex-shrink: 0;
+  }
+  .logo-solar {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
   }
   .btn-print {
     padding: 8px 16px;
@@ -458,11 +464,13 @@
     body { background: white !important; padding: 0 !important; margin: 0 !important; font-size: 12pt !important; }
 
     /* === HEADER / LOGOS === */
-    .header { background: white !important; color: var(--primary-dark) !important; box-shadow: none !important; border-bottom: 3px solid var(--primary); padding: 24px 20px !important; display: flex !important; justify-content: center !important; align-items: center !important; }
+    .header { background: white !important; color: var(--primary-dark) !important; box-shadow: none !important; border-bottom: 3px solid var(--primary); padding: 24px 20px !important; display: flex !important; justify-content: space-between !important; align-items: center !important; }
     .header-logos { display: flex !important; gap: 40px !important; justify-content: center !important; }
     .header-logos img { height: 80px !important; }
     .header-center { display: none !important; }
-    .header-actions { display: none !important; }
+    .header-actions { display: flex !important; align-items: center !important; }
+    .header-actions .btn-print { display: none !important; }
+    .header-actions .logo-solar { height: 50px !important; }
     .client-name-bar { display: none !important; }
     .tab-bar { display: none !important; }
     .print-modal-overlay { display: none !important; }
@@ -563,6 +571,7 @@
   </div>
   <div class="header-actions">
     <button class="btn-print" onclick="openPrintDialog()" title="Imprimer">&#128424; Imprimer</button>
+    <img src="logo-solar-concept.svg" alt="Solar Concept" title="Solar Concept" class="logo-solar">
   </div>
 </div>
 

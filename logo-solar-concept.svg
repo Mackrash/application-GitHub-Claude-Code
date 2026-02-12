@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 50" width="300" height="50">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&amp;display=swap');
+  </style>
+  <text x="150" y="36" text-anchor="middle" font-family="'Orbitron', 'Rajdhani', 'Exo 2', 'Trebuchet MS', Arial, sans-serif" font-weight="900" font-size="34" fill="#F07B20" letter-spacing="2">SOLAR CONCEPT</text>
+</svg>
