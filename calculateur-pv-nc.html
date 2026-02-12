@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculateur Photovoltaique - Nouvelle Caledonie</title>
+<title>Calculateur Photovoltaïque - Nouvelle Calédonie</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -566,8 +566,8 @@
     <img src="https://www.omegapower.nc/wp-content/uploads/2020/01/Typo-Omega-var-400.png" alt="Omega Power" title="Omega Power">
   </div>
   <div class="header-center">
-    <h1>Calculateur Photovoltaique - Nouvelle Caledonie</h1>
-    <p><span class="badge badge-nc">NC</span> Etude solaire complete - Tarifs, batteries, amortissement</p>
+    <h1>Calculateur Photovoltaïque - Nouvelle Calédonie</h1>
+    <p><span class="badge badge-nc">NC</span> Étude solaire complète - Tarifs, batteries, amortissement</p>
   </div>
   <div class="header-actions">
     <button class="btn-print" onclick="openPrintDialog()" title="Imprimer">&#128424; Imprimer</button>
@@ -583,8 +583,8 @@
 <div class="print-modal-overlay" id="printModal">
   <div class="print-modal">
     <h3>Quelle etude imprimer ?</h3>
-    <button class="print-modal-btn" onclick="printTab('tab1')">&#9728; Installation Complete</button>
-    <button class="print-modal-btn" onclick="printTab('tab2')">&#128267; Batterie + Donnees</button>
+    <button class="print-modal-btn" onclick="printTab('tab1')">&#9728; Installation Complète</button>
+    <button class="print-modal-btn" onclick="printTab('tab2')">&#128267; Batterie + Données</button>
     <button class="print-modal-btn" onclick="printTab('tab3')">&#128268; Batterie Estimation</button>
     <button class="print-modal-btn" onclick="printTab('tab4')">&#127970; Entreprise</button>
     <button class="print-modal-cancel" onclick="closePrintDialog()">Annuler</button>
@@ -599,11 +599,11 @@
 <div class="tab-bar">
   <button class="tab-btn t1 active" onclick="switchTab('tab1')">
     <span class="tab-icon">&#9728;</span>
-    <span class="tab-label">Installation Complete</span>
+    <span class="tab-label">Installation Complète</span>
   </button>
   <button class="tab-btn t2" onclick="switchTab('tab2')">
     <span class="tab-icon">&#128267;</span>
-    <span class="tab-label">Batterie + Donnees</span>
+    <span class="tab-label">Batterie + Données</span>
   </button>
   <button class="tab-btn t3" onclick="switchTab('tab3')">
     <span class="tab-icon">&#128268;</span>
@@ -615,27 +615,27 @@
   </button>
   <button class="tab-btn tsettings" onclick="switchTab('tabSettings')">
     <span class="tab-icon">&#9881;</span>
-    <span class="tab-label">Parametres</span>
+    <span class="tab-label">Paramètres</span>
   </button>
 </div>
 
-<!-- ===================== TAB 1 : Installation Complete ===================== -->
+<!-- ===================== TAB 1 : Installation Complète ===================== -->
 <div id="tab1" class="tab-content active">
   <div class="card no-print">
-    <h2><span class="icon">&#9728;</span> Installation Complete - Etude par consommation</h2>
+    <h2><span class="icon">&#9728;</span> Installation Complète - Étude par consommation</h2>
     <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
-      Entrez vos consommations mensuelles (kWh) et selectionnez votre profil pour dimensionner l'installation PV et la batterie.
+      Entrez vos consommations mensuelles (kWh) et sélectionnez votre profil pour dimensionner l'installation PV et la batterie.
     </p>
 
     <h3 style="font-size:0.95em;margin-bottom:10px;">Profil de consommation</h3>
     <div class="profile-selector">
-      <button class="profile-btn active" data-profile="actif" onclick="selectProfile(this)">Actif (present le soir)</button>
-      <button class="profile-btn" data-profile="retraite" onclick="selectProfile(this)">Retraite (la journee)</button>
+      <button class="profile-btn active" data-profile="actif" onclick="selectProfile(this)">Actif (présent le soir)</button>
+      <button class="profile-btn" data-profile="retraite" onclick="selectProfile(this)">Retraite (la journée)</button>
       <button class="profile-btn" data-profile="enfants" onclick="selectProfile(this)">Avec enfants (maman a la maison)</button>
     </div>
     <div class="pool-toggle">
       <input type="checkbox" id="pool1">
-      <label for="pool1">Option Piscine (consommation supplementaire en journee ~350 kWh/mois)</label>
+      <label for="pool1">Option Piscine (consommation supplémentaire en journée ~350 kWh/mois)</label>
     </div>
 
     <div class="divider"></div>
@@ -643,17 +643,17 @@
     <h3 style="font-size:0.95em;margin-bottom:10px;">Consommation mensuelle (kWh)</h3>
     <div class="monthly-grid">
       <div class="form-group"><label>Janvier</label><input type="number" id="c1_jan" placeholder="kWh" value="800"></div>
-      <div class="form-group"><label>Fevrier</label><input type="number" id="c1_fev" placeholder="kWh" value="850"></div>
+      <div class="form-group"><label>Février</label><input type="number" id="c1_fev" placeholder="kWh" value="850"></div>
       <div class="form-group"><label>Mars</label><input type="number" id="c1_mar" placeholder="kWh" value="750"></div>
       <div class="form-group"><label>Avril</label><input type="number" id="c1_avr" placeholder="kWh" value="650"></div>
       <div class="form-group"><label>Mai</label><input type="number" id="c1_mai" placeholder="kWh" value="550"></div>
       <div class="form-group"><label>Juin</label><input type="number" id="c1_jun" placeholder="kWh" value="500"></div>
       <div class="form-group"><label>Juillet</label><input type="number" id="c1_jul" placeholder="kWh" value="480"></div>
-      <div class="form-group"><label>Aout</label><input type="number" id="c1_aou" placeholder="kWh" value="520"></div>
+      <div class="form-group"><label>Août</label><input type="number" id="c1_aou" placeholder="kWh" value="520"></div>
       <div class="form-group"><label>Septembre</label><input type="number" id="c1_sep" placeholder="kWh" value="600"></div>
       <div class="form-group"><label>Octobre</label><input type="number" id="c1_oct" placeholder="kWh" value="680"></div>
       <div class="form-group"><label>Novembre</label><input type="number" id="c1_nov" placeholder="kWh" value="750"></div>
-      <div class="form-group"><label>Decembre</label><input type="number" id="c1_dec" placeholder="kWh" value="820"></div>
+      <div class="form-group"><label>Décembre</label><input type="number" id="c1_dec" placeholder="kWh" value="820"></div>
     </div>
 
     <div class="divider"></div>
@@ -673,7 +673,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Puissance PV installee (kWc)</label>
+        <label>Puissance PV installée (kWc)</label>
         <input type="number" id="c1_puissance_kwc" value="6.3" step="0.5" placeholder="Auto">
         <span class="helper-text">Vide = calcul auto, sinon votre valeur</span>
       </div>
@@ -686,7 +686,7 @@
         <input type="number" id="c1_montant_devis" value="1650000" step="10000">
       </div>
       <div class="form-group">
-        <label>Modele de batterie</label>
+        <label>Modèle de batterie</label>
         <select id="c1_modele_bat" onchange="updateBatteryDisplay('c1')">
           <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
           <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
@@ -696,7 +696,7 @@
       <div class="form-group">
         <label>Nombre de batteries</label>
         <input type="number" id="c1_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c1')">
-        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c1_bat_capacity_display">12,16 kWh</strong></span>
+        <span class="helper-text">Capacité utile (DoD 85%) : <strong id="c1_bat_capacity_display">12,16 kWh</strong></span>
       </div>
     </div>
 
@@ -708,46 +708,46 @@
   <div id="results1" class="results hidden">
     <div id="recapAbonnement1" class="card recap-abonnement" style="display:none;"></div>
     <div class="card">
-      <h2><span class="icon">&#9728;</span> Dimensionnement</h2>
+      <h2><span class="icon">&#9728;</span> Dimensionnement estimatif</h2>
       <div id="resultCards1" class="result-cards"></div>
     </div>
     <div class="card">
-      <h2><span class="icon">&#128176;</span> Avant / Apres - Facture</h2>
+      <h2><span class="icon">&#128176;</span> Avant / Après - Facture estimative</h2>
       <div id="resultCards1b" class="result-cards"></div>
       <div class="chart-container"><canvas id="chart1_facture"></canvas></div>
     </div>
     <div class="card">
-      <h2><span class="icon">&#128200;</span> Repartition energetique</h2>
+      <h2><span class="icon">&#128200;</span> Répartition énergétique estimative</h2>
       <div class="chart-container"><canvas id="chart1_conso"></canvas></div>
       <div id="batteryChart1"></div>
     </div>
     <div class="card">
-      <h2><span class="icon">&#128181;</span> ROI par tranche d'imposition NC</h2>
+      <h2><span class="icon">&#128181;</span> ROI estimatif par tranche d'imposition NC</h2>
       <p style="margin-bottom:12px;color:var(--text-secondary);font-size:0.85em;">
-        La deduction fiscale NC permet de deduire l'investissement de votre revenu imposable (plafond parametrable). Le ROI varie selon votre tranche marginale.
+        La déduction fiscale NC permet de déduire l'investissement de votre revenu imposable (plafond paramétrable). Le ROI varie selon votre tranche marginale.
       </p>
       <div id="trancheTable1"></div>
     </div>
     <div class="card print-page-start">
-      <h2><span class="icon">&#128197;</span> Tableau d'amortissement</h2>
+      <h2><span class="icon">&#128197;</span> Tableau d'amortissement estimatif</h2>
       <div id="amortTable1"></div>
     </div>
   </div>
 </div>
 
-<!-- ===================== TAB 2 : Batterie + Donnees completes ===================== -->
+<!-- ===================== TAB 2 : Batterie + Données complètes ===================== -->
 <div id="tab2" class="tab-content">
   <div class="card no-print">
-    <h2><span class="icon">&#128267;</span> Ajout Batterie - Donnees Completes</h2>
+    <h2><span class="icon">&#128267;</span> Ajout Batterie - Données Complètes</h2>
     <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
-      Vous avez deja des panneaux et toutes les donnees. Calculez la taille de batterie optimale.
+      Vous avez déjà des panneaux et toutes les données. Calculez la taille de batterie optimale.
     </p>
     <div class="monthly-grid">
       <div class="form-group"><label>Mois</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
       <div class="form-group"><label>Conso totale (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
       <div class="form-group"><label>Production PV (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
       <div class="form-group"><label>Revente (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
-      <div class="form-group"><label>Achat reseau (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
+      <div class="form-group"><label>Achat réseau (kWh)</label><span style="font-weight:600;padding:8px 0;">&nbsp;</span></div>
     </div>
     <div id="tab2MonthlyInputs"></div>
 
@@ -773,7 +773,7 @@
         <span class="helper-text">Montant total du devis</span>
       </div>
       <div class="form-group">
-        <label>Modele de batterie</label>
+        <label>Modèle de batterie</label>
         <select id="c2_modele_bat" onchange="updateBatteryDisplay('c2')">
           <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
           <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
@@ -783,7 +783,7 @@
       <div class="form-group">
         <label>Nombre de batteries</label>
         <input type="number" id="c2_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c2')">
-        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c2_bat_capacity_display">12,16 kWh</strong></span>
+        <span class="helper-text">Capacité utile (DoD 85%) : <strong id="c2_bat_capacity_display">12,16 kWh</strong></span>
       </div>
     </div>
 
@@ -795,18 +795,18 @@
   <div id="results2" class="results hidden">
     <div id="recapAbonnement2" class="card recap-abonnement" style="display:none;"></div>
     <div class="card">
-      <h2><span class="icon">&#128200;</span> Resultats - Batterie optimale</h2>
+      <h2><span class="icon">&#128200;</span> Résultats estimatifs - Batterie optimale</h2>
       <div id="resultCards2" class="result-cards"></div>
       <div id="batteryChart2"></div>
       <div class="chart-container"><canvas id="chart2_flux"></canvas></div>
     </div>
     <div class="card">
-      <h2><span class="icon">&#128176;</span> Economies avec batterie</h2>
+      <h2><span class="icon">&#128176;</span> Économies estimatives avec batterie</h2>
       <div id="resultCards2b" class="result-cards"></div>
       <div class="chart-container"><canvas id="chart2_eco"></canvas></div>
     </div>
     <div class="card print-page-start">
-      <h2><span class="icon">&#128197;</span> Amortissement batterie</h2>
+      <h2><span class="icon">&#128197;</span> Amortissement estimatif batterie</h2>
       <div id="amortTable2"></div>
     </div>
   </div>
@@ -815,9 +815,9 @@
 <!-- ===================== TAB 3 : Batterie Estimation ===================== -->
 <div id="tab3" class="tab-content">
   <div class="card no-print">
-    <h2><span class="icon">&#128268;</span> Ajout Batterie - Estimation (donnees partielles)</h2>
+    <h2><span class="icon">&#128268;</span> Ajout Batterie - Estimation (données partielles)</h2>
     <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
-      Vous n'avez que les donnees d'achat reseau et de revente. On estime la consommation totale et la production.
+      Vous n'avez que les données d'achat reseau et de revente. On estime la consommation totale et la production.
     </p>
     <h3 style="font-size:0.95em;margin-bottom:10px;">Profil de consommation</h3>
     <div class="profile-selector">
@@ -826,7 +826,7 @@
       <button class="profile-btn" data-profile="enfants" onclick="selectProfile3(this)">Avec enfants</button>
     </div>
     <div class="divider"></div>
-    <h3 style="font-size:0.95em;margin-bottom:10px;">Donnees mensuelles</h3>
+    <h3 style="font-size:0.95em;margin-bottom:10px;">Données mensuelles</h3>
     <div id="tab3MonthlyInputs"></div>
 
     <div class="divider"></div>
@@ -837,7 +837,7 @@
         <span class="helper-text">Tarif auto selon kVA</span>
       </div>
       <div class="form-group">
-        <label>Puissance PV installee (kWc)</label>
+        <label>Puissance PV installée (kWc)</label>
         <input type="number" id="c3_puissance_pv" value="6.3" step="0.5">
       </div>
       <div class="form-group">
@@ -854,7 +854,7 @@
         <span class="helper-text">Montant total du devis</span>
       </div>
       <div class="form-group">
-        <label>Modele de batterie</label>
+        <label>Modèle de batterie</label>
         <select id="c3_modele_bat" onchange="updateBatteryDisplay('c3')">
           <option value="elite">Elite 100 - 4,8 kWh (48V / 100Ah)</option>
           <option value="prestige">Prestige - 10,65 kWh (51.2V / 208Ah)</option>
@@ -864,7 +864,7 @@
       <div class="form-group">
         <label>Nombre de batteries</label>
         <input type="number" id="c3_nb_bat" value="1" min="1" max="20" step="1" onchange="updateBatteryDisplay('c3')">
-        <span class="helper-text">Capacite utile (DoD 85%) : <strong id="c3_bat_capacity_display">12,16 kWh</strong></span>
+        <span class="helper-text">Capacité utile (DoD 85%) : <strong id="c3_bat_capacity_display">12,16 kWh</strong></span>
       </div>
     </div>
 
@@ -876,18 +876,18 @@
   <div id="results3" class="results hidden">
     <div id="recapAbonnement3" class="card recap-abonnement" style="display:none;"></div>
     <div class="card">
-      <h2><span class="icon">&#128200;</span> Estimation - Batterie</h2>
+      <h2><span class="icon">&#128200;</span> Résultats estimatifs - Batterie</h2>
       <div id="resultCards3" class="result-cards"></div>
       <div id="batteryChart3"></div>
       <div class="chart-container"><canvas id="chart3_estimation"></canvas></div>
     </div>
     <div class="card">
-      <h2><span class="icon">&#128176;</span> Economies estimees</h2>
+      <h2><span class="icon">&#128176;</span> Économies estimées</h2>
       <div id="resultCards3b" class="result-cards"></div>
       <div class="chart-container"><canvas id="chart3_eco"></canvas></div>
     </div>
     <div class="card print-page-start">
-      <h2><span class="icon">&#128197;</span> Amortissement batterie</h2>
+      <h2><span class="icon">&#128197;</span> Amortissement estimatif batterie</h2>
       <div id="amortTable3"></div>
     </div>
   </div>
@@ -919,7 +919,7 @@
         <input type="number" id="c4_puissance_panneau" value="450" step="25">
       </div>
       <div class="form-group">
-        <label>Tarif achat electricite HT (XPF/kWh)</label>
+        <label>Tarif achat électricité HT (XPF/kWh)</label>
         <input type="number" id="c4_tarif_ht" value="29.62" step="0.1">
         <span class="helper-text">Tarif professionnel EEC</span>
       </div>
@@ -937,7 +937,7 @@
         <span class="helper-text">% de la production consommee sur place</span>
       </div>
       <div class="form-group">
-        <label>Hausse tarif elec annuelle (%)</label>
+        <label>Hausse tarif élec. annuelle (%)</label>
         <input type="number" id="c4_hausse" value="3" step="0.5">
       </div>
     </div>
@@ -949,32 +949,32 @@
 
   <div id="results4" class="results hidden">
     <div class="card">
-      <h2><span class="icon">&#128200;</span> Resultats Entreprise</h2>
+      <h2><span class="icon">&#128200;</span> Résultats estimatifs Entreprise</h2>
       <div id="resultCards4" class="result-cards"></div>
       <div class="chart-container"><canvas id="chart4_prod"></canvas></div>
     </div>
     <div class="card">
-      <h2><span class="icon">&#128176;</span> Analyse financiere HT</h2>
+      <h2><span class="icon">&#128176;</span> Analyse financière estimative HT</h2>
       <div id="resultCards4b" class="result-cards"></div>
       <div class="chart-container"><canvas id="chart4_amort"></canvas></div>
     </div>
     <div class="card">
-      <h2><span class="icon">&#128197;</span> Tableau d'amortissement HT</h2>
+      <h2><span class="icon">&#128197;</span> Tableau d'amortissement estimatif HT</h2>
       <div id="amortTable4"></div>
     </div>
   </div>
 </div>
 
-<!-- ===================== TAB Parametres ===================== -->
+<!-- ===================== TAB Paramètres ===================== -->
 <div id="tabSettings" class="tab-content">
   <div class="card">
-    <h2><span class="icon">&#9881;</span> Parametres - Tarifs Nouvelle Caledonie</h2>
+    <h2><span class="icon">&#9881;</span> Paramètres - Tarifs Nouvelle Calédonie</h2>
     <p style="margin-bottom:16px;color:var(--text-secondary);font-size:0.9em;">
       Ces tarifs sont pre-remplis avec les valeurs en vigueur (oct. 2025). Modifiez-les si necessaire, ils seront memorises.
     </p>
     <div class="settings-grid">
       <div class="settings-section">
-        <h3>Tarifs achat electricite (XPF/kWh)</h3>
+        <h3>Tarifs achat électricité (XPF/kWh)</h3>
         <div class="form-group" style="margin-bottom:12px;">
           <label>Domestique &le; 3.3 kVA</label>
           <input type="number" id="s_tarif_dom_low" value="37.91" step="0.01">
@@ -1000,18 +1000,18 @@
         </div>
       </div>
       <div class="settings-section">
-        <h3>Parametres solaires NC</h3>
+        <h3>Paramètres solaires NC</h3>
         <div class="form-group" style="margin-bottom:12px;">
           <label>Ensoleillement moyen (kWh/kWc/jour)</label>
           <input type="number" id="s_ensoleillement" value="4.2" step="0.1">
           <span class="helper-text">Noumea et Grand Sud : ~4.2 kWh/kWc/j</span>
         </div>
         <div class="form-group" style="margin-bottom:12px;">
-          <label>Pertes systeme (%)</label>
+          <label>Pertes système (%)</label>
           <input type="number" id="s_pertes" value="15" step="1">
         </div>
         <div class="form-group" style="margin-bottom:12px;">
-          <label>Degradation panneaux/an (%)</label>
+          <label>Dégradation panneaux/an (%)</label>
           <input type="number" id="s_degradation" value="0.5" step="0.1">
         </div>
       </div>
@@ -1039,22 +1039,22 @@
         </div>
       </div>
       <div class="settings-section">
-        <h3>Parametres financiers</h3>
+        <h3>Paramètres financiers</h3>
         <div class="form-group" style="margin-bottom:12px;">
-          <label>Hausse tarif electricite / an (%)</label>
+          <label>Hausse tarif électricité / an (%)</label>
           <input type="number" id="s_hausse_tarif" value="5" step="0.5">
           <span class="helper-text">NC : ~10% prevu 2025, ~5% ensuite</span>
         </div>
         <div class="form-group" style="margin-bottom:12px;">
-          <label>Duree de vie installation (ans)</label>
+          <label>Durée de vie installation (ans)</label>
           <input type="number" id="s_duree_vie" value="25" step="1">
         </div>
         <div class="form-group" style="margin-bottom:12px;">
-          <label>Duree de vie batterie (ans)</label>
+          <label>Durée de vie batterie (ans)</label>
           <input type="number" id="s_duree_bat" value="10" step="1">
         </div>
         <div class="form-group" style="margin-bottom:12px;">
-          <label>Deduction fiscale max (XPF/an)</label>
+          <label>Déduction fiscale max (XPF/an)</label>
           <input type="number" id="s_deduction" value="1000000" step="100000">
           <span class="helper-text">Plafond NC travaux verts</span>
         </div>
@@ -1068,8 +1068,8 @@
 
 <script>
 // ===================== GLOBAL STATE & SETTINGS =====================
-const MONTHS = ['Jan','Fev','Mar','Avr','Mai','Jun','Jul','Aou','Sep','Oct','Nov','Dec'];
-const MONTHS_FULL = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+const MONTHS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Dec'];
+const MONTHS_FULL = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
 // Monthly solar irradiation factor for NC (relative to average, southern hemisphere tropical)
 const SOLAR_FACTORS = [1.18, 1.12, 1.08, 0.95, 0.85, 0.78, 0.80, 0.88, 0.98, 1.08, 1.15, 1.18];
@@ -1158,7 +1158,7 @@ function saveSettings() {
     deduction: parseFloat(document.getElementById('s_deduction').value)
   };
   localStorage.setItem('pv_nc_settings', JSON.stringify(s));
-  alert('Parametres sauvegardes !');
+  alert('Paramètres sauvegardés !');
 }
 
 // ===================== TAB NAVIGATION =====================
@@ -1290,12 +1290,12 @@ function createStackedBarChart(canvasId, labels, datasets, title, yLabel) {
 // ===================== AMORT TABLE HELPER =====================
 function buildAmortTable(containerId, investTotal, annualSaving, hausse, dureeVie, deductionFiscale = 0) {
   let html = '<table class="amort"><thead><tr>';
-  html += '<th>Annee</th><th>Economie (XPF)</th><th>Cumul eco. (XPF)</th><th>Investissement (XPF)</th><th>Bilan cumule (XPF)</th><th>ROI</th>';
+  html += '<th>Année</th><th>Économie (XPF)</th><th>Cumul éco. (XPF)</th><th>Investissement (XPF)</th><th>Bilan cumulé (XPF)</th><th>ROI</th>';
   html += '</tr></thead><tbody>';
 
   let cumSaving = 0;
   let breakEvenYear = null;
-  // Apply fiscal deduction in year 1 only
+  // Apply fiscal déduction in year 1 only
   const deduction = Math.min(deductionFiscale, investTotal);
 
   for (let y = 1; y <= dureeVie; y++) {
@@ -1321,7 +1321,7 @@ function buildAmortTable(containerId, investTotal, annualSaving, hausse, dureeVi
   html += '</tbody></table>';
 
   if (breakEvenYear) {
-    html = `<p style="margin-bottom:12px;font-weight:600;color:var(--success);">Retour sur investissement atteint en annee ${breakEvenYear}</p>` + html;
+    html = `<p style="margin-bottom:12px;font-weight:600;color:var(--success);">Retour sur investissement atteint en année ${breakEvenYear}</p>` + html;
   }
   document.getElementById(containerId).innerHTML = html;
   return breakEvenYear;
@@ -1334,7 +1334,7 @@ function getTarifByKva(kva) {
 }
 
 // ===================== CALCUL FACTURE COMPLETE =====================
-// Calcule une facture mensuelle domestique complete avec tous les composants
+// Calcule une facture mensuelle domestique complète avec tous les composants
 function calcFactureMois(consoKwh, kva, tarifKwh, reventeKwh, reventeRate, s) {
   const energie = consoKwh * tarifKwh;
   const primefixe = kva * s.prime_fixe;
@@ -1362,7 +1362,7 @@ function chargesFixesMois(kva, s) {
   return primefixe + taxeComPrime + s.redevance_comptage;
 }
 
-// ===================== TAB 1 : Installation Complete =====================
+// ===================== TAB 1 : Installation Complète =====================
 function calculateTab1() {
   const s = getSettings();
   const profile = PROFILES[currentProfile1];
@@ -1459,22 +1459,22 @@ function calculateTab1() {
   // Results display
   document.getElementById('results1').classList.remove('hidden');
 
-  // Recap Abonnement (print only)
+  // Récap. Abonnement (print only)
   const clientNameVal1 = document.getElementById('clientName').value;
   document.getElementById('recapAbonnement1').innerHTML = `
-    <h2><span class="icon">&#128203;</span> Recap Abonnement</h2>
+    <h2><span class="icon">&#128203;</span> Récap. Abonnement</h2>
     <table>
       ${clientNameVal1 ? `<tr><td>Client</td><td>${clientNameVal1}</td></tr>` : ''}
       <tr><td>Abonnement</td><td>${fmtDec(kva)} kVA</td></tr>
-      <tr><td>Tarif electricite</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
+      <tr><td>Tarif électricité</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
       <tr><td>Tarif revente</td><td>${reventeRate} XPF/kWh</td></tr>
       <tr><td>Puissance PV</td><td>${fmtDec(pvKwc)} kWc (${nbPanneaux} panneaux ${puissancePanneau}Wc)</td></tr>
       <tr><td>Batterie</td><td>${nbBat}x ${batModel.name}</td></tr>
-      <tr><td>Capacite utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
+      <tr><td>Capacité utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
       <tr><td>Montant devis</td><td>${fmt(investTotal)} XPF</td></tr>
       <tr><td>Facture actuelle</td><td>${fmt(factureSansPV)} XPF/an</td></tr>
       <tr><td>Facture avec PV + batterie</td><td>${fmt(factureAvecPV)} XPF/an</td></tr>
-      <tr><td>Economie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economiePV)} XPF</td></tr>
+      <tr><td>Économie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economiePV)} XPF</td></tr>
     </table>
   `;
 
@@ -1482,11 +1482,11 @@ function calculateTab1() {
   document.getElementById('resultCards1').innerHTML = `
     <div class="result-card solar"><div class="value">${fmtDec(pvKwc)} kWc</div><div class="label">Puissance PV (${nbPanneaux} panneaux ${puissancePanneau}Wc - ${surfacePV} m2)</div></div>
     <div class="result-card battery"><div class="value">${fmtDec(batteryUsable)} kWh</div><div class="label">${nbBat}x ${batModel.name} (utile DoD 85%)</div></div>
-    <div class="result-card info"><div class="value">${fmt(prodAnnual)} kWh</div><div class="label">Production annuelle</div></div>
-    <div class="result-card savings"><div class="value">${fmtDec(tauxAutoConsommation)}%</div><div class="label">Taux autoconsommation</div></div>
+    <div class="result-card info"><div class="value">${fmt(prodAnnual)} kWh</div><div class="label">Production annuelle estimée</div></div>
+    <div class="result-card savings"><div class="value">${fmtDec(tauxAutoConsommation)}%</div><div class="label">Taux d'autoconsommation estimatif</div></div>
   `;
 
-  // --- Avant / Apres ---
+  // --- Avant / Après ---
   document.getElementById('resultCards1b').innerHTML = `
     <div class="result-card info" style="border-color:#ef9a9a;background:#ffebee;">
       <div class="value" style="color:#c62828;">${fmt(investTotal)} XPF</div>
@@ -1494,40 +1494,40 @@ function calculateTab1() {
     </div>
     <div class="result-card info" style="border-color:#ef9a9a;background:#ffcdd2;">
       <div class="value" style="color:#b71c1c;">${fmt(factMoyAvant)} XPF</div>
-      <div class="label" style="color:#b71c1c;">Facture moyenne / mois AVANT</div>
+      <div class="label" style="color:#b71c1c;">Facture estimative moyenne / mois AVANT</div>
     </div>
     <div class="result-card savings" style="border-color:#a5d6a7;background:#c8e6c9;">
       <div class="value" style="color:#1b5e20;">${fmt(factMoyApres)} XPF</div>
-      <div class="label" style="color:#1b5e20;">Facture moyenne / mois APRES</div>
+      <div class="label" style="color:#1b5e20;">Facture estimative moyenne / mois APRÈS</div>
     </div>
     <div class="result-card savings" style="border-color:#81c784;background:#a5d6a7;">
       <div class="value" style="color:#1b5e20;">${fmt(economiePV)} XPF</div>
-      <div class="label" style="color:#1b5e20;">Economie annuelle</div>
+      <div class="label" style="color:#1b5e20;">Économie annuelle</div>
     </div>
   `;
 
   // Chart: facture mensuelle avant/apres
   createBarChart('chart1_facture', MONTHS, [
     { label: 'Facture AVANT (XPF)', data: factMois, backgroundColor: 'rgba(229,57,53,0.7)', borderColor: '#e53935', borderWidth: 1 },
-    { label: 'Facture APRES PV+batterie (XPF)', data: factPVMois, backgroundColor: 'rgba(52,168,83,0.7)', borderColor: '#34a853', borderWidth: 1 }
-  ], 'Estimatif - Facture mensuelle : AVANT vs APRES (XPF)', 'XPF');
+    { label: 'Facture APRÈS PV+batterie (XPF)', data: factPVMois, backgroundColor: 'rgba(52,168,83,0.7)', borderColor: '#34a853', borderWidth: 1 }
+  ], 'Estimatif - Facture mensuelle : AVANT vs APRÈS (XPF)', 'XPF');
 
-  // --- Repartition energetique ---
+  // --- Répartition énergétique ---
   createStackedBarChart('chart1_conso', MONTHS, [
     { label: 'Autoconsommation PV', data: directUseMonthly, backgroundColor: 'rgba(249,168,37,0.8)' },
     { label: 'Via batterie', data: batteryUseMonthly, backgroundColor: 'rgba(67,160,71,0.8)' },
-    { label: 'Achat reseau', data: battGridMonthly.map(g => Math.round(g)), backgroundColor: 'rgba(229,57,53,0.7)' },
-    { label: 'Reinjection reseau', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.7)' }
-  ], 'Estimatif - Repartition energetique mensuelle (kWh)', 'kWh');
+    { label: 'Achat réseau', data: battGridMonthly.map(g => Math.round(g)), backgroundColor: 'rgba(229,57,53,0.7)' },
+    { label: 'Réinjection réseau', data: battSurplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.7)' }
+  ], 'Estimatif - Répartition énergétique mensuelle (kWh)', 'kWh');
 
   const directUseAnnual = directUseMonthly.reduce((a, b) => a + b, 0);
   const batteryUseAnnual = batteryUseMonthly.reduce((a, b) => a + b, 0);
   renderBatteryChart('batteryChart1', [
     { label: 'Autoconsommation PV', value: directUseAnnual, color: '#f9a825' },
     { label: 'Via batterie', value: batteryUseAnnual, color: '#43a047' },
-    { label: 'Achat reseau', value: battGridAnnual, color: '#e53935' },
-    { label: 'Reinjection reseau', value: battSurplusAnnual, color: '#1a73e8' }
-  ], 'Repartition energetique annuelle');
+    { label: 'Achat réseau', value: battGridAnnual, color: '#e53935' },
+    { label: 'Réinjection réseau', value: battSurplusAnnual, color: '#1a73e8' }
+  ], 'Répartition énergétique annuelle');
 
   // --- ROI par tranche d'imposition NC ---
   const tranchesNC = [
@@ -1543,7 +1543,7 @@ function calculateTab1() {
   const deductionMax = Math.min(s.deduction, investTotal);
 
   let trancheHtml = '<table class="amort"><thead><tr>';
-  trancheHtml += '<th>Tranche</th><th>Revenu imposable</th><th>Deduction fiscale (XPF)</th><th>Invest. net (XPF)</th><th>ROI (annees)</th>';
+  trancheHtml += '<th>Tranche</th><th>Revenu imposable</th><th>Déduction fiscale (XPF)</th><th>Invest. net (XPF)</th><th>ROI (années)</th>';
   trancheHtml += '</tr></thead><tbody>';
 
   tranchesNC.forEach(tr => {
@@ -1569,7 +1569,7 @@ function calculateTab1() {
   trancheHtml += '</tbody></table>';
   document.getElementById('trancheTable1').innerHTML = trancheHtml;
 
-  // --- Amortissement (avec deduction par defaut) ---
+  // --- Amortissement (avec déduction par défaut) ---
   const deduction = deductionMax;
   buildAmortTable('amortTable1', investTotal, economiePV, s.hausse_tarif, s.duree_vie, deduction);
 }
@@ -1645,21 +1645,21 @@ function calculateTab2() {
 
   document.getElementById('results2').classList.remove('hidden');
 
-  // Recap Abonnement (print only)
+  // Récap. Abonnement (print only)
   const clientNameVal2 = document.getElementById('clientName').value;
   document.getElementById('recapAbonnement2').innerHTML = `
-    <h2><span class="icon">&#128203;</span> Recap Abonnement</h2>
+    <h2><span class="icon">&#128203;</span> Récap. Abonnement</h2>
     <table>
       ${clientNameVal2 ? `<tr><td>Client</td><td>${clientNameVal2}</td></tr>` : ''}
       <tr><td>Abonnement</td><td>${fmtDec(kva)} kVA</td></tr>
-      <tr><td>Tarif electricite</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
+      <tr><td>Tarif électricité</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
       <tr><td>Tarif revente</td><td>${reventeRate} XPF/kWh</td></tr>
       <tr><td>Batterie</td><td>${nbBat2}x ${batModel2.name}</td></tr>
-      <tr><td>Capacite utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
+      <tr><td>Capacité utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
       <tr><td>Montant devis</td><td>${fmt(investBat)} XPF</td></tr>
       <tr><td>Facture actuelle</td><td>${fmt(factureActuelle)} XPF/an</td></tr>
       <tr><td>Facture avec batterie</td><td>${fmt(factureAvecBat)} XPF/an</td></tr>
-      <tr><td>Economie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economie)} XPF</td></tr>
+      <tr><td>Économie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economie)} XPF</td></tr>
     </table>
   `;
 
@@ -1675,21 +1675,21 @@ function calculateTab2() {
   renderBatteryChart('batteryChart2', [
     { label: 'Autoconsommation PV', value: autoConsoDirecteAnnuel2, color: '#f9a825' },
     { label: 'Via batterie', value: viaBatterieAnnuel2, color: '#43a047' },
-    { label: 'Achat reseau', value: newAchatAnnuel, color: '#e53935' },
-    { label: 'Reinjection reseau', value: newReventeAnnuelle, color: '#1a73e8' }
-  ], 'Repartition energetique annuelle avec batterie');
+    { label: 'Achat réseau', value: newAchatAnnuel, color: '#e53935' },
+    { label: 'Réinjection réseau', value: newReventeAnnuelle, color: '#1a73e8' }
+  ], 'Répartition énergétique annuelle avec batterie');
 
   createStackedBarChart('chart2_flux', MONTHS, [
     { label: 'Autoconsommation PV', data: autoConsoActuelle.map(a => Math.round(a)), backgroundColor: 'rgba(249,168,37,0.8)' },
     { label: 'Via batterie', data: newAutoConsoMonthly.map((n, i) => Math.round(Math.max(0, n - autoConsoActuelle[i]))), backgroundColor: 'rgba(67,160,71,0.8)' },
-    { label: 'Achat reseau', data: newAchatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.7)' },
-    { label: 'Reinjection reseau', data: newReventeMonthly.map(r => Math.round(r)), backgroundColor: 'rgba(26,115,232,0.7)' }
-  ], 'Estimatif - Flux energetiques mensuels avec batterie (kWh)', 'kWh');
+    { label: 'Achat réseau', data: newAchatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.7)' },
+    { label: 'Réinjection réseau', data: newReventeMonthly.map(r => Math.round(r)), backgroundColor: 'rgba(26,115,232,0.7)' }
+  ], 'Estimatif - Flux énergétiques mensuels avec batterie (kWh)', 'kWh');
 
   document.getElementById('resultCards2b').innerHTML = `
-    <div class="result-card info"><div class="value">${fmt(factureActuelle)}</div><div class="label">Facture actuelle (XPF/an)</div></div>
-    <div class="result-card savings"><div class="value">${fmt(factureAvecBat)}</div><div class="label">Facture avec batterie (XPF/an)</div></div>
-    <div class="result-card savings"><div class="value">${fmt(economie)}</div><div class="label">Economie annuelle (XPF)</div></div>
+    <div class="result-card info"><div class="value">${fmt(factureActuelle)}</div><div class="label">Facture estimative actuelle (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(factureAvecBat)}</div><div class="label">Facture estimative avec batterie (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(economie)}</div><div class="label">Économie annuelle estimative (XPF)</div></div>
   `;
 
   const factMoisAvant = achat.map((a, i) => Math.round(calcFactureMois(a, kva, tarif, revente[i], reventeRate, s)));
@@ -1709,7 +1709,7 @@ function generateTab3Inputs() {
   MONTHS_FULL.forEach((m, i) => {
     html += `<div class="monthly-grid" style="margin-bottom:6px;">
       <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Mois</label><span style="font-weight:500;padding:8px 0;font-size:0.9em;">${m}</span></div>
-      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Achat reseau (kWh)</label><input type="number" id="c3_achat_${i}" value="0"></div>
+      <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Achat réseau (kWh)</label><input type="number" id="c3_achat_${i}" value="0"></div>
       <div class="form-group"><label style="visibility:${i===0?'visible':'hidden'}">Revente surplus (kWh)</label><input type="number" id="c3_revente_${i}" value="0"></div>
     </div>`;
   });
@@ -1735,7 +1735,7 @@ function calculateTab3() {
   // Estimate total production from kWc
   const prodEstMonthly = daysInMonth.map((d, i) => pvKwc * s.ensoleillement * SOLAR_FACTORS[i] * (1 - s.pertes / 100) * d);
 
-  // Autoconsommation actuelle = Production estimee - Revente mesuree
+  // Autoconsommation actuelle = Production estimée - Revente mesurée
   const autoConsoActuelle = prodEstMonthly.map((p, i) => Math.max(0, p - reventeMois[i]));
 
   // Consommation totale estimee = Achat + Autoconsommation
@@ -1775,28 +1775,28 @@ function calculateTab3() {
 
   document.getElementById('results3').classList.remove('hidden');
 
-  // Recap Abonnement (print only)
+  // Récap. Abonnement (print only)
   const clientNameVal3 = document.getElementById('clientName').value;
   document.getElementById('recapAbonnement3').innerHTML = `
-    <h2><span class="icon">&#128203;</span> Recap Abonnement</h2>
+    <h2><span class="icon">&#128203;</span> Récap. Abonnement</h2>
     <table>
       ${clientNameVal3 ? `<tr><td>Client</td><td>${clientNameVal3}</td></tr>` : ''}
       <tr><td>Abonnement</td><td>${fmtDec(kva)} kVA</td></tr>
-      <tr><td>Tarif electricite</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
+      <tr><td>Tarif électricité</td><td>${fmtDec(tarif, 2)} XPF/kWh</td></tr>
       <tr><td>Puissance PV</td><td>${fmtDec(pvKwc)} kWc</td></tr>
       <tr><td>Tarif revente</td><td>${reventeRate} XPF/kWh</td></tr>
       <tr><td>Batterie</td><td>${nbBat3}x ${batModel3.name}</td></tr>
-      <tr><td>Capacite utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
+      <tr><td>Capacité utile (DoD 85%)</td><td>${fmtDec(batteryUsable)} kWh</td></tr>
       <tr><td>Montant devis</td><td>${fmt(investBat)} XPF</td></tr>
       <tr><td>Facture actuelle</td><td>${fmt(factureActuelle)} XPF/an</td></tr>
       <tr><td>Facture avec batterie</td><td>${fmt(factureAvecBat)} XPF/an</td></tr>
-      <tr><td>Economie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economie)} XPF</td></tr>
+      <tr><td>Économie annuelle</td><td style="color:var(--success);font-weight:700;">${fmt(economie)} XPF</td></tr>
     </table>
   `;
 
   document.getElementById('resultCards3').innerHTML = `
     <div class="result-card battery"><div class="value">${fmtDec(batteryUsable)} kWh</div><div class="label">${nbBat3}x ${batModel3.name} (utile DoD 85%)</div></div>
-    <div class="result-card info"><div class="value">${fmt(consoAnnuelle)}</div><div class="label">Conso totale estimee (kWh/an)</div></div>
+    <div class="result-card info"><div class="value">${fmt(consoAnnuelle)}</div><div class="label">Conso totale estimée (kWh/an)</div></div>
     <div class="result-card info"><div class="value">${fmtDec(tauxAvant)}%</div><div class="label">Autoconso. avant batterie</div></div>
     <div class="result-card savings"><div class="value">${fmtDec(tauxApres)}%</div><div class="label">Autoconso. avec batterie</div></div>
   `;
@@ -1806,20 +1806,20 @@ function calculateTab3() {
   renderBatteryChart('batteryChart3', [
     { label: 'Autoconsommation PV', value: autoConsoDirecteAnnuel3, color: '#f9a825' },
     { label: 'Via batterie', value: viaBatterieAnnuel3, color: '#43a047' },
-    { label: 'Achat reseau', value: newAchatAnnuel, color: '#e53935' },
-    { label: 'Reinjection reseau', value: newReventeAnnuelle, color: '#1a73e8' }
-  ], 'Repartition energetique annuelle estimee');
+    { label: 'Achat réseau', value: newAchatAnnuel, color: '#e53935' },
+    { label: 'Réinjection réseau', value: newReventeAnnuelle, color: '#1a73e8' }
+  ], 'Répartition énergétique annuelle estimée');
 
   createBarChart('chart3_estimation', MONTHS, [
-    { label: 'Conso estimee (kWh)', data: consoEstMonthly.map(c => Math.round(c)), backgroundColor: 'rgba(229,57,53,0.6)' },
-    { label: 'Production estimee (kWh)', data: prodEstMonthly.map(p => Math.round(p)), backgroundColor: 'rgba(249,168,37,0.6)' },
+    { label: 'Conso estimée (kWh)', data: consoEstMonthly.map(c => Math.round(c)), backgroundColor: 'rgba(229,57,53,0.6)' },
+    { label: 'Production estimée (kWh)', data: prodEstMonthly.map(p => Math.round(p)), backgroundColor: 'rgba(249,168,37,0.6)' },
     { label: 'Autoconso avec bat (kWh)', data: newAutoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(0,137,123,0.6)' }
-  ], 'Estimatif - Estimation energetique mensuelle (kWh)', 'kWh');
+  ], 'Estimatif - Estimation énergétique mensuelle (kWh)', 'kWh');
 
   document.getElementById('resultCards3b').innerHTML = `
-    <div class="result-card info"><div class="value">${fmt(factureActuelle)}</div><div class="label">Facture actuelle (XPF/an)</div></div>
-    <div class="result-card savings"><div class="value">${fmt(factureAvecBat)}</div><div class="label">Facture avec batterie (XPF/an)</div></div>
-    <div class="result-card savings"><div class="value">${fmt(economie)}</div><div class="label">Economie annuelle (XPF)</div></div>
+    <div class="result-card info"><div class="value">${fmt(factureActuelle)}</div><div class="label">Facture estimative actuelle (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(factureAvecBat)}</div><div class="label">Facture estimative avec batterie (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(economie)}</div><div class="label">Économie annuelle estimative (XPF)</div></div>
     <div class="result-card battery"><div class="value">${fmt(investBat)}</div><div class="label">Investissement (XPF)</div></div>
   `;
 
@@ -1877,21 +1877,21 @@ function calculateTab4() {
   document.getElementById('resultCards4').innerHTML = `
     <div class="result-card solar"><div class="value">${fmtDec(pvKwc)} kWc</div><div class="label">Puissance PV</div></div>
     <div class="result-card solar"><div class="value">${nbPanneaux}</div><div class="label">Panneaux - ${surfacePV} m2</div></div>
-    <div class="result-card info"><div class="value">${fmt(prodAnnuelle)}</div><div class="label">Production annuelle (kWh)</div></div>
-    <div class="result-card savings"><div class="value">${fmtDec(autoConsoAnnuelle / prodAnnuelle * 100)}%</div><div class="label">Taux autoconsommation</div></div>
+    <div class="result-card info"><div class="value">${fmt(prodAnnuelle)}</div><div class="label">Production annuelle estimée (kWh)</div></div>
+    <div class="result-card savings"><div class="value">${fmtDec(autoConsoAnnuelle / prodAnnuelle * 100)}%</div><div class="label">Taux d'autoconsommation estimatif</div></div>
   `;
 
   createStackedBarChart('chart4_prod', MONTHS, [
     { label: 'Autoconsommation PV', data: autoConsoMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(249,168,37,0.8)' },
-    { label: 'Reinjection reseau', data: surplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.7)' },
-    { label: 'Achat reseau', data: achatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.7)' }
-  ], 'Estimatif - Repartition energetique mensuelle - Entreprise (kWh)', 'kWh');
+    { label: 'Réinjection réseau', data: surplusMonthly.map(s => Math.round(s)), backgroundColor: 'rgba(26,115,232,0.7)' },
+    { label: 'Achat réseau', data: achatMonthly.map(a => Math.round(a)), backgroundColor: 'rgba(229,57,53,0.7)' }
+  ], 'Estimatif - Répartition énergétique mensuelle - Entreprise (kWh)', 'kWh');
 
   document.getElementById('resultCards4b').innerHTML = `
     <div class="result-card info"><div class="value">${fmt(investHT)}</div><div class="label">Investissement HT (XPF)</div></div>
-    <div class="result-card info"><div class="value">${fmt(factureSansPV)}</div><div class="label">Facture sans PV HT (XPF/an)</div></div>
-    <div class="result-card savings"><div class="value">${fmt(factureAvecPV)}</div><div class="label">Facture avec PV HT (XPF/an)</div></div>
-    <div class="result-card savings"><div class="value">${fmt(economieHT)}</div><div class="label">Economie annuelle HT (XPF)</div></div>
+    <div class="result-card info"><div class="value">${fmt(factureSansPV)}</div><div class="label">Facture estimative sans PV HT (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(factureAvecPV)}</div><div class="label">Facture estimative avec PV HT (XPF/an)</div></div>
+    <div class="result-card savings"><div class="value">${fmt(economieHT)}</div><div class="label">Économie annuelle estimative HT (XPF)</div></div>
   `;
 
   // Amortization chart
@@ -1905,11 +1905,11 @@ function calculateTab4() {
   }
 
   createLineChart('chart4_amort', years, [
-    { label: 'Economies cumulees HT (XPF)', data: cumSavings, borderColor: '#34a853', backgroundColor: 'rgba(52,168,83,0.1)', fill: true, tension: 0.3 },
+    { label: 'Économies cumulées HT (XPF)', data: cumSavings, borderColor: '#34a853', backgroundColor: 'rgba(52,168,83,0.1)', fill: true, tension: 0.3 },
     { label: 'Investissement HT (XPF)', data: years.map(() => investHT), borderColor: '#e53935', borderDash: [6, 4], pointRadius: 0 }
-  ], 'Estimatif - Amortissement entreprise HT - Economies cumulees vs Investissement', 'XPF');
+  ], 'Estimatif - Amortissement entreprise HT - Économies cumulées vs Investissement', 'XPF');
 
-  // No fiscal deduction for enterprise in this simplified model (already HT)
+  // No fiscal déduction for enterprise in this simplified model (already HT)
   buildAmortTable('amortTable4', investHT, economieHT, hausse, s.duree_vie, 0);
 }
 
