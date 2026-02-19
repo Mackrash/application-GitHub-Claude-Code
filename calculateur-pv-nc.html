@@ -1018,8 +1018,14 @@ function plotPile(div,dA,bA,reinj,achat){
     {l:'Achat réseau',v:achat,c:'#FF4B6E',cg:'#CC2040'},
   ].filter(x=>x.v>0.5);
   const total=all.reduce((a,x)=>a+x.v,0);
-  const VW=620,VH=340,barW=90,barX=145;
+  const VW=620,barW=90,barX=145;
   const GAP=7,titleH=34,capH=14,capW=40;
+  // VH dynamique : évite le dépassement du viewBox quand un segment a la hauteur min
+  const n=all.length;
+  const baseVH=340,baseAvailH=baseVH-titleH-capH-GAP*(n-1)-20;
+  const segHprev=all.map(seg=>Math.max(28,(seg.v/total)*baseAvailH));
+  const needed=titleH+capH+4+segHprev.reduce((a,h)=>a+h,0)+GAP*(n-1)+30;
+  const VH=Math.max(baseVH,needed);
   const availH=VH-titleH-capH-GAP*(all.length-1)-20;
   let y=titleH+capH+4;
   const defs=all.map((seg,i)=>`<linearGradient id="pg${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${seg.cg}"/><stop offset="100%" stop-color="${seg.c}"/></linearGradient>`).join('');
