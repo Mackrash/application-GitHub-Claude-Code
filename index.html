@@ -189,13 +189,15 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   .tab-content.active{display:block!important;padding:0!important}
   .results{display:block!important;margin-top:0}
 
-  /* ── GRAPHIQUES PLOTLY : fond blanc ── */
+  /* ── GRAPHIQUES : contour fin arrondi, contenu clippé proprement ── */
   div[id^="g1_"],div[id^="g2_"],div[id^="g3_"],div[id^="g4_"]{
     display:block!important;
     background:#fff!important;
-    border:1px solid #e0e0e0!important;
+    border:0.5pt solid #CCCCCC!important;
     border-radius:8px!important;
-    margin:8px 0!important;
+    margin:6pt 0!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
   }
   #k1_pb,#k2_pb,#k3_pb,#k4_pb{display:block!important}
 
@@ -272,7 +274,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   .ps-charts .col,.ps-charts .col2{flex:none!important;width:100%!important}
   /* Hauteurs compactes pour tenir avec le récap sur une page A4 */
   /* Pile horizontale : viewBox ~260px de haut, 230px suffit */
-  .ps-charts [id$="_donut"]{height:230px!important;overflow:visible!important}
+  .ps-charts [id$="_donut"]{height:230px!important;overflow:hidden!important}
   .ps-charts [id$="_mois"],.ps-charts [id$="_mois_eco"]{height:220px!important}
   /* ROI compact pour laisser de la place au tableau sur la même page */
   .ps-roi [id$="_roi"]{height:240px!important}
@@ -1667,16 +1669,22 @@ function setPrintLabels(){
 }
 
 window.onbeforeprint=function(){
-  // Fond blanc sur tous les graphiques Plotly
+  // Fond blanc + marges internes sur tous les graphiques Plotly
   document.querySelectorAll('[id^="g1_"],[id^="g2_"],[id^="g3_"],[id^="g4_"]').forEach(function(el){
     if(el._fullLayout){
       try{Plotly.relayout(el,{paper_bgcolor:'#ffffff',plot_bgcolor:'#ffffff',font:{color:'#333333'}});}catch(e){}
     }
   });
-  // Marges symétriques pour centrer le graphique Avant/Après à l'impression
+  // Avant/Après : marges symétriques + espace interne pour ne pas toucher le contour
   document.querySelectorAll('[id$="_mois"],[id$="_mois_eco"]').forEach(function(el){
     if(el._fullLayout){
-      try{Plotly.relayout(el,{margin:{t:30,b:65,l:55,r:55},'legend.y':-0.40});}catch(e){}
+      try{Plotly.relayout(el,{margin:{t:22,b:58,l:52,r:52},'legend.y':-0.42});}catch(e){}
+    }
+  });
+  // ROI : marges équilibrées pour contenu propre dans le contour
+  document.querySelectorAll('[id$="_roi"]').forEach(function(el){
+    if(el._fullLayout){
+      try{Plotly.relayout(el,{margin:{t:22,b:52,l:52,r:28}});}catch(e){}
     }
   });
   // Injecte les titres de sections
@@ -1685,7 +1693,7 @@ window.onbeforeprint=function(){
   document.body.setAttribute('data-date',new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}));
 };
 window.onafterprint=function(){
-  // Restaure les couleurs dark après impression
+  // Restaure les couleurs dark
   document.querySelectorAll('[id^="g1_"],[id^="g2_"],[id^="g3_"],[id^="g4_"]').forEach(function(el){
     if(el._fullLayout){
       try{Plotly.relayout(el,{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#E0E0F0'}});}catch(e){}
@@ -1695,6 +1703,11 @@ window.onafterprint=function(){
   document.querySelectorAll('[id$="_mois"],[id$="_mois_eco"]').forEach(function(el){
     if(el._fullLayout){
       try{Plotly.relayout(el,{margin:{t:40,b:70,l:55,r:14},'legend.y':-0.32});}catch(e){}
+    }
+  });
+  document.querySelectorAll('[id$="_roi"]').forEach(function(el){
+    if(el._fullLayout){
+      try{Plotly.relayout(el,{margin:{t:40,b:50,l:38,r:14}});}catch(e){}
     }
   });
 };
