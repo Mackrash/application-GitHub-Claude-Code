@@ -1,0 +1,64 @@
+ Bien assure toi de ses calculs. Onglet 1 : Autoconsommation sur la base des 3 types. Actifs : 55% des besoins en
+  journée, Retraités : 65% des besoins en journée, MAman : 60% des besoins en journées. LA batterie fournis à 85%
+  de sa capacité en fontion de ce qu'elle a pus recupéré de la production, du surplus reinjecté. Elle renvoi ca la
+  nuit. Le reste est pris sur le reseau. Il me faut donc un graphique simple mais fun qui montre la répartition
+  annuelle de l'autoconsommation, de la reinjection, de l'injection batterie et de l'achat réseau. Recapitulatif
+  clair de l'investissement (pas en rouge stp) depense annuelle en rouge avant, depense annuelle moyenne en vert
+  apres, economie annuelle en vert. Puis une comparaison mois par mois des economies. Le retour sur investissement
+  et les economies sur 20 ans. LEs meme resultats pour les 3 onglets particulier. Pour la partie batterie plus
+  données la c'est differents parce qu'on a excatement toute les données. Il s'agit d'une installation que l'on a
+  faite et le client doit comprendre l'interet de la batterie. Donc le but et de prendre la revente ou reinjection
+  reseau et pour chaque mois voir comment ca peut remplir al batterie et le surplus en revente. la nuit la batterie
+   reinjecte donc sa diminue l'achat réseau. Il faut prendre en compte que certains mois la consommation est
+  supérieure a la quantité batterie et la production inférieure à la quantité batterie. Pour la partie Batteri
+  Estimation c'est le meme principe mais on a pas les données du systeme. On a que la facture qui nous donne la
+  reinection reseau sur laquelle on peut prendre pour remplir la batterie et l'achat réseau qui peut etre absorbé
+  par la batterie. Pour la partie Pro voici le resultat attendu :                  Projet Photovoltaïque
+            SCI BONNET DE LARBOGNE
+                      P 2557
+           14,40       kWc        98846 Nouméa Cedex
+
+
+
+  Caractéristiques du générateur Photovoltaïque
+  Puissance             14,40    kWc
+  Nombre de micro onduleurs Enphase IQ7 A            32
+  Panneaux  monocristallins            32
+  Puissance de chaque panneau            450    Watts
+  Puissance crête du générateur            14,4    kWc
+  Surface du générateur PV        :    70    m2
+
+  Rendement annuel du générateur d'énergie
+
+  Production annuelle d’énergie         :    21 398    kWh
+
+  Compensation carbone par an        :    387    arbres
+  Emissions CO2 évitées        :    13    Tonnes
+  1 kW produit au fioul = 600g de CO2
+
+  Décomposition de la production mensuelle (moyenne sur 20 ans en kWh)
+  Mois    JANV    FÉV    MARS    AVRIL    MAI    JUIN
+  Production    2117    1987    1901    1469    1426    1296
+      JUIL    AOÛT    SEPT    OCT    NOV    DÉC
+      1339    1555    1915    2074    2131    2189
+
+
+  Données économiques
+  Coût total de l’investissement hors taxes            :    2 376 000    F.CFP
+  Production annuelle            :    21 398    kWh/an
+  Nombre de kWh produits sur 15 ans             :    320 976    kWh
+  Prix de revient du kWh sur 15 ans d’utilisation             :    7,40    F/kWh
+  Prix du kWh payé actuellement (H.T)            :    29,00    F/kWh
+  Economie Hypothèse / an            :    424 498    F.CFP
+  Economies réalisées sur 15 ans             :    6 367 467    F.CFP
+  Avantage annuel lié à l'amortissement comptable (10 ans)                71 280    F.CFP
+
+  Soit un rendement annuel estimé de            :    20,9%
+  Prise en compte de l'amortissement comptable            :    712 800    F.CFP
+  (économies d'impôt correspondant à l'amortissement comptable)
+  Coût de l'installation net d'impôt            :    1 663 200    F.CFP
+
+  Retour sur Investissement après amortissement comptable  :                3,9    ans
+
+
+  NB Les calculs de productions prennent en compte le temps d'ensolleillement moyens des 5 dernières années.
