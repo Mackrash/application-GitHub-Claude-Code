@@ -1633,6 +1633,12 @@ window.onbeforeprint=function(){
       try{Plotly.relayout(el,{paper_bgcolor:'#ffffff',plot_bgcolor:'#ffffff',font:{color:'#333333'}});}catch(e){}
     }
   });
+  // Marges symétriques pour centrer le graphique Avant/Après à l'impression
+  document.querySelectorAll('[id$="_mois"],[id$="_mois_eco"]').forEach(function(el){
+    if(el._fullLayout){
+      try{Plotly.relayout(el,{margin:{t:30,b:65,l:55,r:55},'legend.y':-0.40});}catch(e){}
+    }
+  });
   // Injecte les titres de sections
   setPrintLabels();
   // Ajoute la date sur le body pour le pied de page
@@ -1643,6 +1649,12 @@ window.onafterprint=function(){
   document.querySelectorAll('[id^="g1_"],[id^="g2_"],[id^="g3_"],[id^="g4_"]').forEach(function(el){
     if(el._fullLayout){
       try{Plotly.relayout(el,{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#E0E0F0'}});}catch(e){}
+    }
+  });
+  // Restaure les marges d'origine
+  document.querySelectorAll('[id$="_mois"],[id$="_mois_eco"]').forEach(function(el){
+    if(el._fullLayout){
+      try{Plotly.relayout(el,{margin:{t:40,b:70,l:55,r:14},'legend.y':-0.32});}catch(e){}
     }
   });
 };
