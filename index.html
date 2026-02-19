@@ -271,7 +271,8 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   .ps-charts .row{flex-direction:column!important;gap:10pt!important}
   .ps-charts .col,.ps-charts .col2{flex:none!important;width:100%!important}
   /* Hauteurs compactes pour tenir avec le récap sur une page A4 */
-  .ps-charts [id$="_donut"]{height:220px!important}
+  /* Barre horizontale : viewBox ~210px de haut, 220px suffit largement */
+  .ps-charts [id$="_donut"]{height:220px!important;overflow:visible!important}
   .ps-charts [id$="_mois"],.ps-charts [id$="_mois_eco"]{height:220px!important}
   /* ROI compact pour laisser de la place au tableau sur la même page */
   .ps-roi [id$="_roi"]{height:240px!important}
@@ -1018,42 +1019,60 @@ function plotPile(div,dA,bA,reinj,achat){
     {l:'Achat réseau',v:achat,c:'#FF4B6E',cg:'#CC2040'},
   ].filter(x=>x.v>0.5);
   const total=all.reduce((a,x)=>a+x.v,0);
-  const VW=620,VH=340,barW=90,barX=145;
-  const GAP=7,titleH=34,capH=14,capW=40;
-  const availH=VH-titleH-capH-GAP*(all.length-1)-20;
-  let y=titleH+capH+4;
-  const defs=all.map((seg,i)=>`<linearGradient id="pg${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${seg.cg}"/><stop offset="100%" stop-color="${seg.c}"/></linearGradient>`).join('');
-  const blocks=all.map((seg,i)=>{
-    const h=Math.max(28,(seg.v/total)*availH);
+  // Barre horizontale : plus compacte, clipping impossible à l'impression
+  const VW=620,barX=20,barY=44,barW=580,barH=68;
+  const legendY=barY+barH+22;
+  const rows=Math.ceil(all.length/2);
+  const VH=legendY+rows*34+14;
+
+  // Largeurs proportionnelles (min 40px), recalage si débordement
+  let segs=all.map(seg=>({...seg,w:Math.max(40,(seg.v/total)*barW)}));
+  const tw=segs.reduce((a,s)=>a+s.w,0);
+  if(tw>barW) segs=segs.map(s=>({...s,w:s.w*(barW/tw)}));
+
+  // Dégradés haut→bas + clipPath arrondi (IDs uniques par div)
+  const uid=div.replace(/[^a-z0-9]/gi,'_');
+  const defs=
+    `<clipPath id="bc_${uid}"><rect x="${barX}" y="${barY}" width="${barW}" height="${barH}" rx="9"/></clipPath>`+
+    all.map((seg,i)=>
+      `<linearGradient id="pg_${uid}_${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${seg.c}"/><stop offset="100%" stop-color="${seg.cg}"/></linearGradient>`
+    ).join('');
+
+  // Segments de la barre
+  let x=barX;
+  const segments=segs.map((seg,i)=>{
     const pct=Math.round(seg.v/total*100);
-    const mid=y+h/2;
-    const svg=`
-      <rect x="${barX}" y="${y}" width="${barW}" height="${h}" rx="7" ry="7"
-        fill="url(#pg${i})" opacity="0.92"/>
-      <rect x="${barX}" y="${y}" width="${barW}" height="${h}" rx="7" ry="7"
-        fill="none" stroke="#0D0D1A" stroke-width="3" opacity="0.6"/>
-      ${h>32?`<text x="${barX+barW/2}" y="${mid+7}" text-anchor="middle"
-        font-family="RAIDenmarkNeo,sans-serif" font-size="20" font-weight="700" fill="#fff"
-        style="text-shadow:0 1px 4px #0008">${pct}%</text>`:''}
-      <line x1="${barX+barW+6}" y1="${mid}" x2="${barX+barW+20}" y2="${mid}"
-        stroke="${seg.c}" stroke-width="2" opacity="0.7"/>
-      <text x="${barX+barW+25}" y="${mid-7}" font-family="Space Grotesk,sans-serif"
-        font-size="20" fill="#B0B0C8">${seg.l}</text>
-      <text x="${barX+barW+25}" y="${mid+20}" font-family="RAIDenmarkNeo,sans-serif"
-        font-size="25" font-weight="700" fill="${seg.c}">${fmt(Math.round(seg.v))} kWh</text>`;
-    y+=h+GAP;
-    return svg;
+    const mid=x+seg.w/2;
+    const block=`
+      <rect x="${x}" y="${barY}" width="${seg.w}" height="${barH}" fill="url(#pg_${uid}_${i})"/>
+      ${i>0?`<rect x="${x}" y="${barY}" width="2" height="${barH}" fill="#000" opacity="0.22"/>`:''}
+      ${seg.w>52?`<text x="${mid}" y="${barY+barH/2+8}" text-anchor="middle"
+        font-family="RAIDenmarkNeo,sans-serif" font-size="20" font-weight="700" fill="#fff" opacity="0.95">${pct}%</text>`:''}`;
+    x+=seg.w;
+    return block;
   }).join('');
-  const capX=barX+(barW-capW)/2;
-  const firstY=titleH+capH+4;
+
+  // Légende 2 colonnes sous la barre
+  const half=Math.floor(barW/2);
+  const legend=segs.map((seg,i)=>{
+    const col=i%2, row=Math.floor(i/2);
+    const lx=col===0?barX:barX+half+12;
+    const ly=legendY+row*34;
+    const valX=col===0?barX+half-6:barX+barW-6;
+    return `
+      <rect x="${lx}" y="${ly+2}" width="13" height="13" rx="3" fill="${seg.c}" opacity="0.9"/>
+      <text x="${lx+20}" y="${ly+13}" font-family="Space Grotesk,sans-serif" font-size="14" fill="#B0B0C8">${seg.l}</text>
+      <text x="${valX}" y="${ly+13}" text-anchor="end" font-family="RAIDenmarkNeo,sans-serif" font-size="16" font-weight="700" fill="${seg.c}">${fmt(Math.round(seg.v))} kWh</text>`;
+  }).join('');
+
   document.getElementById(div).innerHTML=`<svg width="100%" height="100%"
     viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="xMidYMid meet" style="display:block">
     <defs>${defs}</defs>
-    <text x="${VW/2}" y="26" text-anchor="middle" font-family="RAIDenmarkNeo,sans-serif" font-size="22"
+    <text x="${VW/2}" y="28" text-anchor="middle" font-family="RAIDenmarkNeo,sans-serif" font-size="21"
       font-weight="700" letter-spacing="3" fill="#F07020">RÉPARTITION ÉNERGÉTIQUE</text>
-    <rect x="${capX}" y="${titleH}" width="${capW}" height="${capH}" rx="4"
-      fill="#F07020" opacity="0.55"/>
-    ${blocks}
+    <g clip-path="url(#bc_${uid})">${segments}</g>
+    <rect x="${barX}" y="${barY}" width="${barW}" height="${barH}" rx="9" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+    ${legend}
   </svg>`;
 }
 
