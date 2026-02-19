@@ -271,8 +271,8 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   .ps-charts .row{flex-direction:column!important;gap:10pt!important}
   .ps-charts .col,.ps-charts .col2{flex:none!important;width:100%!important}
   /* Hauteurs compactes pour tenir avec le récap sur une page A4 */
-  /* Pile verticale : viewBox ~324px de haut, 300px pour impression compacte */
-  .ps-charts [id$="_donut"]{height:300px!important;overflow:visible!important}
+  /* Pile horizontale : viewBox ~260px de haut, 230px suffit */
+  .ps-charts [id$="_donut"]{height:230px!important;overflow:visible!important}
   .ps-charts [id$="_mois"],.ps-charts [id$="_mois_eco"]{height:220px!important}
   /* ROI compact pour laisser de la place au tableau sur la même page */
   .ps-roi [id$="_roi"]{height:240px!important}
@@ -1021,27 +1021,27 @@ function plotPile(div,dA,bA,reinj,achat){
   const total=all.reduce((a,x)=>a+x.v,0);
   const n=all.length;
 
-  // ── Dimensions pile verticale ─────────────────────────────────────
-  const BX=50, BY=44, BW=180, BH=264;
-  const NW=72, NH=14, NX=BX+(BW-NW)/2, NY=BY-NH;
-  const PAD=9, GAP=10;
+  // ── Batterie horizontale ─────────────────────────────────────────
+  const BX=20, BY=52, BW=520, BH=110;
+  const NW=18, NH=46, NX=BX+BW, NY=BY+(BH-NH)/2;  // cosse "+" à droite
+  const PAD=8, GAP=8;
   const iX=BX+PAD, iY=BY+PAD, iW=BW-PAD*2, iH=BH-PAD*2;
 
-  // ── Hauteurs segments proportionnelles (min 20px) ─────────────────
-  const availH=iH-GAP*(n-1);
-  let segs=all.map(s=>({...s,h:Math.max(20,(s.v/total)*availH)}));
-  const usedH=segs.reduce((a,s)=>a+s.h,0)+GAP*(n-1);
-  if(usedH>iH){
-    const over=usedH-iH, big=segs.filter(s=>s.h>20).length||1;
-    segs=segs.map(s=>({...s,h:s.h>20?Math.max(20,s.h-over/big):s.h}));
+  // ── Largeurs segments proportionnelles (min 30px) ─────────────────
+  const availW=iW-GAP*(n-1);
+  let segs=all.map(s=>({...s,w:Math.max(30,(s.v/total)*availW)}));
+  const usedW=segs.reduce((a,s)=>a+s.w,0)+GAP*(n-1);
+  if(usedW>iW){
+    const over=usedW-iW, big=segs.filter(s=>s.w>30).length||1;
+    segs=segs.map(s=>({...s,w:s.w>30?Math.max(30,s.w-over/big):s.w}));
   }
 
-  // ── Légende à droite, centrée sur la hauteur de la pile ───────────
-  const lX=BX+BW+30;
-  const lH=Math.min(66,Math.floor(BH/n));
-  const lY=BY+Math.floor((BH-n*lH)/2);
+  // ── Légende 2 colonnes sous la batterie ──────────────────────────
+  const legendY=BY+BH+22;
+  const rows=Math.ceil(n/2);
+  const half=270;
 
-  const VW=620, VH=BY+BH+16;
+  const VW=620, VH=legendY+rows*34+14;
   const uid=div.replace(/[^a-z0-9]/gi,'_');
 
   // ── Dégradés & clip ───────────────────────────────────────────────
@@ -1049,7 +1049,7 @@ function plotPile(div,dA,bA,reinj,achat){
     `<linearGradient id="bk_${uid}" x1="0" y1="0" x2="0" y2="1">
        <stop offset="0%" stop-color="#222246"/><stop offset="100%" stop-color="#0D0D1A"/>
      </linearGradient>`+
-    `<linearGradient id="gl_${uid}" x1="0" y1="0" x2="1" y2="0">
+    `<linearGradient id="gl_${uid}" x1="0" y1="0" x2="0" y2="1">
        <stop offset="0%" stop-color="rgba(255,255,255,0.16)"/>
        <stop offset="55%" stop-color="rgba(255,255,255,0.04)"/>
        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
@@ -1058,49 +1058,50 @@ function plotPile(div,dA,bA,reinj,achat){
        <rect x="${iX}" y="${iY}" width="${iW}" height="${iH}" rx="5"/>
      </clipPath>`+
     all.map((s,i)=>
-      `<linearGradient id="pg_${uid}_${i}" x1="0" y1="0" x2="1" y2="0">
-         <stop offset="0%" stop-color="${s.cg}"/><stop offset="100%" stop-color="${s.c}"/>
+      `<linearGradient id="pg_${uid}_${i}" x1="0" y1="0" x2="0" y2="1">
+         <stop offset="0%" stop-color="${s.c}"/><stop offset="100%" stop-color="${s.cg}"/>
        </linearGradient>`
     ).join('');
 
-  // ── Coque batterie avec cosse "+" ─────────────────────────────────
+  // ── Coque batterie + cosse "+" à droite ───────────────────────────
   const shell=`
-    <rect x="${NX}" y="${NY}" width="${NW}" height="${NH+6}" rx="5"
-      fill="url(#bk_${uid})" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
-    <text x="${NX+NW/2}" y="${NY+NH-1}" text-anchor="middle"
-      font-family="RAIDenmarkNeo,sans-serif" font-size="13" font-weight="700"
-      fill="rgba(255,255,255,0.6)">+</text>
-    <rect x="${BX}" y="${BY}" width="${BW}" height="${BH}" rx="13"
+    <rect x="${BX}" y="${BY}" width="${BW}" height="${BH}" rx="12"
       fill="url(#bk_${uid})" stroke="#F07020" stroke-width="2.5" opacity="0.9"/>
-    <rect x="${BX+5}" y="${BY+5}" width="${Math.round(BW*0.40)}" height="${BH-10}" rx="9"
-      fill="url(#gl_${uid})"/>`;
+    <rect x="${BX+4}" y="${BY+4}" width="${BW-8}" height="${Math.round(BH*0.44)}" rx="9"
+      fill="url(#gl_${uid})"/>
+    <rect x="${NX}" y="${NY}" width="${NW+6}" height="${NH}" rx="5"
+      fill="url(#bk_${uid})" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+    <text x="${NX+NW/2+3}" y="${NY+NH/2+5}" text-anchor="middle"
+      font-family="RAIDenmarkNeo,sans-serif" font-size="14" font-weight="700"
+      fill="rgba(255,255,255,0.6)">+</text>`;
 
-  // ── Segments avec espaces (clippés dans la pile) ──────────────────
-  let sy=iY;
+  // ── Segments horizontaux avec espaces ─────────────────────────────
+  let sx=iX;
   const blocks=segs.map((seg,i)=>{
     const pct=Math.round(seg.v/total*100);
-    const mid=sy+seg.h/2;
+    const mid=sx+seg.w/2;
     const b=`
-      <rect x="${iX}" y="${sy}" width="${iW}" height="${seg.h}"
+      <rect x="${sx}" y="${iY}" width="${seg.w}" height="${iH}"
         fill="url(#pg_${uid}_${i})" rx="5" opacity="0.96"/>
-      ${seg.h>28?`<text x="${iX+iW/2}" y="${mid+7}" text-anchor="middle"
+      ${seg.w>40?`<text x="${mid}" y="${iY+iH/2+7}" text-anchor="middle"
         font-family="RAIDenmarkNeo,sans-serif" font-size="17" font-weight="700"
         fill="#fff" opacity="0.9">${pct}%</text>`:''}`;
-    sy+=seg.h+GAP;
+    sx+=seg.w+GAP;
     return b;
   }).join('');
 
-  // ── Légende à droite ─────────────────────────────────────────────
+  // ── Légende 2 colonnes ────────────────────────────────────────────
   const legend=segs.map((seg,i)=>{
-    const ly=lY+i*lH;
+    const col=i%2, row=Math.floor(i/2);
+    const lx=col===0?BX:BX+half;
+    const ly=legendY+row*34;
+    const valX=col===0?BX+half-8:BX+BW+NW+6-8;
     return `
-      <rect x="${lX}" y="${ly+5}" width="13" height="13" rx="3" fill="${seg.c}" opacity="0.9"/>
-      <text x="${lX+20}" y="${ly+16}" font-family="Space Grotesk,sans-serif"
+      <rect x="${lx}" y="${ly+2}" width="13" height="13" rx="3" fill="${seg.c}" opacity="0.9"/>
+      <text x="${lx+20}" y="${ly+13}" font-family="Space Grotesk,sans-serif"
         font-size="13" fill="#B0B0C8">${seg.l}</text>
-      <text x="${lX+20}" y="${ly+36}" font-family="RAIDenmarkNeo,sans-serif"
-        font-size="19" font-weight="700" fill="${seg.c}">${fmt(Math.round(seg.v))} kWh</text>
-      ${lH>52?`<text x="${lX+20}" y="${ly+50}" font-family="Space Grotesk,sans-serif"
-        font-size="11" fill="#666">${Math.round(seg.v/total*100)}% du total</text>`:''}`;
+      <text x="${valX}" y="${ly+13}" text-anchor="end" font-family="RAIDenmarkNeo,sans-serif"
+        font-size="16" font-weight="700" fill="${seg.c}">${fmt(Math.round(seg.v))} kWh</text>`;
   }).join('');
 
   document.getElementById(div).innerHTML=`<svg width="100%" height="100%"
