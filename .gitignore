@@ -1,0 +1,12 @@
+venv/
+.claude/
+Données/
+Agentrappel/
+Calculateur SOLAIRE/
+__pycache__/
+*.pdf
+*.py
+requirements.txt
+_b64.txt
+_step.txt
+*.pyc
