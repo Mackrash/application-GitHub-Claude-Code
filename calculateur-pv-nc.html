@@ -148,7 +148,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 /* PRINT */
 #cover-page{display:none}
 /* Marges : 1.5cm côtés, 1.8cm haut, 2.2cm bas (pied de page) */
-@page{size:A4 portrait;margin:18mm 15mm 22mm 15mm}
+@page{size:A4 portrait;margin:20mm 18mm 22mm 18mm}
 @media print{
 
   /* ── FIDÉLITÉ COULEURS ── */
@@ -167,7 +167,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   /* ── BASE ── */
   /* width:210mm force Chrome à ne pas scaler (textes microscopiques sinon) */
   html{background:#fff!important;margin:0;padding:0}
-  body{background:#fff!important;color:#333!important;margin:0;padding:0;font-size:13pt;width:210mm}
+  body{background:#fff!important;color:#333!important;margin:0;padding:0;font-size:11pt;width:210mm}
 
   /* ── MASQUER : UI, FORMULAIRES, PARAMÈTRES ── */
   .header,
@@ -205,9 +205,9 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   /* 3 pages total : 1=garde / 2=récap+charts / 3=ROI+tableau */
   .ps{
     display:block;
-    padding:8pt 0 6pt;
+    padding:5pt 0 4pt;
     border-bottom:1px solid #e8e8e8;
-    margin-bottom:8pt;
+    margin-bottom:6pt;
   }
   .ps:last-child{border-bottom:none}
 
@@ -239,22 +239,22 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   /* ── KPI CARDS ── */
   .kpi{background:#FFF8F4!important;border:1px solid rgba(240,112,32,0.30)!important;
        border-left:3px solid #F07020!important;box-shadow:none!important;
-       break-inside:avoid;padding:8pt 12pt;margin-bottom:6pt}
+       break-inside:avoid;padding:6pt 10pt;margin-bottom:4pt}
   .kpi::after{background:#F07020!important}
-  .kpi-grid{gap:8pt;margin-bottom:8pt;break-inside:avoid}
-  .kv{color:#F07020!important;font-size:18pt;text-shadow:none!important;line-height:1.2}
+  .kpi-grid{gap:6pt;margin-bottom:6pt;break-inside:avoid}
+  .kv{color:#F07020!important;font-size:15pt;text-shadow:none!important;line-height:1.2}
   .kv.g{color:#008040!important}
   .kv.r{color:#CC2244!important}
   .kv.b{color:#1565C0!important}
-  .kl{font-size:9pt;color:#555;margin-top:2pt;font-weight:600}
+  .kl{font-size:8pt;color:#555;margin-top:1pt;font-weight:600}
 
   /* ── RECAP BOX ── */
   .st{color:#F07020!important;border-left:4px solid #F07020!important;
-      padding-left:10pt;margin:10pt 0 7pt;font-size:12pt;text-shadow:none!important;
+      padding-left:10pt;margin:8pt 0 5pt;font-size:10pt;text-shadow:none!important;
       break-after:avoid;font-weight:700;letter-spacing:1pt}
   .recap-box{background:#FFF3EC!important;border:1px solid rgba(240,112,32,0.35)!important;
-             padding:10pt 14pt;margin:6pt 0;break-inside:avoid;box-shadow:none!important}
-  .recap-title{color:#F07020!important;font-size:12pt;margin-bottom:8pt;font-weight:700;letter-spacing:1pt}
+             padding:8pt 12pt;margin:4pt 0;break-inside:avoid;box-shadow:none!important}
+  .recap-title{color:#F07020!important;font-size:10pt;margin-bottom:6pt;font-weight:700;letter-spacing:1pt}
   .recap-row{padding:4pt 0;border-bottom:0.5pt solid #ddd;font-size:10pt;
              display:flex;justify-content:space-between}
   .recap-key{color:#555;flex:1}
@@ -274,10 +274,10 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   .ps-charts .col,.ps-charts .col2{flex:none!important;width:100%!important}
   /* Hauteurs compactes pour tenir avec le récap sur une page A4 */
   /* Pile horizontale : viewBox ~260px de haut, 230px suffit */
-  .ps-charts [id$="_donut"]{height:230px!important;overflow:hidden!important}
-  .ps-charts [id$="_mois"],.ps-charts [id$="_mois_eco"]{height:220px!important}
+  .ps-charts [id$="_donut"]{height:200px!important;overflow:hidden!important}
+  .ps-charts [id$="_mois"],.ps-charts [id$="_mois_eco"]{height:190px!important}
   /* ROI compact pour laisser de la place au tableau sur la même page */
-  .ps-roi [id$="_roi"]{height:240px!important}
+  .ps-roi [id$="_roi"]{height:210px!important}
 
   /* ── TABLEAUX ── */
   .tw{overflow:visible!important;margin:8pt 0}
@@ -298,6 +298,16 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 
   /* ── RAPPORT ENTREPRISE (onglet 4) ── */
   .recap-grid{display:grid!important;grid-template-columns:1fr 1fr;gap:6pt 20pt}
+  /* Rapport JS généré — overrides print */
+  .rpt-wrap{border:1pt solid #F07020!important;border-radius:4px!important;overflow:visible!important;break-inside:auto;margin-bottom:8pt!important}
+  .rpt-header{padding:8pt 12pt!important}
+  .rpt-body{padding:10pt 14pt!important}
+  .rpt-2col{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6pt 14pt!important;margin-bottom:10pt!important}
+  .rpt-kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8pt!important;margin-bottom:8pt!important}
+  .rpt-prod-table{overflow:visible!important;margin-bottom:10pt!important}
+  .rpt-prod-table table{font-size:8pt!important}
+  .rpt-kpi-card{padding:10pt!important;break-inside:avoid}
+  .rpt-kpi-card .rpt-kpi-val{font-size:1.6rem!important}
 
   /* ── PAGE DE GARDE ── */
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
@@ -1523,10 +1533,10 @@ function calcT4(){
   // === RAPPORT PRO — Charte Solar Concept ===
   const R=s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"><span style="font-size:.82rem;color:#555">${s.k}</span><span style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.95rem;font-weight:700;color:${s.or?'#F07020':s.g?'#1a7a3c':'#333'}">${s.v}</span></div>`;
   document.getElementById('r4_rapport').innerHTML=`
-  <div style="background:#fff;border:2px solid #F07020;border-radius:12px;overflow:hidden;margin-bottom:16px;color:#333">
+  <div class="rpt-wrap" style="background:#fff;border:2px solid #F07020;border-radius:12px;overflow:hidden;margin-bottom:16px;color:#333">
 
     <!-- EN-TÊTE -->
-    <div style="background:#F07020;padding:16px 24px;display:flex;justify-content:space-between;align-items:center">
+    <div class="rpt-header" style="background:#F07020;padding:16px 24px;display:flex;justify-content:space-between;align-items:center">
       <div>
         <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.7);text-transform:uppercase">Projet Photovoltaïque</div>
         <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:1px;line-height:1.1">${nom}</div>
@@ -1538,10 +1548,10 @@ function calcT4(){
       </div>
     </div>
 
-    <div style="padding:20px 24px">
+    <div class="rpt-body" style="padding:20px 24px">
 
       <!-- DEUX COLONNES : Générateur + Production -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:18px">
+      <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:18px">
         <div>
           <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Générateur PV</div>
           ${R({k:'Puissance crête',v:`${fmtD(kwc)} kWc`,or:true})}
@@ -1560,7 +1570,7 @@ function calcT4(){
 
       <!-- PRODUCTION MENSUELLE -->
       <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Production mensuelle — moyenne sur 20 ans (kWh)</div>
-      <div style="overflow-x:auto;margin-bottom:18px">
+      <div class="rpt-prod-table" style="overflow-x:auto;margin-bottom:18px">
         <table style="width:100%;border-collapse:collapse;font-size:.78rem">
           <thead><tr>${MO.map(m=>`<th style="background:#F07020;color:#fff;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;padding:5px 6px;text-align:center">${m}</th>`).join('')}<th style="background:#333;color:#fff;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;padding:5px 8px;text-align:center">Total</th></tr></thead>
           <tbody><tr>${prodMoy20.map(v=>`<td style="text-align:center;padding:5px 4px;border-bottom:1px solid #eee;color:#333;font-weight:600">${fmt(v)}</td>`).join('')}<td style="text-align:center;padding:5px 8px;background:#fff8f0;color:#F07020;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;font-size:.9rem">${fmt(prodMoy20.reduce((a,b)=>a+b,0))}</td></tr></tbody>
@@ -1569,7 +1579,7 @@ function calcT4(){
 
       <!-- DONNÉES ÉCONOMIQUES -->
       <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Données économiques</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:18px">
+      <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:18px">
         ${R({k:'Coût total investissement HT',v:`${fmt(devis)} F.CFP`,or:true})}
         ${R({k:'Prix du kWh payé actuellement (HT)',v:`${fmtD(tarif,2)} F/kWh`})}
         ${R({k:'Économie hypothèse / an',v:`${fmt(Math.round(ecoAn))} F.CFP`,g:true})}
@@ -1581,12 +1591,12 @@ function calcT4(){
       </div>
 
       <!-- INDICATEURS CLÉS -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-        <div style="background:#fff8f0;border:2px solid #F07020;border-radius:10px;padding:16px;text-align:center">
+      <div class="rpt-kpi-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="rpt-kpi-card" style="background:#fff8f0;border:2px solid #F07020;border-radius:10px;padding:16px;text-align:center">
           <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;margin-bottom:4px">Rendement annuel estimé</div>
           <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.2rem;font-weight:700;color:#F07020;line-height:1">${fmtD(rendement)}%</div>
         </div>
-        <div style="background:#f0fff8;border:2px solid #1a7a3c;border-radius:10px;padding:16px;text-align:center">
+        <div class="rpt-kpi-card" style="background:#f0fff8;border:2px solid #1a7a3c;border-radius:10px;padding:16px;text-align:center">
           <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:2px;color:#1a7a3c;text-transform:uppercase;margin-bottom:4px">Retour sur investissement</div>
           <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.2rem;font-weight:700;color:#1a7a3c;line-height:1">${fmtD(rsi)} ans</div>
           <div style="font-size:.72rem;color:#555;margin-top:2px">après amortissement comptable</div>
