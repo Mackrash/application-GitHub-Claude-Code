@@ -211,9 +211,10 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   }
   .ps:last-child{border-bottom:none}
 
-  /* PAGE 2 : Récap + Charts collés ensemble, saut de page APRES charts */
-  .ps-recap{break-before:avoid;break-after:avoid;break-inside:avoid}
-  .ps-charts{break-before:avoid;break-after:page}
+  /* PAGE 2 : Recap + Charts groupés — saut de page APRES le groupe */
+  .ps-page2{break-after:page;break-inside:auto}
+  .ps-page2 .ps-recap{break-before:avoid;break-after:avoid;break-inside:auto}
+  .ps-page2 .ps-charts{break-before:avoid;break-after:avoid}
 
   /* PAGE 3 : ROI + Tableau collés, pas de saut entre eux */
   .ps-roi{break-before:avoid;break-after:avoid;break-inside:avoid}
@@ -299,15 +300,22 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   /* ── RAPPORT ENTREPRISE (onglet 4) ── */
   .recap-grid{display:grid!important;grid-template-columns:1fr 1fr;gap:6pt 20pt}
   /* Rapport JS généré — overrides print */
-  .rpt-wrap{border:1pt solid #F07020!important;border-radius:4px!important;overflow:visible!important;break-inside:auto;margin-bottom:8pt!important}
-  .rpt-header{padding:8pt 12pt!important}
-  .rpt-body{padding:10pt 14pt!important}
-  .rpt-2col{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6pt 14pt!important;margin-bottom:10pt!important}
-  .rpt-kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8pt!important;margin-bottom:8pt!important}
-  .rpt-prod-table{overflow:visible!important;margin-bottom:10pt!important}
-  .rpt-prod-table table{font-size:8pt!important}
-  .rpt-kpi-card{padding:10pt!important;break-inside:avoid}
-  .rpt-kpi-card .rpt-kpi-val{font-size:1.6rem!important}
+  .rpt-wrap{border:1pt solid #F07020!important;border-radius:4px!important;overflow:visible!important;break-inside:auto;margin-bottom:6pt!important}
+  .rpt-header{padding:5pt 10pt!important;font-size:9pt!important}
+  .rpt-body{padding:6pt 10pt!important;font-size:9pt!important}
+  .rpt-2col{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4pt 12pt!important;margin-bottom:7pt!important}
+  .rpt-kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:5pt!important;margin-bottom:6pt!important}
+  .rpt-prod-table{overflow:visible!important;margin-bottom:7pt!important}
+  .rpt-prod-table table{font-size:7.5pt!important}
+  .rpt-kpi-card{padding:7pt!important;break-inside:avoid}
+  .rpt-kpi-card .rpt-kpi-val{font-size:1.4rem!important}
+  /* Textes internes du rapport entreprise */
+  #r4_rapport [style*="font-size:2.2rem"]{font-size:1.5rem!important}
+  #r4_rapport [style*="font-size:1.8rem"]{font-size:1.3rem!important}
+  #r4_rapport [style*="font-size:1.6rem"]{font-size:1.2rem!important}
+  #r4_rapport [style*="padding:16px 24px"]{padding:5pt 10pt!important}
+  #r4_rapport [style*="margin-bottom:18px"]{margin-bottom:7pt!important}
+  #r4_rapport [style*="margin-bottom:12px"]{margin-bottom:5pt!important}
 
   /* ── PAGE DE GARDE ── */
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
@@ -396,6 +404,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   </div>
   <button class="btn-calc" onclick="calcT1()">⚡ CALCULER</button>
   <div class="results" id="r1">
+    <div class="ps-page2">
     <div class="ps ps-recap">
       <div id="recap1"></div>
       <div id="ded1"></div>
@@ -406,6 +415,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
         <div class="col"><div id="g1_donut" style="height:340px"></div></div>
         <div class="col2"><div id="g1_mois" style="height:340px"></div></div>
       </div>
+    </div>
     </div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
@@ -441,6 +451,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   </div>
   <button class="btn-calc" onclick="calcT2()">⚡ CALCULER</button>
   <div class="results" id="r2">
+    <div class="ps-page2">
     <div class="ps ps-recap">
       <div id="recap2"></div>
       <div id="ded2"></div>
@@ -451,6 +462,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
         <div class="col"><div id="g2_donut" style="height:340px"></div></div>
         <div class="col2"><div id="g2_mois" style="height:340px"></div></div>
       </div>
+    </div>
     </div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
@@ -485,6 +497,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   </div>
   <button class="btn-calc" onclick="calcT3()">⚡ CALCULER</button>
   <div class="results" id="r3">
+    <div class="ps-page2">
     <div class="ps ps-recap">
       <div id="recap3"></div>
       <div class="kpi-grid" id="k3_fin" style="margin:12px 0 6px"></div>
@@ -494,6 +507,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
         <div class="col"><div id="g3_donut" style="height:340px"></div></div>
         <div class="col2"><div id="g3_mois" style="height:340px"></div></div>
       </div>
+    </div>
     </div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
@@ -533,6 +547,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   </div>
   <button class="btn-calc" onclick="calcT4()">⚡ CALCULER</button>
   <div class="results" id="r4">
+    <div class="ps-page2">
     <div class="ps ps-recap">
       <div id="r4_rapport"></div>
       <div class="kpi-grid" id="k4_fin" style="margin:12px 0 6px"></div>
@@ -542,6 +557,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
         <div class="col"><div id="g4_donut" style="height:340px"></div></div>
         <div class="col2"><div id="g4_mois_eco" style="height:340px"></div></div>
       </div>
+    </div>
     </div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
@@ -1267,6 +1283,7 @@ function calcT1(){
 
 // ===== CALCUL TAB 2 =====
 function calcT2(){
+  try{
   const s=getS();
   const prodM2=getMGTrow('t2_prod');
   const consoM=getMGTrow('t2_conso');
@@ -1353,6 +1370,13 @@ function calcT2(){
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,eco10:eco10_t2,eco15:eco15_t2};
 
   document.getElementById('r2').style.display='block';
+  }catch(err){
+    const er=document.getElementById('r2');
+    er.innerHTML='<div style="padding:14px;color:#CC2244;background:#fff8f8;border:2px solid #CC2244;border-radius:8px;margin:10px 0;font-family:Space Grotesk,sans-serif"><strong>❌ Erreur Calcul Tab 2 :</strong><br>'+err.message+'<br><small style="color:#888">'+err.stack.split('
+').slice(0,3).join(' | ')+'</small></div>';
+    er.style.display='block';
+    console.error('calcT2',err);
+  }
 }
 
 // ===== CALCUL TAB 3 =====
