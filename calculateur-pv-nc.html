@@ -297,6 +297,8 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   table.at tbody tr:nth-child(n+16){display:none!important}
   table.at thead,table.bc thead{display:table-header-group}
 
+  /* ── RAPPORT ENTREPRISE (onglet 4) — P2=rapport seul, P3=charts, P4=ROI+tableau ── */
+  .t4-recap{break-after:page!important;break-inside:auto}
   /* ── RAPPORT ENTREPRISE (onglet 4) ── */
   .recap-grid{display:grid!important;grid-template-columns:1fr 1fr;gap:6pt 20pt}
   /* Rapport JS généré — overrides print */
@@ -547,11 +549,11 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   </div>
   <button class="btn-calc" onclick="calcT4()">⚡ CALCULER</button>
   <div class="results" id="r4">
-    <div class="ps-page2">
-    <div class="ps ps-recap">
+    <div class="ps ps-recap t4-recap">
       <div id="r4_rapport"></div>
       <div class="kpi-grid" id="k4_fin" style="margin:12px 0 6px"></div>
     </div>
+    <div class="ps-page2">
     <div class="ps ps-charts">
       <div class="row" style="margin-top:14px">
         <div class="col"><div id="g4_donut" style="height:340px"></div></div>
