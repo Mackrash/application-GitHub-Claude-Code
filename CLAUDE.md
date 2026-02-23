@@ -2,6 +2,38 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
 
+## Repo GitHub
+
+Le repo distant est : `https://github.com/Mackrash/application-GitHub-Claude-Code.git`
+Branche locale : `master` → push sur `main` (remote).
+**Toujours pusher après chaque modification** : `git push origin master:main`
+
+GitHub Pages déploie depuis `main` sur :
+`https://mackrash.github.io/application-GitHub-Claude-Code/calculateur-pv-nc.html`
+
+Après un push, forcer le redéploiement si nécessaire :
+`gh api --method POST repos/Mackrash/application-GitHub-Claude-Code/pages/builds`
+Puis attendre 2-3 min et Ctrl+F5.
+
+## État du projet — Février 2026
+
+**Calculateur PV NC — TERMINÉ ✅**
+
+Fichier unique : `calculateur-pv-nc.html`
+Dépendances : Plotly 2.27.0 (CDN)
+
+### Corrections appliquées
+- Fix erreur syntaxe JS critique (saut de ligne littéral dans err.stack.split)
+- Fix mise en page print onglets 3 et 4
+- Onglet 4 (Entreprise) print : P2=rapport, P3=ROI+tableau+graphiques
+- Rapport entreprise tailles augmentées en print
+- GitHub Pages reconfiguré sur branche `main`
+
+### Vérification syntaxe JS (à faire après chaque modif)
+```bash
+node -e "const fs=require('fs');const html=fs.readFileSync('calculateur-pv-nc.html','utf8');const m=html.match(/<script>([\s\S]*?)<\/script>/g);if(m){const js=m.map(s=>s.replace(/<\/?script>/g,'')).join('\n');fs.writeFileSync('_check.js',js);}" && node --check _check.js && echo "SYNTAXE OK"
+```
+
 ## Skill disponible
 
 Tape `/charte` pour charger et appliquer automatiquement la charte graphique Solar Concept.
