@@ -302,22 +302,22 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   /* ── RAPPORT ENTREPRISE (onglet 4) ── */
   .recap-grid{display:grid!important;grid-template-columns:1fr 1fr;gap:6pt 20pt}
   /* Rapport JS généré — overrides print */
-  .rpt-wrap{border:1pt solid #F07020!important;border-radius:4px!important;overflow:visible!important;break-inside:auto;margin-bottom:6pt!important}
-  .rpt-header{padding:5pt 10pt!important;font-size:9pt!important}
-  .rpt-body{padding:6pt 10pt!important;font-size:9pt!important}
-  .rpt-2col{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4pt 12pt!important;margin-bottom:7pt!important}
-  .rpt-kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:5pt!important;margin-bottom:6pt!important}
-  .rpt-prod-table{overflow:visible!important;margin-bottom:7pt!important}
-  .rpt-prod-table table{font-size:7.5pt!important}
-  .rpt-kpi-card{padding:7pt!important;break-inside:avoid}
-  .rpt-kpi-card .rpt-kpi-val{font-size:1.4rem!important}
+  .rpt-wrap{border:1pt solid #F07020!important;border-radius:4px!important;overflow:visible!important;break-inside:auto;margin-bottom:8pt!important}
+  .rpt-header{padding:7pt 12pt!important;font-size:11pt!important}
+  .rpt-body{padding:8pt 12pt!important;font-size:10pt!important}
+  .rpt-2col{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6pt 16pt!important;margin-bottom:9pt!important}
+  .rpt-kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7pt!important;margin-bottom:8pt!important}
+  .rpt-prod-table{overflow:visible!important;margin-bottom:9pt!important}
+  .rpt-prod-table table{font-size:9pt!important}
+  .rpt-kpi-card{padding:9pt!important;break-inside:avoid}
+  .rpt-kpi-card .rpt-kpi-val{font-size:1.7rem!important}
   /* Textes internes du rapport entreprise */
-  #r4_rapport [style*="font-size:2.2rem"]{font-size:1.5rem!important}
-  #r4_rapport [style*="font-size:1.8rem"]{font-size:1.3rem!important}
-  #r4_rapport [style*="font-size:1.6rem"]{font-size:1.2rem!important}
-  #r4_rapport [style*="padding:16px 24px"]{padding:5pt 10pt!important}
-  #r4_rapport [style*="margin-bottom:18px"]{margin-bottom:7pt!important}
-  #r4_rapport [style*="margin-bottom:12px"]{margin-bottom:5pt!important}
+  #r4_rapport [style*="font-size:2.2rem"]{font-size:1.8rem!important}
+  #r4_rapport [style*="font-size:1.8rem"]{font-size:1.5rem!important}
+  #r4_rapport [style*="font-size:1.6rem"]{font-size:1.4rem!important}
+  #r4_rapport [style*="padding:16px 24px"]{padding:7pt 12pt!important}
+  #r4_rapport [style*="margin-bottom:18px"]{margin-bottom:9pt!important}
+  #r4_rapport [style*="margin-bottom:12px"]{margin-bottom:6pt!important}
 
   /* ── PAGE DE GARDE ── */
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
@@ -549,18 +549,13 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   </div>
   <button class="btn-calc" onclick="calcT4()">⚡ CALCULER</button>
   <div class="results" id="r4">
+    <!-- P2 : Rapport entreprise -->
     <div class="ps ps-recap t4-recap">
       <div id="r4_rapport"></div>
       <div class="kpi-grid" id="k4_fin" style="margin:12px 0 6px"></div>
     </div>
+    <!-- P3 : ROI + Tableau amortissement -->
     <div class="ps-page2">
-    <div class="ps ps-charts">
-      <div class="row" style="margin-top:14px">
-        <div class="col"><div id="g4_donut" style="height:340px"></div></div>
-        <div class="col2"><div id="g4_mois_eco" style="height:340px"></div></div>
-      </div>
-    </div>
-    </div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
       <div id="g4_roi" style="height:300px"></div>
@@ -569,6 +564,14 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="ps ps-table">
       <div class="st">Tableau d'amortissement HT</div>
       <div class="tw" id="tb4"></div>
+    </div>
+    </div>
+    <!-- P4 : Graphiques avant/après -->
+    <div class="ps ps-charts">
+      <div class="row" style="margin-top:14px">
+        <div class="col"><div id="g4_donut" style="height:340px"></div></div>
+        <div class="col2"><div id="g4_mois_eco" style="height:340px"></div></div>
+      </div>
     </div>
   </div>
 </div>
