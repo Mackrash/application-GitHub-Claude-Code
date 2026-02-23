@@ -1372,8 +1372,7 @@ function calcT2(){
   document.getElementById('r2').style.display='block';
   }catch(err){
     const er=document.getElementById('r2');
-    er.innerHTML='<div style="padding:14px;color:#CC2244;background:#fff8f8;border:2px solid #CC2244;border-radius:8px;margin:10px 0;font-family:Space Grotesk,sans-serif"><strong>❌ Erreur Calcul Tab 2 :</strong><br>'+err.message+'<br><small style="color:#888">'+err.stack.split('
-').slice(0,3).join(' | ')+'</small></div>';
+    er.innerHTML='<div style="padding:14px;color:#CC2244;background:#fff8f8;border:2px solid #CC2244;border-radius:8px;margin:10px 0;font-family:Space Grotesk,sans-serif"><strong>❌ Erreur Calcul Tab 2 :</strong><br>'+err.message+'<br><small style="color:#888">'+err.stack.split('\n').slice(0,3).join(' | ')+'</small></div>';
     er.style.display='block';
     console.error('calcT2',err);
   }
