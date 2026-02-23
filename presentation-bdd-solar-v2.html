@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture Notion — Solar Concept</title>
+<style>
+:root { --o:#F07020; --d:#333333; --w:#FFFFFF; --bg:#111; --card:#1e1e1e; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); overflow:hidden; height:100vh; width:100vw; }
+
+.slide { display:none; width:100vw; height:100vh; position:absolute; top:0; left:0; }
+.slide.active { display:flex; animation:sIn .35s ease; }
+@keyframes sIn { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
+
+#nav { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; z-index:999; }
+#nav button { background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); color:rgba(255,255,255,.5); padding:8px 22px; border-radius:30px; cursor:pointer; font-size:13px; font-weight:700; transition:all .15s; }
+#nav button:hover { background:var(--o); border-color:var(--o); color:#000; }
+.dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.2); cursor:pointer; transition:all .2s; }
+.dot.on { background:var(--o); box-shadow:0 0 8px var(--o); transform:scale(1.4); border-radius:3px; }
+#snum { position:fixed; bottom:25px; right:28px; font-family:monospace; font-size:12px; color:rgba(255,255,255,.2); z-index:999; }
+
+/* ════ SLIDE 1 — TITRE ════ */
+#s1 { background:var(--d); flex-direction:column; align-items:center; justify-content:center; text-align:center; overflow:hidden; position:relative; }
+/* Rayons CSS */
+#s1::before { content:''; position:absolute; top:50%; left:50%; width:200vmax; height:200vmax;
+  background:conic-gradient(from 0deg,
+    transparent 0deg,rgba(240,112,32,.07) 5deg,transparent 10deg,
+    transparent 22deg,rgba(240,112,32,.05) 27deg,transparent 32deg,
+    transparent 44deg,rgba(240,112,32,.07) 49deg,transparent 54deg,
+    transparent 66deg,rgba(240,112,32,.05) 71deg,transparent 76deg,
+    transparent 88deg,rgba(240,112,32,.07) 93deg,transparent 98deg,
+    transparent 110deg,rgba(240,112,32,.05) 115deg,transparent 120deg,
+    transparent 132deg,rgba(240,112,32,.07) 137deg,transparent 142deg,
+    transparent 154deg,rgba(240,112,32,.05) 159deg,transparent 164deg,
+    transparent 176deg,rgba(240,112,32,.07) 181deg,transparent 186deg,
+    transparent 198deg,rgba(240,112,32,.05) 203deg,transparent 208deg,
+    transparent 220deg,rgba(240,112,32,.07) 225deg,transparent 230deg,
+    transparent 242deg,rgba(240,112,32,.05) 247deg,transparent 252deg,
+    transparent 264deg,rgba(240,112,32,.07) 269deg,transparent 274deg,
+    transparent 286deg,rgba(240,112,32,.05) 291deg,transparent 296deg,
+    transparent 308deg,rgba(240,112,32,.07) 313deg,transparent 318deg,
+    transparent 330deg,rgba(240,112,32,.05) 335deg,transparent 340deg,
+    transparent 352deg,rgba(240,112,32,.07) 357deg,transparent 360deg);
+  transform:translate(-50%,-50%); animation:spinRay 28s linear infinite; pointer-events:none; }
+@keyframes spinRay { to { transform:translate(-50%,-50%) rotate(360deg); } }
+#s1::after { content:''; position:absolute; top:50%; left:50%; width:480px; height:480px; transform:translate(-50%,-50%); background:radial-gradient(circle,rgba(240,112,32,.13) 0%,transparent 60%); animation:breathe 4s ease-in-out infinite; pointer-events:none; }
+@keyframes breathe { 0%,100%{opacity:.7;transform:translate(-50%,-50%) scale(1)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.35)} }
+
+#s1 .inner { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; }
+#s1 .sun-spin { font-size:3.8em; margin-bottom:18px; animation:rotateSun 10s linear infinite; display:inline-block; filter:drop-shadow(0 0 20px rgba(240,112,32,.6)); }
+@keyframes rotateSun { to { transform:rotate(360deg); } }
+#s1 h1 { font-size:5em; font-weight:900; color:#fff; text-transform:uppercase; line-height:.95; letter-spacing:-.02em; max-width:900px; }
+#s1 h1 em { color:var(--o); font-style:normal; }
+#s1 .sub { font-size:1em; color:rgba(255,255,255,.42); font-style:italic; max-width:560px; margin:20px auto 36px; line-height:1.7; }
+#s1 .pills { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+#s1 .pill { border:1.5px solid rgba(240,112,32,.4); color:var(--o); padding:8px 20px; font-size:.85em; font-weight:700; text-transform:uppercase; letter-spacing:.5px; transition:all .2s; }
+#s1 .pill:hover { background:var(--o); color:#000; }
+
+/* ════ SLIDE 2 — VUE D'ENSEMBLE ════ */
+#s2 { background:var(--d); flex-direction:column; padding:44px 60px 70px; }
+#s2 .s2h { font-size:2.6em; font-weight:900; color:#fff; text-transform:uppercase; margin-bottom:6px; }
+#s2 .s2h em { color:var(--o); font-style:normal; }
+#s2 .s2sub { font-size:.88em; color:rgba(255,255,255,.38); font-style:italic; margin-bottom:24px; }
+.gal { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; flex:1; }
+.gc { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); border-top:4px solid var(--o); border-radius:10px; padding:20px 16px; display:flex; flex-direction:column; gap:7px; transition:all .25s; cursor:default; }
+.gc:hover { background:rgba(240,112,32,.09); transform:translateY(-5px); box-shadow:0 14px 32px rgba(0,0,0,.3); }
+.gc.star { background:rgba(240,112,32,.1); border-color:rgba(240,112,32,.3); }
+.gc .gi { font-size:2.7em; }
+.gc .gn { font-size:3.5em; font-weight:900; color:var(--o); line-height:1; }
+.gc.star .gn { color:#fff; }
+.gc .gl { font-weight:800; color:#fff; font-size:.88em; text-transform:uppercase; letter-spacing:.4px; }
+.gc.star .gl { color:var(--o); }
+.gc .gd { color:rgba(255,255,255,.35); font-size:.74em; line-height:1.7; margin-top:3px; }
+.s2foot { margin-top:16px; padding:13px 20px; background:rgba(240,112,32,.1); border-left:4px solid var(--o); font-size:.86em; color:rgba(255,255,255,.55); font-style:italic; }
+.s2foot strong { color:var(--o); font-style:normal; }
+
+/* ════ SLIDE 3 — CRM ════ */
+#s3 { background:#fff; flex-direction:column; padding:44px 60px 70px; }
+#s3 .s3h { font-size:2.4em; font-weight:900; color:var(--d); text-transform:uppercase; }
+#s3 .s3h em { color:var(--o); font-style:normal; }
+#s3 .s3sub { font-size:.88em; color:#888; font-style:italic; margin-bottom:20px; margin-top:4px; }
+.cg { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; flex:1; }
+.cc { background:#f7f7f7; border-left:5px solid var(--o); border-radius:8px; padding:16px 18px; display:flex; flex-direction:column; gap:6px; transition:all .2s; }
+.cc:hover { background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.1); border-left-width:7px; }
+.cc .cn { font-weight:900; color:var(--d); font-size:.97em; }
+.cc .cd { font-size:.8em; color:#666; line-height:1.55; }
+.cc .ct { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+.ck { background:rgba(240,112,32,.1); color:var(--o); font-size:.7em; padding:2px 7px; border-radius:3px; font-weight:700; }
+.ck.o { background:rgba(51,51,51,.08); color:#666; }
+#s3 .s3foot { margin-top:14px; padding:11px 18px; background:rgba(240,112,32,.08); border-left:4px solid var(--o); font-size:.85em; color:#555; }
+#s3 .s3foot strong { color:var(--o); }
+
+/* ════ SLIDE 4 — SYSTÈME SOLAIRE ════ */
+#s4 { background:#07090d; flex-direction:column; padding:40px 60px 60px; overflow:hidden; position:relative; }
+/* Champ d'étoiles */
+#s4::before { content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(1px 1px at 8% 15%,rgba(255,255,255,.55) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 92% 8%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 25% 72%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 67% 88%,rgba(255,255,255,.45) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 5%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 78% 55%,rgba(255,255,255,.35) 0%,transparent 100%),
+    radial-gradient(1px 1px at 12% 48%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 55% 38%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 88% 78%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 33% 92%,rgba(255,255,255,.38) 0%,transparent 100%),
+    radial-gradient(1px 1px at 72% 22%,rgba(255,255,255,.42) 0%,transparent 100%),
+    radial-gradient(1px 1px at 5% 85%,rgba(255,255,255,.35) 0%,transparent 100%); }
+
+#s4 .s4h { font-size:1.9em; font-weight:900; color:#fff; text-transform:uppercase; position:relative; z-index:1; }
+#s4 .s4h em { color:var(--o); font-style:normal; }
+#s4 .s4sub { font-size:.84em; color:rgba(255,255,255,.35); font-style:italic; margin-top:5px; margin-bottom:0; position:relative; z-index:1; }
+
+/* Système solaire */
+.sys { flex:1; position:relative; }
+
+/* Anneaux d'orbite */
+.ring { position:absolute; left:50%; top:50%; border-radius:50%; border:1px dashed rgba(240,112,32,.18); pointer-events:none; }
+.ring.r1 { width:264px; height:264px; transform:translate(-50%,-50%); }
+.ring.r2 { width:430px; height:430px; transform:translate(-50%,-50%); }
+.ring.r3 { width:606px; height:606px; transform:translate(-50%,-50%); }
+
+/* Le Soleil */
+.sol { position:absolute; left:50%; top:50%; width:145px; height:145px; transform:translate(-50%,-50%); border-radius:50%;
+  background:radial-gradient(circle at 38% 38%,#FFD166,var(--o) 55%,#c03000);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; animation:solPulse 3s ease-in-out infinite; }
+@keyframes solPulse { 0%,100%{box-shadow:0 0 30px 8px rgba(240,112,32,.5),0 0 70px 20px rgba(240,112,32,.2)} 50%{box-shadow:0 0 55px 18px rgba(240,112,32,.7),0 0 120px 40px rgba(240,112,32,.3)} }
+.sol .si { font-size:2.6em; }
+.sol .sl { font-size:.56em; font-weight:900; color:#000; text-transform:uppercase; letter-spacing:.5px; text-align:center; line-height:1.2; margin-top:2px; }
+
+/* Planètes en orbite */
+.pla { position:absolute; left:50%; top:50%; z-index:5; }
+@keyframes orb {
+  from { transform:translate(-50%,-50%) rotate(0deg) translateX(var(--r)) rotate(0deg); }
+  to   { transform:translate(-50%,-50%) rotate(360deg) translateX(var(--r)) rotate(-360deg); }
+}
+.pi { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:default; }
+.pd { width:52px; height:52px; border-radius:50%; background:#111; border:2px solid var(--o); display:flex; align-items:center; justify-content:center; font-size:1.4em; transition:all .2s; box-shadow:0 0 8px rgba(240,112,32,.25); }
+.pla:hover .pd { border-color:#fff; box-shadow:0 0 18px rgba(240,112,32,.6); transform:scale(1.15); }
+.pn { font-size:.75em; font-weight:800; color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:.3px; white-space:nowrap; }
+.ps { font-size:.65em; color:rgba(255,255,255,.3); white-space:nowrap; }
+
+/* Légende */
+.s4leg { position:absolute; bottom:0; right:0; display:flex; flex-direction:column; gap:6px; z-index:20; }
+.s4li { display:flex; align-items:center; gap:8px; font-size:.7em; color:rgba(255,255,255,.35); }
+.s4li .ld { width:10px; height:10px; border-radius:50%; background:#111; border:2px solid var(--o); flex-shrink:0; }
+
+/* Tooltip au survol */
+.pla .tip { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:rgba(0,0,0,.85); border:1px solid rgba(240,112,32,.4); border-radius:6px; padding:7px 12px; font-size:.68em; color:rgba(255,255,255,.8); white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .2s; z-index:20; }
+.pla:hover .tip { opacity:1; }
+
+/* ════ SLIDE 5 — OPÉRATIONS ════ */
+#s5 { background:var(--d); flex-direction:column; padding:44px 60px 70px; }
+#s5 .s5h { font-size:2.4em; font-weight:900; color:#fff; text-transform:uppercase; }
+#s5 .s5h em { color:var(--o); font-style:normal; }
+#s5 .s5sub { font-size:.88em; color:rgba(255,255,255,.38); font-style:italic; margin-bottom:20px; margin-top:4px; }
+.og { display:grid; grid-template-columns:1fr 1fr; gap:12px; flex:1; }
+.og .oc.wide { grid-column:1/-1; }
+.oc { background:rgba(255,255,255,.05); border-left:5px solid var(--o); border-radius:8px; padding:16px 18px; display:flex; flex-direction:column; gap:6px; transition:all .2s; }
+.oc:hover { background:rgba(255,255,255,.09); border-left-width:7px; }
+.oc .cn { font-weight:900; color:#fff; font-size:.97em; }
+.oc .cd { font-size:.8em; color:rgba(255,255,255,.45); line-height:1.55; }
+.oc .ct { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+.ok2 { background:rgba(240,112,32,.1); color:var(--o); font-size:.7em; padding:2px 7px; border-radius:3px; font-weight:700; }
+.ok2.b { background:rgba(255,255,255,.07); color:rgba(255,255,255,.5); }
+.s5foot { margin-top:14px; padding:11px 18px; background:rgba(240,112,32,.08); border-left:4px solid var(--o); font-size:.85em; color:rgba(255,255,255,.55); }
+.s5foot strong { color:var(--o); }
+
+/* ════ SLIDE 6 — SAV ════ */
+#s6 { background:#fff; flex-direction:column; padding:44px 60px 70px; }
+#s6 .s6h { font-size:2.4em; font-weight:900; color:var(--d); text-transform:uppercase; }
+#s6 .s6h em { color:var(--o); font-style:normal; }
+#s6 .s6sub { font-size:.88em; color:#888; font-style:italic; margin-bottom:20px; margin-top:4px; }
+.sg { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; flex:1; }
+.sc { background:#f7f7f7; border-top:5px solid var(--o); border-radius:10px; padding:22px; display:flex; flex-direction:column; gap:9px; transition:all .2s; }
+.sc:hover { transform:translateY(-5px); box-shadow:0 14px 36px rgba(0,0,0,.1); }
+.sc .sct { font-weight:900; color:var(--d); font-size:1.03em; }
+.sc .scd { font-size:.8em; color:#666; line-height:1.6; flex:1; }
+.sc .scch { display:flex; flex-wrap:wrap; gap:4px; }
+.sch { background:rgba(240,112,32,.1); color:var(--o); font-size:.7em; padding:2px 7px; border-radius:3px; font-weight:700; }
+.sch.i { background:rgba(51,51,51,.08); color:#666; }
+.sc .scn { background:rgba(240,112,32,.08); border-left:3px solid var(--o); padding:8px 12px; font-size:.78em; color:#555; font-weight:600; margin-top:3px; }
+.s6chain { margin-top:14px; font-size:.8em; color:#aaa; font-style:italic; font-family:monospace; padding:10px 18px; border:1px dashed rgba(240,112,32,.3); border-radius:6px; }
+.s6chain span { color:var(--o); font-weight:700; font-style:normal; }
+
+/* ════ SLIDE 7 — PIPELINE ════ */
+#s7 { background:var(--d); flex-direction:column; padding:44px 60px 70px; }
+#s7 .s7h { font-size:2.4em; font-weight:900; color:#fff; text-transform:uppercase; }
+#s7 .s7h em { color:var(--o); font-style:normal; }
+#s7 .s7sub { font-size:.88em; color:rgba(255,255,255,.38); font-style:italic; margin-bottom:20px; margin-top:4px; }
+.pw { flex:1; display:flex; align-items:center; position:relative; }
+.pw::before { content:''; position:absolute; left:0; right:0; top:50%; height:2px; background:linear-gradient(90deg,transparent,rgba(240,112,32,.3) 8%,rgba(240,112,32,.3) 92%,transparent); }
+.ps { flex:1; text-align:center; position:relative; padding:0 4px; }
+.pd2 { width:64px; height:64px; border-radius:50%; background:rgba(240,112,32,.07); border:2px solid rgba(240,112,32,.3); margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:1.3em; font-weight:900; color:rgba(255,255,255,.4); position:relative; z-index:1; transition:all .2s; }
+.ps:hover .pd2 { border-color:var(--o); color:var(--o); }
+.ps.hl .pd2 { width:92px; height:92px; background:var(--o); border-color:var(--o); color:#000; font-size:1.9em; animation:hlGlow 2.5s ease-in-out infinite; margin-bottom:8px; }
+@keyframes hlGlow { 0%,100%{box-shadow:0 0 0 0 rgba(240,112,32,.5)} 50%{box-shadow:0 0 0 14px rgba(240,112,32,0)} }
+.pn2 { font-size:.92em; font-weight:900; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.4px; }
+.ps.hl .pn2 { color:#fff; font-size:1.05em; }
+.psub { font-size:.82em; color:rgba(255,255,255,.28); margin-top:5px; line-height:1.5; }
+.ps.hl .psub { color:rgba(255,255,255,.55); }
+.pa { flex-shrink:0; color:var(--o); font-size:1.6em; padding:0 2px; animation:arrFlow 1.3s ease-in-out infinite; }
+.pa:nth-of-type(2)  { animation-delay:0s; }
+.pa:nth-of-type(4)  { animation-delay:.22s; }
+.pa:nth-of-type(6)  { animation-delay:.44s; }
+.pa:nth-of-type(8)  { animation-delay:.66s; }
+.pa:nth-of-type(10) { animation-delay:.88s; }
+@keyframes arrFlow { 0%,100%{opacity:.2;transform:translateX(0)} 50%{opacity:.8;transform:translateX(4px)} }
+.pfacts { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:22px; }
+.pf { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); border-radius:8px; padding:11px 16px; font-size:.79em; color:rgba(255,255,255,.42); transition:all .2s; }
+.pf:hover { border-color:rgba(240,112,32,.3); color:rgba(255,255,255,.6); }
+.pf strong { color:var(--o); display:block; margin-bottom:2px; }
+
+/* ════ SLIDE 8 — FORCES ════ */
+#s8 { flex-direction:row; overflow:hidden; }
+.s8h { flex:1; padding:50px 48px 70px; display:flex; flex-direction:column; }
+.s8h.ok { background:#fff; }
+.s8h.ax { background:var(--d); }
+.s8h h2 { font-size:1.35em; font-weight:900; text-transform:uppercase; padding:8px 16px; display:inline-block; margin-bottom:22px; }
+.s8h.ok h2 { background:var(--o); color:#fff; }
+.s8h.ax h2 { background:rgba(240,112,32,.12); color:var(--o); border:1.5px solid rgba(240,112,32,.3); }
+.s8div { width:4px; background:var(--o); flex-shrink:0; box-shadow:0 0 20px rgba(240,112,32,.4); }
+.si2 { display:flex; gap:11px; align-items:flex-start; font-size:.87em; line-height:1.55; padding:8px 10px; border-radius:6px; margin-bottom:3px; transition:background .15s; }
+.s8h.ok .si2 { color:#444; }
+.s8h.ok .si2:hover { background:#f5f5f5; }
+.s8h.ax .si2 { color:rgba(255,255,255,.62); }
+.s8h.ax .si2:hover { background:rgba(255,255,255,.04); }
+.sico { width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.78em; font-weight:900; margin-top:1px; }
+.ok .sico { background:rgba(240,112,32,.14); color:var(--o); }
+.ax .sico { background:rgba(240,112,32,.1); color:var(--o); }
+.si2 strong { font-weight:800; }
+.ok .si2 strong { color:var(--d); }
+.ax .si2 strong { color:#fff; }
+
+/* ════ SLIDE 9 — CONCLUSION ════ */
+#s9 { background:var(--d); flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px; position:relative; overflow:hidden; }
+#s9 canvas { position:absolute; inset:0; pointer-events:none; }
+#s9 > *:not(canvas) { position:relative; z-index:1; }
+#s9 .s9tag { background:var(--o); color:#000; font-size:.8em; font-weight:900; padding:4px 18px; text-transform:uppercase; letter-spacing:2px; margin-bottom:24px; display:inline-block; }
+#s9 .s9sun { font-size:3.5em; margin-bottom:10px; animation:rotateSun 8s linear infinite; display:inline-block; filter:drop-shadow(0 0 20px rgba(240,112,32,.6)); }
+#s9 .s9big { font-size:5em; font-weight:900; color:#fff; text-transform:uppercase; line-height:.95; letter-spacing:-.02em; }
+#s9 .s9big em { color:var(--o); font-style:normal; text-shadow:0 0 50px rgba(240,112,32,.5); }
+#s9 .s9stats { display:flex; gap:56px; margin-top:40px; margin-bottom:36px; }
+#s9 .ss { text-align:center; }
+#s9 .ssn { font-size:2.7em; font-weight:900; color:var(--o); text-shadow:0 0 30px rgba(240,112,32,.4); }
+#s9 .ssl { font-size:.75em; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,.3); margin-top:4px; }
+#s9 .slogan { font-size:.95em; font-style:italic; color:rgba(255,255,255,.5); letter-spacing:.5px; border-top:1px solid rgba(240,112,32,.3); padding-top:20px; }
+#s9 .slogan strong { color:var(--o); font-style:normal; }
+</style>
+</head>
+<body>
+
+<!-- ══ S1 — TITRE ══ -->
+<div class="slide active" id="s1">
+  <div class="inner">
+    <div class="sun-spin">☀️</div>
+    <h1>L'<em>architecture</em> Notion<br>de Solar Concept</h1>
+    <p class="sub">Bienvenue dans la galaxie. 20 bases de données qui cohabitent pacifiquement.<br>(La plupart du temps.)</p>
+    <div class="pills">
+      <div class="pill">20 bases de données</div>
+      <div class="pill">5 pôles métier</div>
+      <div class="pill">1 hub central : Affaires</div>
+      <div class="pill">Pipeline Lead → SAV</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S2 — VUE D'ENSEMBLE ══ -->
+<div class="slide" id="s2">
+  <p class="s2h">20 BDD. 5 Pôles. <em>Voilà le plan.</em></p>
+  <p class="s2sub">Ou comment on a organisé le chaos en 5 zones qui se parlent. Oui, c'est beaucoup. Non, c'est pas du hasard.</p>
+  <div class="gal">
+    <div class="gc">
+      <div class="gi">📇</div>
+      <div class="gn">7</div>
+      <div class="gl">CRM &amp; Commercial</div>
+      <div class="gd">CRM · Particuliers · Sociétés · Institutions · RDV · Tâches · Appels d'Offres</div>
+    </div>
+    <div class="gc star">
+      <div class="gi">☀️</div>
+      <div class="gn">★</div>
+      <div class="gl">Vente &amp; Affaires</div>
+      <div class="gd">Affaires Commerciales · Études · Visites Techniques — Le centre de tout</div>
+    </div>
+    <div class="gc">
+      <div class="gi">⚙️</div>
+      <div class="gn">5</div>
+      <div class="gl">Opérations</div>
+      <div class="gd">Installations · Admin NC · Planning · Commandes · Produits</div>
+    </div>
+    <div class="gc">
+      <div class="gi">🔧</div>
+      <div class="gn">3</div>
+      <div class="gl">Après-Vente</div>
+      <div class="gd">Interventions SAV · Contrats d'entretien · Rapports mensuels</div>
+    </div>
+    <div class="gc">
+      <div class="gi">🏢</div>
+      <div class="gn">2</div>
+      <div class="gl">RH &amp; Finance</div>
+      <div class="gd">Annuaire employés · Journal des paiements</div>
+    </div>
+  </div>
+  <div class="s2foot"><strong>Spoiler :</strong> tout tourne autour d'Affaires Commerciales. Comme les planètes autour du soleil. Slide suivante pour voir pourquoi.</div>
+</div>
+
+<!-- ══ S3 — CRM ══ -->
+<div class="slide" id="s3">
+  <p class="s3h">📇 CRM &amp; Commercial — <em>votre filet à clients</em></p>
+  <p class="s3sub">6 bases pour ne laisser filer aucun prospect. De la première poignée de main à l'Affaire signée.</p>
+  <div class="cg">
+    <div class="cc">
+      <div class="cn">📇 CRM</div>
+      <div class="cd">Carnet d'adresses global — prospects, clients, partenaires. Le noyau. Rien n'entre dans le système sans passer par là.</div>
+      <div class="ct"><span class="ck">Nom</span><span class="ck">Type</span><span class="ck">Statut</span><span class="ck">Commercial</span></div>
+    </div>
+    <div class="cc">
+      <div class="cn">👤 Particuliers</div>
+      <div class="cd">Fiche client complète : abonnement EEC, compteur, projets, historique. Le dossier permanent du client solaire.</div>
+      <div class="ct"><span class="ck">N° abonné</span><span class="ck">Parrain</span><span class="ck o">→ Affaires</span></div>
+    </div>
+    <div class="cc">
+      <div class="cn">🏢 Sociétés &amp; Institutions</div>
+      <div class="cd">B2B et institutionnel NC — entreprises, collectivités, RIDET. Marchés publics et privés.</div>
+      <div class="ct"><span class="ck">RIDET</span><span class="ck">Secteur</span><span class="ck o">→ Appels d'Offres</span></div>
+    </div>
+    <div class="cc">
+      <div class="cn">📅 Rendez-Vous</div>
+      <div class="cd">Agenda commercial — visites, démarchage, présentations. Un RDV qualifié = une Affaire qui s'ouvre.</div>
+      <div class="ct"><span class="ck">Date</span><span class="ck">Commercial</span><span class="ck o">→ Affaires</span></div>
+    </div>
+    <div class="cc">
+      <div class="cn">✅ Tâches Commerciales</div>
+      <div class="cd">Relances, devis à envoyer, rappels. Assignable avec deadline. Rien ne tombe dans le vide.</div>
+      <div class="ct"><span class="ck">Priorité</span><span class="ck">Assigné à</span><span class="ck o">→ Affaires</span></div>
+    </div>
+    <div class="cc">
+      <div class="cn">📑 Appels d'Offres</div>
+      <div class="cd">AO publics et privés NC — délais, dossiers, résultats. Un AO gagné crée directement une Affaire.</div>
+      <div class="ct"><span class="ck">Référence</span><span class="ck">Montant</span><span class="ck">Deadline</span></div>
+    </div>
+  </div>
+  <div class="s3foot"><strong>Tous ces contacts convergent vers un seul endroit :</strong> la base Affaires Commerciales. C'est l'étoile de la galaxie. La preuve en slide 4.</div>
+</div>
+
+<!-- ══ S4 — SYSTÈME SOLAIRE ══ -->
+<div class="slide" id="s4">
+  <p class="s4h">☀️ <em>Affaires Commerciales</em> — L'étoile autour de laquelle tout tourne</p>
+  <p class="s4sub">Pas une métaphore. Regardez vraiment.</p>
+  <div class="sys">
+    <!-- Anneaux d'orbite -->
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+
+    <!-- Le Soleil -->
+    <div class="sol">
+      <div class="si">🗃️</div>
+      <div class="sl">Affaires<br>Commerciales</div>
+    </div>
+
+    <!-- Orbite interne r=130px -->
+    <div class="pla" style="--r:130px; animation:orb 6s 0s linear infinite;">
+      <div class="pi">
+        <div class="pd">📇</div>
+        <div class="pn">CRM</div>
+        <div class="ps">Contacts</div>
+      </div>
+      <div class="tip">Source des prospects et clients</div>
+    </div>
+    <div class="pla" style="--r:130px; animation:orb 6s -3s linear infinite;">
+      <div class="pi">
+        <div class="pd">📅</div>
+        <div class="pn">Rendez-Vous</div>
+        <div class="ps">Agenda</div>
+      </div>
+      <div class="tip">RDV qualifié → Affaire ouverte</div>
+    </div>
+
+    <!-- Orbite moyenne r=210px -->
+    <div class="pla" style="--r:210px; animation:orb 10s 0s linear infinite;">
+      <div class="pi">
+        <div class="pd">👤</div>
+        <div class="pn">Particuliers</div>
+        <div class="ps">Clients</div>
+      </div>
+      <div class="tip">Fiche client complète</div>
+    </div>
+    <div class="pla" style="--r:210px; animation:orb 10s -5s linear infinite;">
+      <div class="pi">
+        <div class="pd">📐</div>
+        <div class="pn">Études</div>
+        <div class="ps">Technique</div>
+      </div>
+      <div class="tip">Dimensionnement PV + ROI</div>
+    </div>
+
+    <!-- Orbite externe r=290px -->
+    <div class="pla" style="--r:290px; animation:orb 15s 0s linear infinite;">
+      <div class="pi">
+        <div class="pd">🏗️</div>
+        <div class="pn">Installations</div>
+        <div class="ps">Chantier</div>
+      </div>
+      <div class="tip">Pose + suivi chantier</div>
+    </div>
+    <div class="pla" style="--r:290px; animation:orb 15s -5s linear infinite;">
+      <div class="pi">
+        <div class="pd">🪛</div>
+        <div class="pn">SAV</div>
+        <div class="ps">Après-vente</div>
+      </div>
+      <div class="tip">Interventions + Contrats + Rapports</div>
+    </div>
+    <div class="pla" style="--r:290px; animation:orb 15s -10s linear infinite;">
+      <div class="pi">
+        <div class="pd">📦</div>
+        <div class="pn">Commandes</div>
+        <div class="ps">Matériel</div>
+      </div>
+      <div class="tip">Panneaux · Onduleurs · Batteries</div>
+    </div>
+
+    <!-- Légende -->
+    <div class="s4leg">
+      <div class="s4li"><div class="ld"></div>BDD connectée à Affaires</div>
+      <div class="s4li"><span style="display:inline-block;width:20px;height:1px;border-top:1px dashed rgba(240,112,32,.4)"></span>Orbite de relation</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S5 — OPÉRATIONS ══ -->
+<div class="slide" id="s5">
+  <p class="s5h">⚙️ Opérations — <em>La salle des machines</em></p>
+  <p class="s5sub">Là où les devis deviennent des panneaux sur des toits. L'atelier du système.</p>
+  <div class="og">
+    <div class="oc">
+      <div class="cn">🏗️ Suivi des Installations</div>
+      <div class="cd">Chantier en temps réel — étapes, photos, techniciens affectés, kWc installé. Statuts à jour, rien ne se perd entre la signature et la mise en service.</div>
+      <div class="ct"><span class="ok2">Date pose</span><span class="ok2">Techniciens</span><span class="ok2">kWc</span><span class="ok2 b">← Affaire</span></div>
+    </div>
+    <div class="oc">
+      <div class="cn">📋 Suivi Administratif</div>
+      <div class="cd">DIMENC · EEC/ENERCAL · COTSUEL · VERITAS. Les délais réglementaires NC trackés nativement. Parce que la paperasse ne pardonne pas les retards.</div>
+      <div class="ct"><span class="ok2">DIMENC</span><span class="ok2">EEC</span><span class="ok2">COTSUEL</span><span class="ok2 b">← Affaire</span></div>
+    </div>
+    <div class="oc">
+      <div class="cn">📅 Planning Techniciens</div>
+      <div class="cd">Dispatch des chantiers et SAV. Vue calendrier + Kanban par technicien. Qui, où, quand — sans réunion de 2h pour le savoir.</div>
+      <div class="ct"><span class="ok2">Technicien</span><span class="ok2">Zone NC</span><span class="ok2 b">→ Installs</span><span class="ok2 b">→ SAV</span></div>
+    </div>
+    <div class="oc wide">
+      <div class="cn">📦 Commandes + 🔋 Produits</div>
+      <div class="cd">Panneaux, onduleurs Enphase, batteries OMEGA — commandes liées au catalogue Produits et à l'Affaire. Suivi ETA, réception, stock. Chaque commande est traçable du bon de commande au chantier.</div>
+      <div class="ct"><span class="ok2">Référence</span><span class="ok2">Prix HT</span><span class="ok2">ETA livraison</span><span class="ok2">Stock</span><span class="ok2 b">← Affaire</span><span class="ok2 b">Commandes ↔ Produits</span></div>
+    </div>
+  </div>
+  <div class="s5foot"><strong>Spécificité NC :</strong> DIMENC, EEC, COTSUEL — des obligations réglementaires uniques. Trackées depuis l'Affaire, jamais oubliées.</div>
+</div>
+
+<!-- ══ S6 — SAV ══ -->
+<div class="slide" id="s6">
+  <p class="s6h">🔧 Après-Vente — <em>Parce que le client revient toujours</em></p>
+  <p class="s6sub">Même les panneaux parfaits ont leurs nuages. C'est là qu'on transforme un incident en fidélité.</p>
+  <div class="sg">
+    <div class="sc">
+      <div class="sct">🪛 Interventions SAV</div>
+      <div class="scd">Base centrale des dépannages. Chaque ticket : client, problème, photos, technicien, historique. Depuis un appel, un mail, ou un formulaire — tout est tracé.</div>
+      <div class="scch"><span class="sch">Statut ticket</span><span class="sch">Urgence</span><span class="sch">Photos</span><span class="sch i">← Particuliers</span><span class="sch i">→ Planning</span></div>
+      <div class="scn">⚡ Déclencheur : appel client, mail ou formulaire</div>
+    </div>
+    <div class="sc">
+      <div class="sct">📄 Contrats d'Entretien</div>
+      <div class="scd">Maintenance annuelle — renouvellements, alertes d'échéance, visites périodiques. La BDD qui dort et qui contient un vrai potentiel de revenu récurrent.</div>
+      <div class="scch"><span class="sch">Date début/fin</span><span class="sch">Tarif</span><span class="sch">Fréquence</span><span class="sch i">← Particuliers</span></div>
+      <div class="scn">💰 MRR potentiel — base présente, à activer sérieusement</div>
+    </div>
+    <div class="sc">
+      <div class="sct">📊 Rapports Mensuels</div>
+      <div class="scd">Bilans périodiques : production mesurée, anomalies, actions. Transmis au client comme preuve de valeur. Ce qui transforme un service en relation durable.</div>
+      <div class="scch"><span class="sch">Période</span><span class="sch">kWh produits</span><span class="sch i">← Contrats</span><span class="sch i">← Installs</span></div>
+      <div class="scn">📈 Tableau de bord satisfaction client</div>
+    </div>
+  </div>
+  <div class="s6chain">
+    // Chaîne SAV : <span>Particuliers</span> → <span>Contrat</span> → <span>Planning</span> → <span>SAV</span> → <span>Rapport mensuel</span> → <span>Renouvellement</span>
+  </div>
+</div>
+
+<!-- ══ S7 — PIPELINE ══ -->
+<div class="slide" id="s7">
+  <p class="s7h">🚀 Pipeline — <em>Du premier bonjour à la prochaine facture</em></p>
+  <p class="s7sub">6 étapes. 1 hub au centre. Pas une seule information qui se perd en route.</p>
+  <div class="pw">
+    <div class="ps">
+      <div class="pd2">1</div>
+      <div class="pn2">Acquisition</div>
+      <div class="psub">CRM · Particuliers<br>Sociétés · AO</div>
+    </div>
+    <div class="pa">›</div>
+    <div class="ps">
+      <div class="pd2">2</div>
+      <div class="pn2">Qualification</div>
+      <div class="psub">RDV · Tâches<br>Étude · Simulation</div>
+    </div>
+    <div class="pa">›</div>
+    <div class="ps hl">
+      <div class="pd2">★</div>
+      <div class="pn2">Affaire</div>
+      <div class="psub">🗃️ HUB CENTRAL<br>VT · Devis · Contrat</div>
+    </div>
+    <div class="pa">›</div>
+    <div class="ps">
+      <div class="pd2">4</div>
+      <div class="pn2">Commande</div>
+      <div class="psub">Matériel<br>Produits</div>
+    </div>
+    <div class="pa">›</div>
+    <div class="ps">
+      <div class="pd2">5</div>
+      <div class="pn2">Chantier</div>
+      <div class="psub">Installations<br>Planning · Admin NC</div>
+    </div>
+    <div class="pa">›</div>
+    <div class="ps">
+      <div class="pd2">6</div>
+      <div class="pn2">Fidélisation</div>
+      <div class="psub">SAV · Contrats<br>Rapports mensuels</div>
+    </div>
+  </div>
+  <div class="pfacts">
+    <div class="pf"><strong>🗃️ Hub unique</strong>Affaires relie TOUTES les BDD. Chaque étape y est connectée — avant, pendant et après.</div>
+    <div class="pf"><strong>🏛️ Spécificité NC</strong>DIMENC · EEC · COTSUEL intégrés dans le flux. Obligatoire, tracé, jamais oublié.</div>
+    <div class="pf"><strong>💰 Revenu récurrent</strong>Contrats d'entretien = MRR post-installation. La base existe. Il faut l'activer.</div>
+  </div>
+</div>
+
+<!-- ══ S8 — FORCES ══ -->
+<div class="slide" id="s8">
+  <div class="s8h ok">
+    <h2>☀️ Ce qui brille</h2>
+    <div class="si2"><div class="sico ok">✓</div><span><strong>Pipeline complet</strong> — Du lead au SAV, toutes les étapes sont tracées. Rien ne vit dans un fichier Excel solitaire.</span></div>
+    <div class="si2"><div class="sico ok">✓</div><span><strong>Hub central fort</strong> — Affaires Commerciales relie tout. Une seule source de vérité pour toute l'équipe.</span></div>
+    <div class="si2"><div class="sico ok">✓</div><span><strong>Spécificité NC intégrée</strong> — DIMENC, EEC, COTSUEL trackés nativement dans le flux réglementaire.</span></div>
+    <div class="si2"><div class="sico ok">✓</div><span><strong>Multi-pôles unifiés</strong> — Commercial, Technique, Admin, SAV dans un seul espace partagé. Fini le "t'as pas vu le fichier ?".</span></div>
+    <div class="si2"><div class="sico ok">✓</div><span><strong>IA en déploiement</strong> — Bot fournisseurs, agent email, calculateur PV, projet NEXIA. La galaxie s'agrandit.</span></div>
+  </div>
+  <div class="s8div"></div>
+  <div class="s8h ax">
+    <h2>🌑 Ce qui attend son heure</h2>
+    <div class="si2"><div class="sico ax">!</div><span><strong>Doublons CRM / Particuliers</strong> — Chevauchement à clarifier. Pour l'instant ça marche, mais c'est pas propre.</span></div>
+    <div class="si2"><div class="sico ax">!</div><span><strong>Journal des paiements</strong> — Toujours en "Test". À formaliser ou migrer vers Zoho Books. Ça fait longtemps.</span></div>
+    <div class="si2"><div class="sico ax">!</div><span><strong>Stock OMEGA</strong> — Encore dans Google Sheets. Intégration Notion à étudier avant que ça devienne un problème.</span></div>
+    <div class="si2"><div class="sico ax">!</div><span><strong>Contrats d'entretien</strong> — La base existe, le MRR attend. À activer sérieusement — c'est de l'argent qui dort.</span></div>
+    <div class="si2"><div class="sico ax">!</div><span><strong>Automatisations</strong> — Les relations entre BDD sont prêtes. Les bots n8n/IA arrivent. Patience, ça vient.</span></div>
+  </div>
+</div>
+
+<!-- ══ S9 — CONCLUSION ══ -->
+<div class="slide" id="s9">
+  <canvas id="cv"></canvas>
+  <div class="s9tag">Solar Concept — Notion Architecture 2026</div>
+  <div class="s9sun">☀️</div>
+  <div class="s9big">20 <em>BDD</em><br>1 vision</div>
+  <div class="s9stats">
+    <div class="ss"><div class="ssn" id="n0">20</div><div class="ssl">Bases</div></div>
+    <div class="ss"><div class="ssn" id="n1">5</div><div class="ssl">Pôles</div></div>
+    <div class="ss"><div class="ssn" id="n2">1</div><div class="ssl">Hub</div></div>
+    <div class="ss"><div class="ssn" id="n3">6</div><div class="ssl">Étapes</div></div>
+  </div>
+  <div class="slogan"><strong>"Votre meilleure source d'énergie"</strong> — même dans Notion.</div>
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <button onclick="prev()">←</button>
+  <div id="dots"></div>
+  <button onclick="next()">→</button>
+</div>
+<div id="snum"></div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dotsEl = document.getElementById('dots');
+let cur = 0, busy = false;
+
+slides.forEach((_,i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' on':'');
+  d.onclick = () => show(i);
+  dotsEl.appendChild(d);
+});
+
+function updateUI() {
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===cur));
+  document.getElementById('snum').textContent = (cur+1) + ' / ' + slides.length;
+}
+
+function show(n) {
+  if (busy || n===cur) return;
+  busy = true;
+  slides[cur].classList.remove('active');
+  cur = (n + slides.length) % slides.length;
+  slides[cur].classList.add('active');
+  updateUI();
+  onEnter(cur);
+  setTimeout(() => busy=false, 380);
+}
+function next() { show(cur+1); }
+function prev() { show(cur-1); }
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') next();
+  if (e.key==='ArrowLeft'||e.key==='ArrowUp') prev();
+});
+
+// Count-up
+function countUp(el, target, dur) {
+  let t0 = null;
+  (function go(ts) {
+    if (!t0) t0 = ts;
+    const p = Math.min((ts-t0)/dur, 1);
+    el.textContent = Math.round((1-Math.pow(1-p,3))*target);
+    if (p<1) requestAnimationFrame(go);
+  })(performance.now());
+}
+
+// Particles
+let raf;
+function startPart() {
+  const cv = document.getElementById('cv');
+  const cx = cv.getContext('2d');
+  cv.width = innerWidth; cv.height = innerHeight;
+  const pts = Array.from({length:80}, () => ({
+    x: Math.random()*cv.width, y: Math.random()*cv.height,
+    r: Math.random()*2+.5, vx: (Math.random()-.5)*.6, vy: (Math.random()-.5)*.6,
+    a: Math.random()*.5+.15
+  }));
+  const draw = () => {
+    cx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p => {
+      cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle = `rgba(240,112,32,${p.a})`; cx.fill();
+      p.x = (p.x+p.vx+cv.width)%cv.width;
+      p.y = (p.y+p.vy+cv.height)%cv.height;
+    });
+    raf = requestAnimationFrame(draw);
+  };
+  if (raf) cancelAnimationFrame(raf);
+  draw();
+}
+function stopPart() { if(raf) cancelAnimationFrame(raf); }
+
+function onEnter(i) {
+  if (i===8) {
+    startPart();
+    [[0,20,1300],[1,5,900],[2,1,600],[3,6,1000]].forEach(([idx,t,d]) =>
+      countUp(document.getElementById('n'+idx), t, d));
+  } else stopPart();
+}
+
+updateUI();
+</script>
+</body>
+</html>
