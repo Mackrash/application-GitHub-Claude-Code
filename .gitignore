@@ -10,3 +10,13 @@ requirements.txt
 _b64.txt
 _step.txt
 *.pyc
+
+# Dossiers clients confidentiels
+RESCO/
+resco/
+*.pptx
+*.pps
+*.ppsx
+*.xlsx
+*.xls
+*.dwg
