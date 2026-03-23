@@ -66,6 +66,19 @@ Slogan : *"Votre meilleure source d'énergie"*
 | `LOGO sc rond.png` / `LOGO (2).png` | Icône ronde, fond anthracite |
 | `Logo SC Gris.png` | Version neutre grise avec téléphone |
 | `LOGO-230x230.png` | Format carré pour web/favicon |
+| `RAIDenmarkNeo (1).ttf` | Police logo — embarquer en base64 si besoin HTML |
+| `Diapositive1.PNG` | Visuel présentation Solar Concept |
+| `MAison 1.png` / `MAison 2.jpg` | Photos installation solaire |
+
+### Données batteries OMEGA Power (`Données/Données Batterie/`)
+Fiches techniques des 3 modèles de batteries :
+| Modèle | Fichiers |
+|---|---|
+| **Elite** | `elite donnees.jpg` + `elite photo.jpg` |
+| **Prestige** | `Prestige donnees.jpg` + `prestige photo.jpg` |
+| **Maestro** | `MAestro donnée.jpg` + `Maestro photo.jpg` |
+
+Ces images contiennent les specs (capacité, puissance, DoD, garantie) utiles pour alimenter le calculateur.
 
 ### Règles d'utilisation
 - Toujours utiliser l'orange `#F07020` comme couleur dominante

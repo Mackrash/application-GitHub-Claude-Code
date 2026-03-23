@@ -11,6 +11,9 @@ _b64.txt
 _step.txt
 *.pyc
 
+# Config MCP (contient clés API)
+.mcp.json
+
 # Dossiers clients confidentiels
 RESCO/
 resco/
