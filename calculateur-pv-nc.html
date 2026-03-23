@@ -122,6 +122,14 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 .fgrid3 .sep,.fgrid2 .sep{grid-column:1/-1;height:1px;background:rgba(240,112,32,.1);margin:4px 0 8px}
 @media(max-width:680px){.fgrid3,.fgrid2{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.fgrid3,.fgrid2,.fgrid3 .fg,.fgrid2 .fg{grid-template-columns:1fr}.mg{grid-template-columns:repeat(3,1fr)}}
+.fiscal-compare-container{margin:15px 0;overflow-x:auto}
+.fiscal-compare{width:100%;border-collapse:collapse;font-size:.85rem}
+.fiscal-compare th{background:var(--d2);color:#fff;padding:8px 10px;text-align:center;font-weight:600}
+.fiscal-compare td{padding:6px 10px;border-bottom:1px solid rgba(240,112,32,.12);text-align:right}
+.fiscal-compare td:first-child{text-align:left;font-weight:500}
+.fiscal-compare tr.best{background:rgba(0,212,160,.08);font-weight:600}
+.fiscal-compare tr:hover{background:rgba(240,112,32,.05)}
+@media(max-width:680px){.fiscal-compare{font-size:.75rem}.fiscal-compare th,.fiscal-compare td{padding:4px 6px}}
 
 /* MONTHLY DATA TABLE */
 .mg-wrap{overflow-x:auto;margin-bottom:14px}
@@ -401,9 +409,6 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="fg"><label>Taux d'autoconsommation (%)</label>
       <select id="t1_auto"><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30">30%</option><option value="35">35%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option><option value="55">55%</option><option value="60" selected>60%</option><option value="65">65%</option><option value="70">70%</option><option value="75">75%</option><option value="80">80%</option><option value="85">85%</option><option value="90">90%</option><option value="95">95%</option><option value="100">100%</option></select>
     </div>
-    <div class="fg"><label>Tranche marginale NC</label>
-      <select id="t1_tr"><option value="0">0% — Non imposable</option><option value="15">15%</option><option value="25">25%</option><option value="30">30%</option><option value="40">40% — &gt; 5 388 000 XPF</option></select>
-    </div>
     <div style="display:flex;align-items:center;gap:18px;padding-top:18px">
       <label class="cb" style="margin:0"><input type="checkbox" id="t1_pisc"><span>Piscine (+350 kWh/mois)</span></label>
     </div>
@@ -413,7 +418,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="ps-page2">
     <div class="ps ps-recap">
       <div id="recap1"></div>
-      <div id="ded1"></div>
+      <div id="ded1" class="fiscal-compare-container"></div>
       <div class="kpi-grid" id="k1_fin" style="margin:12px 0 6px"></div>
     </div>
     <div class="ps ps-charts">
@@ -448,9 +453,6 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="fg"><label>Batterie — quantité</label><input type="number" id="t2_bat_qty" value="1" min="1" max="10" step="1"></div>
     <div class="fg"><label>Montant du devis TTC (XPF)</label><input type="number" id="t2_devis" value="1200000" min="0" step="50000"></div>
     <div class="fg"><label>Tarif revente réseau (XPF/kWh)</label><select id="t2_rev"><option value="0">0 XPF/kWh — pas de revente</option><option value="15" selected>15 XPF/kWh — standard</option><option value="21">21 XPF/kWh — haute</option></select></div>
-    <div class="fg"><label>Tranche marginale NC</label>
-      <select id="t2_tr"><option value="0">0% — Non imposable</option><option value="15">15%</option><option value="25">25%</option><option value="30">30%</option><option value="40">40%</option></select>
-    </div>
     <div style="display:flex;align-items:center;gap:18px;padding-top:18px">
       <label class="cb" style="margin:0"><input type="checkbox" id="t2_pisc"><span>Piscine (+350 kWh/mois)</span></label>
     </div>
@@ -460,7 +462,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="ps-page2">
     <div class="ps ps-recap">
       <div id="recap2"></div>
-      <div id="ded2"></div>
+      <div id="ded2" class="fiscal-compare-container"></div>
       <div class="kpi-grid" id="k2_fin" style="margin:12px 0 6px"></div>
     </div>
     <div class="ps ps-charts">
@@ -619,9 +621,17 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 
 <script>
 // ===== CONSTANTES =====
-const SF=[1.18,1.12,1.08,0.95,0.85,0.78,0.80,0.88,0.98,1.08,1.15,1.18];
+// Facteurs solaires mensuels calibrés SAM/PySAM — Nouméa NC (lat -22.27, lon 166.44, tilt 15°, azimuth 0°)
+const SF=[1.15,1.08,1.05,0.92,0.82,0.75,0.78,0.85,0.95,1.05,1.12,1.18];
 const MO=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 const DM=[31,28,31,30,31,30,31,31,30,31,30,31];
+const TRANCHES_NC=[
+  {taux:0,  label:'Non imposable'},
+  {taux:15, label:'Tranche 15%'},
+  {taux:25, label:'Tranche 25%'},
+  {taux:30, label:'Tranche 30%'},
+  {taux:40, label:'> 5 388 000 XPF'},
+];
 const TD=DM.reduce((a,b)=>a+b,0);
 const BLBL={4800:'Élite',10650:'Prestige',14336:'Maestro'};
 const BAT_REPL={4800:360000,10650:530000,14336:590000};
@@ -902,6 +912,42 @@ function showDed(id,invest,taux,plafond){
   if(taux===0){e.innerHTML=`<div class="alert-d">ℹ️ Tranche <strong>non imposable</strong> — aucune économie fiscale.</div>`;return;}
   const f=calcDeduction(invest,taux,plafond);
   e.innerHTML=`<div class="alert-d">🧾 <strong>Déduction fiscale NC</strong> — Abattement revenu imposable :<br>Montant déductible : <strong>${fmt(f.total)} XPF</strong> sur <strong>${f.nbAns} an(s)</strong> (plafond ${fmt(plafond)} XPF/an)<br>Économie fiscale totale à <strong>${taux}%</strong> : <strong>${fmt(f.eco)} XPF</strong></div>`;
+}
+
+// ===== COMPARATIF FISCAL MULTI-TRANCHES =====
+function buildFiscalCompare(invest,ecoAn,hausse,deg,duree,plafond,coutBatR,anneeR){
+  return TRANCHES_NC.map(t=>{
+    const {rows,pb}=buildAmort(invest,ecoAn,hausse,deg,duree,t.taux,plafond,coutBatR,anneeR);
+    const fisc=calcDeduction(invest,t.taux,plafond);
+    const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
+    const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
+    const eco20=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
+    return{label:t.label,taux:t.taux,pb,eco10,eco15,eco20,deduction:fisc.eco};
+  });
+}
+
+function renderFiscalCompare(containerId,data){
+  const minPb=Math.min(...data.filter(d=>d.pb>0).map(d=>d.pb));
+  const rows=data.map(d=>{
+    const isBest=d.pb===minPb&&d.pb>0;
+    const pbStr=d.pb?`An ${d.pb}`:'—';
+    return`<tr class="${isBest?'best':''}">
+      <td>${d.label}${isBest?' ★':''}</td>
+      <td>${d.deduction>0?fmt(d.deduction)+' XPF':'—'}</td>
+      <td>${pbStr}</td>
+      <td>${fmt(d.eco10)} XPF</td>
+      <td>${fmt(d.eco15)} XPF</td>
+      <td>${fmt(d.eco20)} XPF</td>
+    </tr>`;
+  }).join('');
+  document.getElementById(containerId).innerHTML=`
+    <table class="fiscal-compare">
+      <thead><tr>
+        <th>Tranche IR</th><th>Déduction fiscale</th><th>Retour invest.</th>
+        <th>Économies 10 ans</th><th>Économies 15 ans</th><th>Économies 20 ans</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 // ===== RÉCAP INSTALLATION =====
@@ -1204,7 +1250,6 @@ function calcT1(){
   const batQty=parseInt(document.getElementById('t1_bat_qty').value)||1;
   const batWh=batModel*batQty;
   const panWc=Math.max(100,parseInt(document.getElementById('t1_wc').value)||450);
-  const taux=parseInt(document.getElementById('t1_tr').value);
   const rev=parseFloat(document.getElementById('t1_rev').value??'0');
 
   const prod=prodM(kwc,s.en,s.pe);
@@ -1262,9 +1307,11 @@ function calcT1(){
     {k:'Économie annuelle (An 1)',v:`${fmt(ecoAn)} XPF`,g:true},
   ].filter(Boolean));
 
-  showDed('ded1',devis,taux,s.ded);
-
-  const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,20,taux,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);
+  // Tableau comparatif fiscal multi-tranches
+  const compareData=buildFiscalCompare(devis,ecoAn,s.hau,s.deg,20,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);
+  renderFiscalCompare('ded1',compareData);
+  // Tableau d'amortissement détaillé avec taux=0 (cas conservateur)
+  const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,20,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);
 
   const eco20=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   kpiGrid('k1_fin',[
@@ -1303,7 +1350,6 @@ function calcT2(){
   const batQty=parseInt(document.getElementById('t2_bat_qty').value)||1;
   const batWh=batModel*batQty;
   const panWc=Math.max(100,parseInt(document.getElementById('t2_wc').value)||450);
-  const taux=parseInt(document.getElementById('t2_tr').value);
   const rev=parseFloat(document.getElementById('t2_rev').value);
   if(document.getElementById('t2_pisc').checked)consoM.forEach((_,i)=>consoM[i]+=350);
   const dod=s.dod/100;
@@ -1362,9 +1408,11 @@ function calcT2(){
     {v:`${fmt(ecoAn)} XPF`,l:'Économie batterie / an',s:'g'},
     {v:`${fmtD(txAuto)}%`,l:'Taux autoconsommation'},
   ]);
-  showDed('ded2',devis,taux,s.ded);
-
-  const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,taux,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
+  // Tableau comparatif fiscal multi-tranches
+  const compareData=buildFiscalCompare(devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
+  renderFiscalCompare('ded2',compareData);
+  // Tableau d'amortissement détaillé avec taux=0 (cas conservateur)
+  const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
   const ecoTotale=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
 
   plotPile('g2_donut',autoconsoDirecteAn,bDischAn,newReinjAn,newAchatAn);
