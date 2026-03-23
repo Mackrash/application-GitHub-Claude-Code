@@ -1,0 +1,3 @@
+# Override parent .gitignore — include Python source files in this directory
+!*.py
+!**/*.py
