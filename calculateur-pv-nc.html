@@ -1198,12 +1198,12 @@ function calcT1(){
   const consoM=getMths('m1_');
   if(document.getElementById('t1_pisc').checked)consoM.forEach((_,i)=>consoM[i]+=350);
   const tauxAuto=parseInt(document.getElementById('t1_auto').value)||60; // taux autoconsommation fixe (%)
-  const kwc=parseFloat(document.getElementById('t1_kwc').value)||3;
-  const devis=parseFloat(document.getElementById('t1_devis').value)||0;
+  const kwc=Math.max(0.5,parseFloat(document.getElementById('t1_kwc').value)||3);
+  const devis=Math.max(0,parseFloat(document.getElementById('t1_devis').value)||0);
   const batModel=parseInt(document.getElementById('t1_bat').value)||0;
   const batQty=parseInt(document.getElementById('t1_bat_qty').value)||1;
   const batWh=batModel*batQty;
-  const panWc=parseInt(document.getElementById('t1_wc').value)||450;
+  const panWc=Math.max(100,parseInt(document.getElementById('t1_wc').value)||450);
   const taux=parseInt(document.getElementById('t1_tr').value);
   const rev=parseFloat(document.getElementById('t1_rev').value??'0');
 
@@ -1297,12 +1297,12 @@ function calcT2(){
   const consoM=getMGTrow('t2_conso');
   const reinjM=getMGTrow('t2_reinj');
   const achatM=getMGTrow('t2_achat');
-  const kwc=parseFloat(document.getElementById('t2_kwc').value)||6.3;
-  const devis=parseFloat(document.getElementById('t2_devis').value)||0;
+  const kwc=Math.max(0.5,parseFloat(document.getElementById('t2_kwc').value)||6.3);
+  const devis=Math.max(0,parseFloat(document.getElementById('t2_devis').value)||0);
   const batModel=parseInt(document.getElementById('t2_bat').value)||4800;
   const batQty=parseInt(document.getElementById('t2_bat_qty').value)||1;
   const batWh=batModel*batQty;
-  const panWc=parseInt(document.getElementById('t2_wc').value)||450;
+  const panWc=Math.max(100,parseInt(document.getElementById('t2_wc').value)||450);
   const taux=parseInt(document.getElementById('t2_tr').value);
   const rev=parseFloat(document.getElementById('t2_rev').value);
   if(document.getElementById('t2_pisc').checked)consoM.forEach((_,i)=>consoM[i]+=350);
@@ -1393,8 +1393,8 @@ function calcT3(){
   const achatM=getMGTrow('t3_achat');
   const injM=getMGTrow('t3_inj');
   if(document.getElementById('t3_pisc').checked)achatM.forEach((_,i)=>achatM[i]+=350);
-  const kwc=parseFloat(document.getElementById('t3_kwc').value)||6.3;
-  const devis=parseFloat(document.getElementById('t3_devis').value)||0;
+  const kwc=Math.max(0.5,parseFloat(document.getElementById('t3_kwc').value)||6.3);
+  const devis=Math.max(0,parseFloat(document.getElementById('t3_devis').value)||0);
   const auto_nuit=parseInt(document.getElementById('t3_auto').value);
   const batModel=parseInt(document.getElementById('t3_bat').value)||14336;
   const batQty=parseInt(document.getElementById('t3_bat_qty').value)||1;
@@ -1500,9 +1500,9 @@ function calcT4(){
   const s=getS();
   const consoM=getMths('m4_');
   const conso=consoM.reduce((a,b)=>a+b,0);
-  const kwc=parseFloat(document.getElementById('t4_kwc').value)||20;
-  const devis=parseFloat(document.getElementById('t4_devis').value)||0;
-  const panWc=parseInt(document.getElementById('t4_wc').value)||450;
+  const kwc=Math.max(0.5,parseFloat(document.getElementById('t4_kwc').value)||20);
+  const devis=Math.max(0,parseFloat(document.getElementById('t4_devis').value)||0);
+  const panWc=Math.max(100,parseInt(document.getElementById('t4_wc').value)||450);
   const tarif=parseFloat(document.getElementById('t4_tarif').value)||s.tp;
   const partA=parseInt(document.getElementById('t4_auto').value)/100;
   const rev=parseFloat(document.getElementById('t4_rev').value??'0');
