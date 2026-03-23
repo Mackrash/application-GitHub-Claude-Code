@@ -127,8 +127,9 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 .mg-wrap{overflow-x:auto;margin-bottom:14px}
 .mg-table{width:100%;border-collapse:collapse;font-size:.74rem;white-space:nowrap}
 .mg-table th{background:rgba(240,112,32,.1);color:var(--or);font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:5px 5px;border-bottom:1px solid rgba(240,112,32,.18);text-align:center}
-.mg-table th:first-child{text-align:left;min-width:120px}
-.mg-table .mgt-lbl{padding:4px 10px 4px 0;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.6px;text-align:left}
+.mg-table th:first-child{text-align:left;min-width:120px;position:sticky;left:0;z-index:2;background:var(--d2)}
+.mg-table .mgt-lbl{padding:4px 10px 4px 0;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.6px;text-align:left;position:sticky;left:0;z-index:2;background:var(--d2)}
+.mg-wrap{-webkit-overflow-scrolling:touch}
 .mg-table td{padding:3px 2px;text-align:center}
 .mg-table input[type=number]{width:58px;background:rgba(22,33,62,.85);border:1px solid rgba(240,112,32,.18);color:var(--tx);padding:4px 3px;border-radius:5px;font-size:.78rem;text-align:center;outline:none;font-family:'Space Grotesk',sans-serif}
 .mg-table input[type=number]:focus{border-color:rgba(240,112,32,.55)}
