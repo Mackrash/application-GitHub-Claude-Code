@@ -509,6 +509,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="ps ps-recap">
       <div id="recap3"></div>
       <div class="kpi-grid" id="k3_fin" style="margin:12px 0 6px"></div>
+      <div id="fc3"></div>
     </div>
     <div class="ps ps-charts">
       <div class="row" style="margin-top:14px">
@@ -1506,6 +1507,9 @@ function calcT3(){
     {v:`${fmt(ecoAn)} XPF`,l:'Économie / an',s:'g'},
     {v:`${fmt(devis)} XPF`,l:'Devis TTC',s:'b'},
   ]);
+
+  const compareData3=buildFiscalCompare(devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
+  renderFiscalCompare('fc3',compareData3);
 
   const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
 
