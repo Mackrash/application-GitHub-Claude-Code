@@ -297,6 +297,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   table.at tbody tr,table.bc tbody tr{break-inside:avoid}
   /* Tableau d'amortissement limité à 15 ans en impression */
   table.at tbody tr:nth-child(n+16){display:none!important}
+  table.at tbody tr:nth-child(15) td:last-child::after{content:" ⚠ Limité à 15 ans";font-size:7pt;color:#888;font-style:italic}
   table.at thead,table.bc thead{display:table-header-group}
 
   /* ── RAPPORT ENTREPRISE (onglet 4) — P2=rapport seul, P3=charts, P4=ROI+tableau ── */
