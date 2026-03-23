@@ -1283,6 +1283,7 @@ function calcT1(){
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,eco10,eco15};
 
   document.getElementById('r1').style.display='block';
+  document.getElementById('r1').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 // ===== CALCUL TAB 2 =====
@@ -1374,6 +1375,7 @@ function calcT2(){
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,eco10:eco10_t2,eco15:eco15_t2};
 
   document.getElementById('r2').style.display='block';
+  document.getElementById('r2').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(err){
     const er=document.getElementById('r2');
     er.innerHTML='<div style="padding:14px;color:#CC2244;background:#fff8f8;border:2px solid #CC2244;border-radius:8px;margin:10px 0;font-family:Space Grotesk,sans-serif"><strong>❌ Erreur Calcul Tab 2 :</strong><br>'+err.message+'<br><small style="color:#888">'+err.stack.split('\n').slice(0,3).join(' | ')+'</small></div>';
@@ -1487,6 +1489,7 @@ function calcT3(){
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,eco10:eco10_t3,eco15:eco15_t3};
 
   document.getElementById('r3').style.display='block';
+  document.getElementById('r3').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 // ===== CALCUL TAB 4 =====
@@ -1651,6 +1654,7 @@ function calcT4(){
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel:0,batQty:1,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,eco10:eco10_t4,eco15:eco15_t4};
 
   document.getElementById('r4').style.display='block';
+  document.getElementById('r4').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 // ===== INIT =====
