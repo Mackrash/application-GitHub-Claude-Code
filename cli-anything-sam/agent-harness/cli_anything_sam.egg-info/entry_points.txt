@@ -1,0 +1,2 @@
+[console_scripts]
+cli-anything-sam = cli_anything.sam.sam_cli:main
