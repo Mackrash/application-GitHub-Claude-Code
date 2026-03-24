@@ -574,8 +574,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
       <div id="k4_pb"></div>
     </div>
     <div class="ps ps-table">
-      <div class="st">Tableau d'amortissement HT</div>
-      <div class="tw" id="tb4"></div>
+      <div id="amort4_combined"></div>
     </div>
     <div class="ps ps-charts">
       <div class="row" style="margin-top:14px">
@@ -632,18 +631,21 @@ const SF=[1.15,1.08,1.05,0.92,0.82,0.75,0.78,0.85,0.95,1.05,1.12,1.18];
 const MO=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 const DM=[31,28,31,30,31,30,31,31,30,31,30,31];
 const TRANCHES_NC=[
-  {taux:0,  label:'Non imposable'},
-  {taux:15, label:'Tranche 15%'},
-  {taux:25, label:'Tranche 25%'},
-  {taux:30, label:'Tranche 30%'},
-  {taux:40, label:'Tranche 40%'},
+  {taux:0,  label:'0%',  desc:'≤ 1 000 000'},
+  {taux:4,  label:'4%',  desc:'1M→1,8M'},
+  {taux:12, label:'12%', desc:'1,8M→3M'},
+  {taux:25, label:'25%', desc:'3M→4,5M'},
+  {taux:30, label:'30%', desc:'4,5M→5,7M'},
+  {taux:35, label:'35%', desc:'5,7M→7,5M'},
+  {taux:40, label:'40%', desc:'7,5M→12,1M'},
+  {taux:45, label:'45%', desc:'> 12,1M'},
 ];
 const TD=DM.reduce((a,b)=>a+b,0);
 const BLBL={4800:'Élite',10650:'Prestige',14336:'Maestro'};
 const BAT_REPL={4800:360000,10650:530000,14336:590000};
 
 // ===== STOCKAGE DONNÉES ÉTUDE =====
-let lastStudyData={kwc:0,devis:0,ecoAn:0,ecoAn1:0,fSansAn:0,fAvecAn:0,batModel:0,batQty:1,client:'',commercial:'',adresse:'',rows:[],pb:0,eco10:0,eco15:0};
+let lastStudyData={kwc:0,devis:0,ecoAn:0,ecoAn1:0,fSansAn:0,fAvecAn:0,batModel:0,batQty:0,client:'',commercial:'',adresse:'',rows:[],pb:0,eco10:0,eco15:0};
 
 // ===== SETTINGS =====
 function getS(){
@@ -1731,11 +1733,11 @@ function calcT4(){
   plotAvantApres('g4_mois_eco',fSansM,fAvecM,'Sans PV','Avec PV');
   plotROI('g4_roi',rows);
   if(pb)document.getElementById('k4_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  renderTable('tb4',rows,pb);
+  renderCombinedAmort('amort4_combined',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,0,0,0);
 
   const eco10_t4=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t4=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel:0,batQty:1,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,eco10:eco10_t4,eco15:eco15_t4};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel:0,batQty:0,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,eco10:eco10_t4,eco15:eco15_t4};
 
   document.getElementById('r4').style.display='block';
   document.getElementById('r4').scrollIntoView({behavior:'smooth',block:'start'});
