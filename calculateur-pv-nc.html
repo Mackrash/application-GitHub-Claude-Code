@@ -932,7 +932,7 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
   var minPb=Math.min.apply(null,trancheData.filter(function(d){return d.pb>0;}).map(function(d){return d.pb;}));
   // Tableau transposé : colonnes = tranches IR, lignes = métriques + années
   var h='<div class="st">Tableau d\'amortissement</div>';
-  h+='<div style="overflow-x:auto"><table class="at"><thead><tr>';
+  h+='<div style="overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch"><table class="at" style="min-width:520px"><thead><tr>';
   h+='<th style="text-align:left"></th>';
   trancheData.forEach(function(d){
     var isBest=d.pb===minPb&&d.pb>0;
@@ -953,7 +953,7 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
   });
   h+='</tr>';
   // Séparateur années
-  h+='<tr class="section-head"><th style="text-align:left;font-family:\'SingaporeSling\',sans-serif;letter-spacing:2px">Cumul /an</th>';
+  h+='<tr class="section-head"><th style="text-align:left;font-family:\'Nunito\',sans-serif;font-size:.68rem;letter-spacing:1px">Cumul /an</th>';
   trancheData.forEach(function(){h+='<th></th>';});
   h+='</tr>';
   // Une ligne par année
