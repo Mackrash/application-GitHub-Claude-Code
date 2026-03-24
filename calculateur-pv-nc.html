@@ -139,7 +139,11 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 @media(max-width:680px){.fiscal-compare{font-size:.75rem}.fiscal-compare th,.fiscal-compare td{padding:4px 6px}}
 .at tr.section-head th{background:var(--ac);color:#fff;padding:7px 10px;text-align:right;font-weight:600;border-top:2px solid var(--d2)}
 .at tr.section-head th:first-child{text-align:left}
-@media print{.at tr.section-head th{background:#F07020!important;color:#fff!important}}
+@media print{.at tr.section-head th{background:#F07020!important;color:#fff!important}
+/* Impression : garder 0%,4%,25%,35%,45% — masquer 12%(col4), 30%(col6), 40%(col8) */
+table.at th:nth-child(4),table.at td:nth-child(4),
+table.at th:nth-child(6),table.at td:nth-child(6),
+table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
 
 /* MONTHLY DATA TABLE */
 .mg-wrap{overflow-x:auto;margin-bottom:14px}
