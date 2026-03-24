@@ -81,7 +81,7 @@ input[type=range]{width:100%;accent-color:var(--or);cursor:pointer;margin-top:4p
 .kpi{background:linear-gradient(135deg,rgba(22,33,62,.88),rgba(15,52,96,.32));border:1px solid rgba(240,112,32,.22);border-radius:11px;padding:11px 13px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s}
 .kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--or),transparent)}
 .kpi:hover{border-color:rgba(240,112,32,.5);box-shadow:0 0 16px rgba(240,112,32,.1)}
-.kv{font-family:'SingaporeSling',sans-serif;font-size:1.45rem;font-weight:700;color:var(--or);line-height:1.1;text-shadow:0 0 10px var(--org)}
+.kv{font-family:'Nunito',sans-serif;font-size:1.45rem;font-weight:700;color:var(--or);line-height:1.1;text-shadow:0 0 10px var(--org)}
 .kv.g{color:var(--gr);text-shadow:0 0 10px rgba(0,212,160,.4)}
 .kv.r{color:var(--rd);text-shadow:0 0 10px rgba(255,75,110,.4)}
 .kv.b{color:var(--bl);text-shadow:0 0 10px rgba(79,195,247,.4)}
@@ -800,7 +800,7 @@ function preparePrint(noPrint=false){
         <div class="cv-party-addr">${adresse||'Adresse non renseignée'}</div>
       </div>
       <div class="cv-party">
-        <div class="cv-party-label">Votre commercial Solar Concept</div>
+        <div class="cv-party-label">Votre Commercial</div>
         <div class="cv-party-name">${commName||'—'}</div>
         <div class="cv-party-contact">
           ${commTel?'📞 '+commTel+'<br>':''}
