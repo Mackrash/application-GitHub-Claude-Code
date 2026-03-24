@@ -704,7 +704,7 @@ function calcDeduction(invest,tauxM,plafond){
 }
 
 // ===== IMPRESSION =====
-function preparePrint(){
+function preparePrint(noPrint=false){
   const d=new Date();
   const dateStr=d.toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'});
 
@@ -847,7 +847,7 @@ function preparePrint(){
 
   </div>`;
 
-  setTimeout(()=>window.print(),100);
+  if(!noPrint)setTimeout(()=>window.print(),100);
 }
 
 // ===== AMORTISSEMENT (avec dégradation panneaux) =====
@@ -1785,7 +1785,7 @@ async function saveStudy(){
   const oldTxt=btn.textContent;
   btn.textContent='...';btn.disabled=true;
   try{
-    preparePrint();
+    preparePrint(true);
     const coverHTML=document.getElementById('cover-page').innerHTML;
     const tpfx=['t1_','t2_','t3_','t4_'][activeTab];
     const formData={};
