@@ -743,8 +743,8 @@ function preparePrint(){
     .cv-parties{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #eee}
     .cv-party{padding:0.9cm 1.5cm}
     .cv-party-left{border-right:1px solid #eee}
-    .cv-party-label{font-size:1.02rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:2px;margin-bottom:0.35cm;font-family:'SingaporeSling',sans-serif}
-    .cv-party-name{font-family:'SingaporeSling',sans-serif;font-size:2.16rem;font-weight:400;color:#333;line-height:1.2}
+    .cv-party-label{font-size:1.02rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:2px;margin-bottom:0.35cm;font-family:'Nunito',sans-serif}
+    .cv-party-name{font-family:'Nunito',sans-serif;font-size:2.16rem;font-weight:700;color:#333;line-height:1.2}
     .cv-party-addr{font-size:0.92rem;color:#555;margin-top:0.2cm;line-height:1.5}
     .cv-party-contact{font-size:0.92rem;color:#555;margin-top:0.2cm;line-height:1.7}
     .cv-party-contact a{color:#F07020;text-decoration:none}
@@ -953,7 +953,7 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
   });
   h+='</tr>';
   // Séparateur années
-  h+='<tr class="section-head"><th style="text-align:left">Cumul par année</th>';
+  h+='<tr class="section-head"><th style="text-align:left;font-family:\'SingaporeSling\',sans-serif;letter-spacing:2px">Cumul par année</th>';
   trancheData.forEach(function(){h+='<th></th>';});
   h+='</tr>';
   // Une ligne par année
