@@ -376,6 +376,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
   </div>
   <div class="header-right">
     <button class="btn-print" onclick="preparePrint()">🖨 Imprimer / PDF</button>
+    <button class="btn-print" onclick="saveStudy()" id="btn-save" style="margin-left:6px">💾 Enregistrer l’étude</button>
     <div class="tel">☎ 47 03 02</div>
   </div>
 </div>
@@ -1774,6 +1775,67 @@ function calcT4(){
 
   loadSettings();
 })();
+
+// ===== SAUVEGARDE ETUDE HTML STANDALONE =====
+async function saveStudy(){
+  const tabBtns=document.querySelectorAll('.tab-btn');
+  let activeTab=0;
+  tabBtns.forEach((b,i)=>{if(b.classList.contains('active'))activeTab=i;});
+  if(activeTab>=4){alert('Allez dans un onglet calculateur et lancez le calcul avant de sauvegarder.');return;}
+  const rId='r'+(activeTab+1);
+  const rDiv=document.getElementById(rId);
+  if(!rDiv||!rDiv.querySelector('.kpi-grid, .st, .tw')||lastStudyData.devis===0){
+    alert('Calculez d\'abord l\'étude avant de l\'enregistrer.');return;
+  }
+  const btn=document.getElementById('btn-save');
+  const oldTxt=btn.textContent;
+  btn.textContent='...';btn.disabled=true;
+  try{
+    preparePrint();
+    const coverHTML=document.getElementById('cover-page').innerHTML;
+    const tpfx=['t1_','t2_','t3_','t4_'][activeTab];
+    const formData={};
+    document.querySelectorAll('input[id^="'+tpfx+'"],select[id^="'+tpfx+'"]').forEach(el=>{
+      formData[el.id]=(el.type==='checkbox')?el.checked:el.value;
+    });
+    if(activeTab>0){
+      ['t1_client','t1_commercial','t1_adresse'].forEach(id=>{
+        const el=document.getElementById(id);if(el)formData[id]=el.value;
+      });
+    }
+    const gpfx='g'+(activeTab+1)+'_';
+    const chartDivs=Array.from(document.querySelectorAll('[id^="'+gpfx+'"]')).filter(d=>d._fullLayout);
+    const imgMap={};
+    await Promise.all(chartDivs.map(div=>
+      Plotly.toImage(div,{format:'png',width:820,height:parseInt(div.style.height)||340})
+        .then(url=>{imgMap[div.id]=url;}).catch(()=>{})
+    ));
+    const rClone=rDiv.cloneNode(true);
+    Object.keys(imgMap).forEach(id=>{
+      const d=rClone.querySelector('#'+id);
+      if(d){d.innerHTML='<img src="'+imgMap[id]+'" style="width:100%;height:auto;display:block">';}
+    });
+    const styles=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
+    const client=(lastStudyData.client||'Etude').replace(/[^\w\sÀ-ÿ]/g,'').trim().replace(/\s+/g,'_')||'Etude';
+    const dd=new Date();
+    const dStr=String(dd.getDate()).padStart(2,'0')+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+dd.getFullYear();
+    const filename='Etude_PV_'+client+'_'+dStr+'.html';
+    const coverStyled=coverHTML.replace(/<\/style>/gi,'<\/style>');
+    const html='<!DOCTYPE html>\n<html lang="fr">\n<head>\n<meta charset="UTF-8">\n<title>Étude PV - '+(lastStudyData.client||'Étude')+'</title>\n<style>\nbody{margin:0;padding:0;background:#fff}\n.results{display:block!important}\n</style>\n<style>'+styles.replace(/<\/style>/gi,'<\/style>')+'</style>\n</head>\n<body>\n<div id="cover-page">'+coverStyled+'</div>\n<div class="results" id="'+rId+'" style="padding:16px 24px;background:#fff">'+rClone.innerHTML+'</div>\n<script type="application/json" id="study-meta">'+JSON.stringify({activeTab,formData,lastStudyData})+'<\/script>\n</body>\n</html>';
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1500);
+  }catch(err){
+    console.error('saveStudy error:',err);
+    alert('Erreur sauvegarde: '+err.message);
+  }finally{
+    btn.textContent=oldTxt;btn.disabled=false;
+  }
+}
+
 
 // ===== IMPRESSION — préparation Plotly fond blanc =====
 function setPrintLabels(){
