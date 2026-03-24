@@ -137,6 +137,9 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 .fiscal-compare tr.best{background:rgba(0,212,160,.08);font-weight:600}
 .fiscal-compare tr:hover{background:rgba(240,112,32,.05)}
 @media(max-width:680px){.fiscal-compare{font-size:.75rem}.fiscal-compare th,.fiscal-compare td{padding:4px 6px}}
+.at tr.section-head th{background:var(--ac);color:#fff;padding:7px 10px;text-align:right;font-weight:600;border-top:2px solid var(--d2)}
+.at tr.section-head th:first-child{text-align:left}
+@media print{.at tr.section-head th{background:#F07020!important;color:#fff!important}}
 
 /* MONTHLY DATA TABLE */
 .mg-wrap{overflow-x:auto;margin-bottom:14px}
@@ -929,15 +932,16 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
     return{label:t.label,taux:t.taux,pb:res.pb,eco10:eco10,eco15:eco15,eco20:eco20,deduction:fisc.eco};
   });
   var minPb=Math.min.apply(null,compareData.filter(function(d){return d.pb>0;}).map(function(d){return d.pb;}));
+  // Tableau unique — section 1 : comparatif fiscal
   var h='<div class="st">Tableau d\'amortissement</div>';
-  h+='<table class="fiscal-compare" style="margin-bottom:18px"><thead><tr>';
+  h+='<table class="at"><thead><tr>';
   h+='<th style="text-align:left">Tranche IR</th><th>Déduction fiscale</th><th>Payback</th>';
-  h+='<th>Gains 10 ans</th><th>Gains 15 ans</th><th>Gains 20 ans</th></tr></thead><tbody>';
+  h+='<th>Gains 10 ans</th><th>Gains 15 ans</th><th>Gains 20 ans</th>';
+  h+='</tr></thead><tbody>';
   compareData.forEach(function(d){
     var isBest=d.pb===minPb&&d.pb>0;
-    var isActif=d.taux===tauxActif;
-    h+='<tr'+(isBest?' class="best"':'')+(isActif?' style="font-weight:700"':'')+'>'+
-      '<td style="text-align:left">'+d.label+(isActif?' ◄':isBest?' ★':'')+'</td>'+
+    h+='<tr'+(isBest?' class="best pos"':'')+'>'+
+      '<td style="text-align:left">'+d.label+(isBest?' ★':'')+'</td>'+
       '<td>'+(d.deduction>0?fmt(d.deduction)+' XPF':'&mdash;')+'</td>'+
       '<td>'+(d.pb?'An '+d.pb:'> '+duree+' ans')+'</td>'+
       '<td>'+fmt(d.eco10)+' XPF</td>'+
@@ -945,13 +949,10 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
       '<td>'+fmt(d.eco20)+' XPF</td>'+
     '</tr>';
   });
-  h+='</tbody></table>';
+  // Ligne-séparateur avec nouveaux en-têtes — section 2 : détail 5 ans
+  h+='<tr class="section-head"><th style="text-align:left">Période</th><th>Éco. énergie</th><th>Éco. fiscale NC</th><th>Remp. batterie</th><th>Bénéfice net</th><th>Cumul</th></tr>';
   var res2=buildAmort(invest,ecoAn,hausse,deg,duree,tauxActif,plafond,coutBatR,anneeR);
   var rows=res2.rows,pb=res2.pb;
-  h+='<table class="at"><thead><tr>'+
-    '<th>Période</th><th>Éco. énergie</th><th>Éco. fiscale NC</th>'+
-    '<th>Remp. batterie</th><th>Bénéfice net</th><th>Cumul</th>'+
-  '</tr></thead><tbody>';
   var nbSlices=Math.ceil(duree/5);
   for(var s=0;s<nbSlices;s++){
     var slice=rows.filter(function(r){return r.y>s*5&&r.y<=(s+1)*5;});
@@ -962,7 +963,7 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
     var sumBen=slice.reduce(function(a,r){return a+r.ben;},0);
     var cumul=slice[slice.length-1].cumul;
     var debut=s*5+1,fin=Math.min((s+1)*5,duree);
-    var label=debut===fin?'An '+debut:'An '+debut+'–'+fin;
+    var label=debut===fin?'An '+debut:'An '+debut+'\u2013'+fin;
     var pbInSlice=pb&&pb>s*5&&pb<=(s+1)*5;
     h+='<tr'+(cumul>=0?' class="pos"':'')+'>'+
       '<td>'+label+(pbInSlice?' <small style="opacity:.8">(payback An '+pb+')</small>':'')+'</td>'+
