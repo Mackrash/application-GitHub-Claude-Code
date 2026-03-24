@@ -1817,11 +1817,23 @@ async function saveStudy(){
     const coverStyled=coverHTML.replace(/<\/style>/gi,'<\/style>');
     const html='<!DOCTYPE html>\n<html lang="fr">\n<head>\n<meta charset="UTF-8">\n<title>Étude PV - '+(lastStudyData.client||'Étude')+'</title>\n<style>\nbody{margin:0;padding:0;background:#fff}\n.results{display:block!important}\n</style>\n<style>'+styles.replace(/<\/style>/gi,'<\/style>')+'</style>\n</head>\n<body>\n<div id="cover-page">'+coverStyled+'</div>\n<div class="results" id="'+rId+'" style="padding:16px 24px;background:#fff">'+rClone.innerHTML+'</div>\n<script type="application/json" id="study-meta">'+JSON.stringify({activeTab,formData,lastStudyData})+'<\/script>\n</body>\n</html>';
     const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=filename;
-    document.body.appendChild(a);a.click();
-    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1500);
+    if(window.showSaveFilePicker){
+      try{
+        const fh=await window.showSaveFilePicker({
+          suggestedName:filename,
+          types:[{description:'Fichier HTML',accept:{'text/html':['.html']}}]
+        });
+        const w=await fh.createWritable();
+        await w.write(blob);
+        await w.close();
+      }catch(e){if(e.name!=='AbortError')throw e;}
+    }else{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=filename;
+      document.body.appendChild(a);a.click();
+      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1500);
+    }
   }catch(err){
     console.error('saveStudy error:',err);
     alert('Erreur sauvegarde: '+err.message);
