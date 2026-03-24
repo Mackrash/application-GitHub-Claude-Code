@@ -1,91 +1,64 @@
-"""
-generate_sf.py — Génère les facteurs solaires mensuels SF[] pour Nouméa NC via PySAM.
+#!/usr/bin/env python3
+"""Génère les facteurs solaires mensuels SF[] via PySAM pour le calculateur PV NC.
 
 Usage:
-    python generate_sf.py --lat -22.27 --lon 166.44 --tilt 15 --azimuth 0
-    python generate_sf.py --lat -22.27 --lon 166.44 --tilt 15 --azimuth 0 --api-key YOUR_NREL_KEY
+    python generate_sf.py
+    python generate_sf.py --lat -22.27 --lon 166.44 --api-key YOUR_NREL_KEY
 
-Sortie:
-    Tableau JS prêt à coller dans calculateur-pv-nc.html :
-    // Facteurs solaires mensuels calibrés SAM/PySAM — Nouméa NC (lat -22.27, lon 166.44, tilt 15°, azimuth 0°)
-    const SF=[1.15,1.08,...];
+Clé API NREL gratuite : https://developer.nrel.gov/signup/
 """
-
 import argparse
-import sys
-
-try:
-    import PySAM.Pvwattsv8 as pv
-except ImportError:
-    print("ERREUR : PySAM non installé. Lancez : pip install NREL-PySAM", file=sys.stderr)
-    sys.exit(1)
-
-
-def generate_sf(lat: float, lon: float, tilt: float, azimuth: float, api_key: str = None) -> list:
-    """Simule 1 kWc à la position donnée et retourne les facteurs SF mensuels."""
-    model = pv.default("PVWattsResidential")
-
-    # Système : 1 kWc, tilt/azimuth configurables, pertes 14%
-    sd = model.SystemDesign
-    sd.system_capacity = 1.0
-    sd.tilt = tilt
-    sd.azimuth = azimuth
-    sd.losses = 14.0
-    sd.array_type = 0   # Fixe
-    sd.module_type = 0  # Standard
-
-    # Ressource météo
-    sr = model.SolarResource
-    if api_key:
-        # Utiliser NSRDB via API NREL (TMY)
-        url = (
-            f"https://developer.nrel.gov/api/solar/nsrdb_psm3_download.json"
-            f"?api_key={api_key}&lat={lat}&lon={lon}&interval=60"
-            f"&attributes=ghi,dhi,dni,wind_speed,air_temperature"
-            f"&name=noumea&email=user@example.com&leap_day=false&utc=false"
-            f"&full_name=PySAM&affiliation=Solar&reason=research&mailing_list=false"
-            f"&year=tmy"
-        )
-        print(f"NSRDB URL : {url}", file=sys.stderr)
-        print("Note : téléchargez le fichier CSV NSRDB et utilisez solar_resource_file.", file=sys.stderr)
-        print("Pour l'instant, utilisation des données synthétiques.", file=sys.stderr)
-
-    # Données synthétiques si pas d'API key
-    from cli_anything.sam.utils.sam_backend import _build_solar_resource_data
-    loc = {"lat": lat, "lon": lon, "tz": 11, "elev": 0}
-    sr.solar_resource_data = _build_solar_resource_data(loc)
-
-    model.execute()
-
-    monthly_kwh = list(model.Outputs.ac_monthly)  # kWh/mois pour 1 kWc
-
-    # Facteurs = ratio mois / moyenne mensuelle
-    avg = sum(monthly_kwh) / 12
-    if avg == 0:
-        raise ValueError("Production moyenne nulle — vérifiez les données météo.")
-
-    sf = [round(m / avg, 2) for m in monthly_kwh]
-    return sf
-
 
 def main():
-    parser = argparse.ArgumentParser(description="Génère les facteurs solaires SF[] pour le calculateur PV NC")
-    parser.add_argument("--lat", type=float, default=-22.27, help="Latitude (défaut : -22.27, Nouméa)")
-    parser.add_argument("--lon", type=float, default=166.44, help="Longitude (défaut : 166.44, Nouméa)")
-    parser.add_argument("--tilt", type=float, default=15.0, help="Inclinaison panneaux en degrés (défaut : 15)")
-    parser.add_argument("--azimuth", type=float, default=0.0, help="Azimuth en degrés, 0=Nord (défaut : 0)")
-    parser.add_argument("--api-key", type=str, default=None, help="Clé API NREL pour données NSRDB réelles")
+    parser = argparse.ArgumentParser(description='Génère SF[] via PySAM Pvwattsv8')
+    parser.add_argument('--lat',     type=float, default=-22.27)
+    parser.add_argument('--lon',     type=float, default=166.44)
+    parser.add_argument('--tilt',    type=float, default=15.0)
+    parser.add_argument('--azimuth', type=float, default=0.0)
+    parser.add_argument('--losses',  type=float, default=14.0)
+    parser.add_argument('--api-key', type=str,   default='')
     args = parser.parse_args()
 
-    print(f"Simulation PySAM — lat={args.lat}, lon={args.lon}, tilt={args.tilt}°, azimuth={args.azimuth}°", file=sys.stderr)
+    try:
+        import PySAM.Pvwattsv8 as pv
+        import PySAM.ResourceTools as rt
+        import numpy as np
+    except ImportError:
+        print("ERREUR: pip install NREL-PySAM numpy")
+        print("Facteurs actuels (estimation Nouméa):")
+        print("const SF=[1.15,1.08,1.05,0.92,0.82,0.75,0.78,0.85,0.95,1.05,1.12,1.18];")
+        return
 
-    sf = generate_sf(args.lat, args.lon, args.tilt, args.azimuth, args.api_key)
+    if not args.api_key:
+        print("Utiliser --api-key YOUR_KEY (gratuit sur https://developer.nrel.gov/signup/)")
+        print("Facteurs actuels:")
+        print("const SF=[1.15,1.08,1.05,0.92,0.82,0.75,0.78,0.85,0.95,1.05,1.12,1.18];")
+        return
 
-    mois = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"]
-    print(f"\n// Facteurs solaires mensuels calibrés SAM/PySAM — Nouméa NC (lat {args.lat}, lon {args.lon}, tilt {args.tilt}°, azimuth {args.azimuth}°)")
-    print(f"const SF=[{','.join(str(v) for v in sf)}];")
-    print(f"// {' '.join(f'{m}={v}' for m, v in zip(mois, sf))}")
+    model = pv.default('PVWattsResidential')
+    model.SystemDesign.system_capacity = 1.0
+    model.SystemDesign.tilt = args.tilt
+    model.SystemDesign.azimuth = args.azimuth
+    model.SystemDesign.losses = args.losses
 
+    weather = rt.FetchResourceFiles(tech='solar', lat=args.lat, lon=args.lon,
+                                    api_key=args.api_key, email='user@example.com')
+    model.SolarResource.solar_resource_file = weather.resource_file_paths[0]
+    model.execute()
 
-if __name__ == "__main__":
+    ac  = np.array(model.Outputs.ac)
+    dim = [31,28,31,30,31,30,31,31,30,31,30,31]
+    mois = ['Jan','Fev','Mar','Avr','Mai','Jun','Jul','Aou','Sep','Oct','Nov','Dec']
+    monthly, h = [], 0
+    for d in dim:
+        monthly.append(sum(ac[h:h+d*24])/1000); h += d*24
+
+    avg = sum(monthly)/12
+    sf  = [round(m/avg,2) for m in monthly]
+    print(f"// PySAM Pvwattsv8 — lat={args.lat}, lon={args.lon}, tilt={args.tilt}°")
+    print(f"// Production annuelle 1 kWc : {sum(monthly):.0f} kWh")
+    print(f"const SF=[{','.join(str(s) for s in sf)}];")
+    print(f"//         {' '.join(f'{m:>4}' for m in mois)}")
+
+if __name__ == '__main__':
     main()
