@@ -425,7 +425,6 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="ps-page2">
     <div class="ps ps-recap">
       <div id="recap1"></div>
-      <div id="ded1" class="fiscal-compare-container"></div>
       <div class="kpi-grid" id="k1_fin" style="margin:12px 0 6px"></div>
     </div>
     <div class="ps ps-charts">
@@ -441,7 +440,6 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
       <div id="k1_pb"></div>
     </div>
     <div class="ps ps-table">
-      <div class="st">Tableau d'amortissement</div>
       <div class="tw" id="tb1"></div>
     </div>
   </div>
@@ -469,7 +467,6 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="ps-page2">
     <div class="ps ps-recap">
       <div id="recap2"></div>
-      <div id="ded2" class="fiscal-compare-container"></div>
       <div class="kpi-grid" id="k2_fin" style="margin:12px 0 6px"></div>
     </div>
     <div class="ps ps-charts">
@@ -485,7 +482,6 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
       <div id="k2_pb"></div>
     </div>
     <div class="ps ps-table">
-      <div class="st">Tableau d'amortissement</div>
       <div class="tw" id="tb2"></div>
     </div>
   </div>
@@ -516,7 +512,6 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="ps ps-recap">
       <div id="recap3"></div>
       <div class="kpi-grid" id="k3_fin" style="margin:12px 0 6px"></div>
-      <div id="fc3"></div>
     </div>
     <div class="ps ps-charts">
       <div class="row" style="margin-top:14px">
@@ -533,8 +528,7 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
     <div class="ps ps-table">
       <div class="st">Comparatif modèles</div>
       <div class="tw" id="tb3"></div>
-      <div class="st" style="margin-top:14px">Tableau d'amortissement</div>
-      <div class="tw" id="tb3_amort"></div>
+      <div class="tw" id="tb3_amort" style="margin-top:14px"></div>
     </div>
   </div>
 </div>
@@ -924,39 +918,64 @@ function showDed(id,invest,taux,plafond){
 }
 
 // ===== COMPARATIF FISCAL MULTI-TRANCHES =====
-function buildFiscalCompare(invest,ecoAn,hausse,deg,duree,plafond,coutBatR,anneeR){
-  return TRANCHES_NC.map(t=>{
-    const {rows,pb}=buildAmort(invest,ecoAn,hausse,deg,duree,t.taux,plafond,coutBatR,anneeR);
-    const fisc=calcDeduction(invest,t.taux,plafond);
-    const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-    const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-    const eco20=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-    return{label:t.label,taux:t.taux,pb,eco10,eco15,eco20,deduction:fisc.eco};
+// ===== TABLEAU COMBINE : comparatif fiscal + amortissement par tranches 5 ans =====
+function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBatR,anneeR,tauxActif){
+  var compareData=TRANCHES_NC.map(function(t){
+    var res=buildAmort(invest,ecoAn,hausse,deg,duree,t.taux,plafond,coutBatR,anneeR);
+    var fisc=calcDeduction(invest,t.taux,plafond);
+    var eco10=res.rows.filter(function(r){return r.y<=10;}).reduce(function(a,r){return a+(r.ben>0?r.ben:0);},0);
+    var eco15=res.rows.filter(function(r){return r.y<=15;}).reduce(function(a,r){return a+(r.ben>0?r.ben:0);},0);
+    var eco20=res.rows.reduce(function(a,r){return a+(r.ben>0?r.ben:0);},0);
+    return{label:t.label,taux:t.taux,pb:res.pb,eco10:eco10,eco15:eco15,eco20:eco20,deduction:fisc.eco};
   });
-}
-
-function renderFiscalCompare(containerId,data){
-  const minPb=Math.min(...data.filter(d=>d.pb>0).map(d=>d.pb));
-  const rows=data.map(d=>{
-    const isBest=d.pb===minPb&&d.pb>0;
-    const pbStr=d.pb?`An ${d.pb}`:'—';
-    return`<tr class="${isBest?'best':''}">
-      <td>${d.label}${isBest?' ★':''}</td>
-      <td>${d.deduction>0?fmt(d.deduction)+' XPF':'—'}</td>
-      <td>${pbStr}</td>
-      <td>${fmt(d.eco10)} XPF</td>
-      <td>${fmt(d.eco15)} XPF</td>
-      <td>${fmt(d.eco20)} XPF</td>
-    </tr>`;
-  }).join('');
-  document.getElementById(containerId).innerHTML=`
-    <table class="fiscal-compare">
-      <thead><tr>
-        <th>Tranche IR</th><th>Déduction fiscale</th><th>Retour invest.</th>
-        <th>Économies 10 ans</th><th>Économies 15 ans</th><th>Économies 20 ans</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  var minPb=Math.min.apply(null,compareData.filter(function(d){return d.pb>0;}).map(function(d){return d.pb;}));
+  var h='<div class="st">Tableau d\'amortissement</div>';
+  h+='<table class="fiscal-compare" style="margin-bottom:18px"><thead><tr>';
+  h+='<th style="text-align:left">Tranche IR</th><th>Déduction fiscale</th><th>Payback</th>';
+  h+='<th>Gains 10 ans</th><th>Gains 15 ans</th><th>Gains 20 ans</th></tr></thead><tbody>';
+  compareData.forEach(function(d){
+    var isBest=d.pb===minPb&&d.pb>0;
+    var isActif=d.taux===tauxActif;
+    h+='<tr'+(isBest?' class="best"':'')+(isActif?' style="font-weight:700"':'')+'>'+
+      '<td style="text-align:left">'+d.label+(isActif?' ◄':isBest?' ★':'')+'</td>'+
+      '<td>'+(d.deduction>0?fmt(d.deduction)+' XPF':'&mdash;')+'</td>'+
+      '<td>'+(d.pb?'An '+d.pb:'> '+duree+' ans')+'</td>'+
+      '<td>'+fmt(d.eco10)+' XPF</td>'+
+      '<td>'+fmt(d.eco15)+' XPF</td>'+
+      '<td>'+fmt(d.eco20)+' XPF</td>'+
+    '</tr>';
+  });
+  h+='</tbody></table>';
+  var res2=buildAmort(invest,ecoAn,hausse,deg,duree,tauxActif,plafond,coutBatR,anneeR);
+  var rows=res2.rows,pb=res2.pb;
+  h+='<table class="at"><thead><tr>'+
+    '<th>Période</th><th>Éco. énergie</th><th>Éco. fiscale NC</th>'+
+    '<th>Remp. batterie</th><th>Bénéfice net</th><th>Cumul</th>'+
+  '</tr></thead><tbody>';
+  var nbSlices=Math.ceil(duree/5);
+  for(var s=0;s<nbSlices;s++){
+    var slice=rows.filter(function(r){return r.y>s*5&&r.y<=(s+1)*5;});
+    if(!slice.length)continue;
+    var sumEco=slice.reduce(function(a,r){return a+r.eco;},0);
+    var sumEf=slice.reduce(function(a,r){return a+r.ef;},0);
+    var sumRemp=slice.reduce(function(a,r){return a+r.remp;},0);
+    var sumBen=slice.reduce(function(a,r){return a+r.ben;},0);
+    var cumul=slice[slice.length-1].cumul;
+    var debut=s*5+1,fin=Math.min((s+1)*5,duree);
+    var label=debut===fin?'An '+debut:'An '+debut+'–'+fin;
+    var pbInSlice=pb&&pb>s*5&&pb<=(s+1)*5;
+    h+='<tr'+(cumul>=0?' class="pos"':'')+'>'+
+      '<td>'+label+(pbInSlice?' <small style="opacity:.8">(payback An '+pb+')</small>':'')+'</td>'+
+      '<td>'+fmt(Math.round(sumEco))+' XPF</td>'+
+      '<td>'+(sumEf>0?fmt(Math.round(sumEf))+' XPF':'&mdash;')+'</td>'+
+      '<td>'+(sumRemp>0?'-'+fmt(Math.round(sumRemp))+' XPF':'&mdash;')+'</td>'+
+      '<td>'+fmt(Math.round(sumBen))+' XPF</td>'+
+      '<td>'+fmt(Math.round(cumul))+' XPF</td>'+
+    '</tr>';
+  }
+  h+='</tbody></table>';
+  document.getElementById(divId).innerHTML=h;
+  return{rows:rows,pb:pb};
 }
 
 // ===== RÉCAP INSTALLATION =====
@@ -965,12 +984,30 @@ function renderRecap(id,data){
   document.getElementById(id).innerHTML=`<div class="recap-box"><div class="recap-title">📋 Récapitulatif installation</div><div class="recap-grid">${rows}</div></div>`;
 }
 
-// ===== TABLE =====
+// ===== TABLE PAR TRANCHES 5 ANS =====
 function renderTable(id,rows,pb){
-  let h=`<table class="at"><thead><tr><th>Année</th><th>Éco. énergie</th><th>Éco. fiscale NC</th><th>Remp. batterie</th><th>Bénéfice net</th><th>Cumul</th></tr></thead><tbody>`;
-  rows.forEach(r=>{
-    h+=`<tr${r.cumul>=0?' class="pos"':''}><td>An ${r.y}</td><td>${fmt(r.eco)} XPF</td><td>${r.ef>0?fmt(r.ef)+' XPF':'—'}</td><td>${r.remp>0?'-'+fmt(r.remp)+' XPF':'—'}</td><td>${fmt(r.ben)} XPF</td><td>${fmt(r.cumul)} XPF</td></tr>`;
-  });
+  var h='<table class="at"><thead><tr><th>Période</th><th>Éco. énergie</th><th>Éco. fiscale NC</th><th>Remp. batterie</th><th>Bénéfice net</th><th>Cumul</th></tr></thead><tbody>';
+  var duree=rows.length,nbSlices=Math.ceil(duree/5);
+  for(var s=0;s<nbSlices;s++){
+    var slice=rows.filter(function(r){return r.y>s*5&&r.y<=(s+1)*5;});
+    if(!slice.length)continue;
+    var sumEco=slice.reduce(function(a,r){return a+r.eco;},0);
+    var sumEf=slice.reduce(function(a,r){return a+r.ef;},0);
+    var sumRemp=slice.reduce(function(a,r){return a+r.remp;},0);
+    var sumBen=slice.reduce(function(a,r){return a+r.ben;},0);
+    var cumul=slice[slice.length-1].cumul;
+    var debut=s*5+1,fin=Math.min((s+1)*5,duree);
+    var label=debut===fin?'An '+debut:'An '+debut+'–'+fin;
+    var pbInSlice=pb&&pb>s*5&&pb<=(s+1)*5;
+    h+='<tr'+(cumul>=0?' class="pos"':'')+'>'+
+      '<td>'+label+(pbInSlice?' (An '+pb+')'+'</td>':'</td>')+
+      '<td>'+fmt(Math.round(sumEco))+' XPF</td>'+
+      '<td>'+(sumEf>0?fmt(Math.round(sumEf))+' XPF':'&mdash;')+'</td>'+
+      '<td>'+(sumRemp>0?'-'+fmt(Math.round(sumRemp))+' XPF':'&mdash;')+'</td>'+
+      '<td>'+fmt(Math.round(sumBen))+' XPF</td>'+
+      '<td>'+fmt(Math.round(cumul))+' XPF</td>'+
+    '</tr>';
+  }
   document.getElementById(id).innerHTML=h+'</tbody></table>';
 }
 
@@ -1316,11 +1353,7 @@ function calcT1(){
     {k:'Économie annuelle (An 1)',v:`${fmt(ecoAn)} XPF`,g:true},
   ].filter(Boolean));
 
-  // Tableau comparatif fiscal multi-tranches
-  const compareData=buildFiscalCompare(devis,ecoAn,s.hau,s.deg,20,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);
-  renderFiscalCompare('ded1',compareData);
-  // Tableau d'amortissement détaillé avec taux=0 (cas conservateur)
-  const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,20,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);
+  const {rows,pb}=renderCombinedAmort('tb1',devis,ecoAn,s.hau,s.deg,20,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0,taux);
 
   const eco20=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   kpiGrid('k1_fin',[
@@ -1334,7 +1367,6 @@ function calcT1(){
   plotROI('g1_roi',rows);
 
   if(pb)document.getElementById('k1_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  renderTable('tb1',rows,pb);
 
   // Stocke les données pour la page de garde
   const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
@@ -1417,18 +1449,13 @@ function calcT2(){
     {v:`${fmt(ecoAn)} XPF`,l:'Économie batterie / an',s:'g'},
     {v:`${fmtD(txAuto)}%`,l:'Taux autoconsommation'},
   ]);
-  // Tableau comparatif fiscal multi-tranches
-  const compareData=buildFiscalCompare(devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
-  renderFiscalCompare('ded2',compareData);
-  // Tableau d'amortissement détaillé avec taux=0 (cas conservateur)
-  const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
+  const {rows,pb}=renderCombinedAmort('tb2',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl,taux);
   const ecoTotale=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
 
   plotPile('g2_donut',autoconsoDirecteAn,bDischAn,newReinjAn,newAchatAn);
   plotAvantApres('g2_mois',fSansM,fAvecM,'Sans batterie','Avec batterie');
   plotROI('g2_roi',rows);
   if(pb)document.getElementById('k2_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  renderTable('tb2',rows,pb);
 
   const eco10_t2=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
@@ -1516,10 +1543,7 @@ function calcT3(){
     {v:`${fmt(devis)} XPF`,l:'Devis TTC',s:'b'},
   ]);
 
-  const compareData3=buildFiscalCompare(devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
-  renderFiscalCompare('fc3',compareData3);
-
-  const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl);
+  const {rows,pb}=renderCombinedAmort('tb3_amort',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl,0);
 
   // Pile répartition avec batterie
   plotPile('g3_donut',0,bDischAn,newInjAn,newAchatAn);
@@ -1543,7 +1567,6 @@ function calcT3(){
     h+=`<tr${isR?' class="rec"':''}><td>${m.l}</td><td>${fmtD(m.wh/1000,2)} kWh</td><td>${cv.toFixed(0)}%</td><td>${fmt(Math.round(eco))} XPF</td><td>${isR?'⭐':''}</td></tr>`;
   });
   document.getElementById('tb3').innerHTML=h+'</tbody></table>';
-  renderTable('tb3_amort',rows,pb);
 
   const eco10_t3=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t3=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
