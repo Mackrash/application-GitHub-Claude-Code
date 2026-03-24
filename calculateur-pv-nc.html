@@ -1290,6 +1290,7 @@ function calcT1(){
   const consoM=getMths('m1_');
   if(document.getElementById('t1_pisc').checked)consoM.forEach((_,i)=>consoM[i]+=350);
   const tauxAuto=parseInt(document.getElementById('t1_auto').value)||60; // taux autoconsommation fixe (%)
+  const taux=parseInt(document.getElementById('t1_tr').value)||0;
   const kwc=Math.max(0.5,parseFloat(document.getElementById('t1_kwc').value)||3);
   const devis=Math.max(0,parseFloat(document.getElementById('t1_devis').value)||0);
   const batModel=parseInt(document.getElementById('t1_bat').value)||0;
@@ -1392,6 +1393,7 @@ function calcT2(){
   const batWh=batModel*batQty;
   const panWc=Math.max(100,parseInt(document.getElementById('t2_wc').value)||450);
   const rev=parseFloat(document.getElementById('t2_rev').value);
+  const taux=parseInt(document.getElementById('t2_tr').value)||0;
   if(document.getElementById('t2_pisc').checked)consoM.forEach((_,i)=>consoM[i]+=350);
   const dod=s.dod/100;
 
