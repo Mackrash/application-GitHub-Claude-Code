@@ -1792,37 +1792,44 @@ async function saveStudy(){
   const oldTxt=btn.textContent;
   btn.textContent='...';btn.disabled=true;
   try{
-    preparePrint(true);
-    const coverHTML=document.getElementById('cover-page').innerHTML;
-    const tpfx=['t1_','t2_','t3_','t4_'][activeTab];
-    const formData={};
-    document.querySelectorAll('input[id^="'+tpfx+'"],select[id^="'+tpfx+'"]').forEach(el=>{
-      formData[el.id]=(el.type==='checkbox')?el.checked:el.value;
+    // --- Injecter les valeurs actuelles dans les attributs HTML ---
+    // Sauvegarder l'état des selects avant modif pour restauration
+    const selectStates=[];
+    document.querySelectorAll('select').forEach(el=>{
+      const saved=Array.from(el.options).map(o=>o.hasAttribute('selected'));
+      selectStates.push({el,saved});
+      Array.from(el.options).forEach(o=>o.removeAttribute('selected'));
+      if(el.selectedIndex>=0) el.options[el.selectedIndex].setAttribute('selected','selected');
     });
-    if(activeTab>0){
-      ['t1_client','t1_commercial','t1_adresse'].forEach(id=>{
-        const el=document.getElementById(id);if(el)formData[id]=el.value;
-      });
-    }
-    const gpfx='g'+(activeTab+1)+'_';
-    const chartDivs=Array.from(document.querySelectorAll('[id^="'+gpfx+'"]')).filter(d=>d._fullLayout);
-    const imgMap={};
-    await Promise.all(chartDivs.map(div=>
-      Plotly.toImage(div,{format:'png',width:820,height:parseInt(div.style.height)||340})
-        .then(url=>{imgMap[div.id]=url;}).catch(()=>{})
-    ));
-    const rClone=rDiv.cloneNode(true);
-    Object.keys(imgMap).forEach(id=>{
-      const d=rClone.querySelector('#'+id);
-      if(d){d.innerHTML='<img src="'+imgMap[id]+'" style="width:100%;height:auto;display:block">';}
+    document.querySelectorAll('input[type=number],input[type=text]').forEach(el=>{
+      el.setAttribute('value',el.value);
     });
-    const styles=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
-    const client=(lastStudyData.client||'Etude').replace(/[^\w\sÀ-ÿ]/g,'').trim().replace(/\s+/g,'_')||'Etude';
+    document.querySelectorAll('input[type=range]').forEach(el=>{
+      el.setAttribute('value',el.value);
+    });
+    document.querySelectorAll('input[type=checkbox]').forEach(el=>{
+      if(el.checked) el.setAttribute('checked','checked');
+      else el.removeAttribute('checked');
+    });
+
+    // --- Capturer le HTML complet ---
+    const clientEl=document.getElementById('t1_client')||document.getElementById('t4_nom');
+    const clientRaw=(clientEl&&clientEl.value)||'Etude';
+    const client=clientRaw.replace(/[^\w\sÀ-ÿ]/g,'').trim().replace(/\s+/g,'_')||'Etude';
     const dd=new Date();
     const dStr=String(dd.getDate()).padStart(2,'0')+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+dd.getFullYear();
     const filename='Etude_PV_'+client+'_'+dStr+'.html';
-    const coverStyled=coverHTML.replace(/<\/style>/gi,'<\/style>');
-    const html='<!DOCTYPE html>\n<html lang="fr">\n<head>\n<meta charset="UTF-8">\n<title>Étude PV - '+(lastStudyData.client||'Étude')+'</title>\n<style>\nbody{margin:0;padding:0;background:#fff}\n.results{display:block!important}\n</style>\n<style>'+styles.replace(/<\/style>/gi,'<\/style>')+'</style>\n</head>\n<body>\n<div id="cover-page">'+coverStyled+'</div>\n<div class="results" id="'+rId+'" style="padding:16px 24px;background:#fff">'+rClone.innerHTML+'</div>\n<script type="application/json" id="study-meta">'+JSON.stringify({activeTab,formData,lastStudyData})+'<\/script>\n</body>\n</html>';
+    const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+
+    // --- Restaurer les selects ---
+    selectStates.forEach(({el,saved})=>{
+      Array.from(el.options).forEach((o,i)=>{
+        if(saved[i]) o.setAttribute('selected','selected');
+        else o.removeAttribute('selected');
+      });
+    });
+
+    // --- Télécharger ---
     const blob=new Blob([html],{type:'text/html;charset=utf-8'});
     if(window.showSaveFilePicker){
       try{
