@@ -883,8 +883,10 @@ function showTab(i){
 }
 
 // ===== MONTHS — grille simple (onglets 1 & 4) =====
-function initMG(id,pfx,defVal,totId){
-  const g=document.getElementById(id);g.className='mg';
+function initMG(id,pfx,defVal,totId,skip){
+  const g=document.getElementById(id);
+  if(skip&&g.querySelector('input')){updTot(pfx,totId);return;}
+  g.className='mg';
   const defM=DM.map(d=>Math.round(defVal*d/TD));
   MO.forEach((m,i)=>{
     g.innerHTML+=`<div class="fg"><label>${m}</label><input type="number" id="${pfx}${i}" value="${defM[i]}" min="0" max="9999" step="10" oninput="updTot('${pfx}','${totId}')"></div>`;
@@ -897,8 +899,9 @@ function updTot(pfx,tid){
 function getMths(pfx){return MO.map((_,i)=>parseFloat(document.getElementById(pfx+i).value)||0)}
 
 // ===== MONTHS — tableau multi-lignes (onglets 2 & 3) =====
-function initMGTable(id,rows){
+function initMGTable(id,rows,skip){
   const g=document.getElementById(id);
+  if(skip&&g.querySelector('input')){rows.forEach(r=>updMGT(r.id));return;}
   let h=`<div class="mg-wrap"><table class="mg-table"><thead><tr><th></th>${MO.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
   rows.forEach(r=>{
     const tot=r.def.reduce((a,b)=>a+b,0);
@@ -1750,8 +1753,10 @@ function calcT4(){
 
 // ===== INIT =====
 (function init(){
-  initMG('mg1','m1_',4500,'t1_tot');
-  initMG('mg4','m4_',20000,'t4_tot');
+  const isSaved=!!document.querySelector('meta[name="saved-study"]');
+
+  initMG('mg1','m1_',4500,'t1_tot',isSaved);
+  initMG('mg4','m4_',20000,'t4_tot',isSaved);
 
   // Tab 2 — defaults basés sur 6.3 kWc / 4500 kWh/an conso
   const f2=6.3*4.2*0.85;
@@ -1764,7 +1769,7 @@ function calcT4(){
     {id:'t2_conso',label:'Consommation',c:'bl',def:c2},
     {id:'t2_reinj',label:'Réinjection réseau',c:'gr',def:r2},
     {id:'t2_achat',label:'Achat réseau',c:'rd',def:a2},
-  ]);
+  ],isSaved);
 
   // Tab 3 — defaults génériques (achat ~80 kWh/mois, injection ~180 kWh/mois)
   const a3=DM.map(d=>Math.round(80*d/31));
@@ -1772,9 +1777,20 @@ function calcT4(){
   initMGTable('mg3',[
     {id:'t3_achat',label:'Achat réseau',c:'rd',def:a3},
     {id:'t3_inj',label:'Injection réseau',c:'gr',def:i3},
-  ]);
+  ],isSaved);
 
   loadSettings();
+  if(isSaved){
+    updTot('m1_','t1_tot');
+    updTot('m4_','t4_tot');
+    ['t2_prod','t2_conso','t2_reinj','t2_achat','t3_achat','t3_inj'].forEach(id=>updMGT(id));
+    ['t1_auto:t1_al','t3_auto:t3_al','t4_auto:t4_al'].forEach(pair=>{
+      const [sid,lid]=pair.split(':');
+      const s=document.getElementById(sid);
+      const l=document.getElementById(lid);
+      if(s&&l) l.textContent=s.value;
+    });
+  }
 })();
 
 // ===== SAUVEGARDE ETUDE HTML STANDALONE =====
@@ -1812,6 +1828,11 @@ async function saveStudy(){
       else el.removeAttribute('checked');
     });
 
+    // --- Marquer comme fichier sauvegardé ---
+    let metaTag=document.querySelector('meta[name="saved-study"]');
+    if(!metaTag){metaTag=document.createElement('meta');metaTag.name='saved-study';document.head.appendChild(metaTag);}
+    metaTag.content='true';
+
     // --- Capturer le HTML complet ---
     const clientEl=document.getElementById('t1_client')||document.getElementById('t4_nom');
     const clientRaw=(clientEl&&clientEl.value)||'Etude';
@@ -1820,6 +1841,9 @@ async function saveStudy(){
     const dStr=String(dd.getDate()).padStart(2,'0')+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+dd.getFullYear();
     const filename='Etude_PV_'+client+'_'+dStr+'.html';
     const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+
+    // --- Retirer le meta tag ---
+    metaTag.remove();
 
     // --- Restaurer les selects ---
     selectStates.forEach(({el,saved})=>{
