@@ -318,9 +318,9 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
   table.bc tr.rec td{color:#008040!important;background:#F0FBF6!important}
   /* Pagination tableau : autoriser les sauts de ligne */
   table.at tbody tr,table.bc tbody tr{break-inside:avoid}
-  /* Tableau d'amortissement limité à 15 ans en impression */
-  table.at tbody tr:nth-child(n+16){display:none!important}
-  table.at tbody tr:nth-child(15) td:last-child::after{content:" ⚠ Limité à 15 ans";font-size:7pt;color:#888;font-style:italic}
+  /* Tableau d'amortissement limité à 20 ans en impression (3 lignes d'en-tête + 20 années = 23) */
+  table.at tbody tr:nth-child(n+24){display:none!important}
+  table.at tbody tr:nth-child(23) td:last-child::after{content:" ⚠ Limité à 20 ans";font-size:7pt;color:#888;font-style:italic}
   table.at thead,table.bc thead{display:table-header-group}
 
   /* ── RAPPORT ENTREPRISE (onglet 4) — P2=rapport seul, P3=charts, P4=ROI+tableau ── */
@@ -650,7 +650,7 @@ const BLBL={4800:'Élite',10650:'Prestige',14336:'Maestro'};
 const BAT_REPL={4800:360000,10650:530000,14336:590000};
 
 // ===== STOCKAGE DONNÉES ÉTUDE =====
-let lastStudyData={kwc:0,devis:0,ecoAn:0,ecoAn1:0,fSansAn:0,fAvecAn:0,batModel:0,batQty:0,client:'',commercial:'',adresse:'',rows:[],pb:0,eco10:0,eco15:0};
+let lastStudyData={kwc:0,devis:0,ecoAn:0,ecoAn1:0,fSansAn:0,fAvecAn:0,batModel:0,batQty:0,client:'',commercial:'',adresse:'',rows:[],pb:0,pbMin:0,pbMax:0,eco10:0,eco15:0};
 
 // ===== SETTINGS =====
 function getS(){
@@ -715,7 +715,7 @@ function preparePrint(noPrint=false){
   const d=new Date();
   const dateStr=d.toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'});
 
-  const {kwc=6.3,devis=0,ecoAn=0,fSansAn=0,fAvecAn=0,batModel=0,batQty=1,client='',commercial='',adresse='',pb=0,eco10=0,eco15=0}=lastStudyData;
+  const {kwc=6.3,devis=0,ecoAn=0,fSansAn=0,fAvecAn=0,batModel=0,batQty=1,client='',commercial='',adresse='',pb=0,pbMin=0,pbMax=0,eco10=0,eco15=0}=lastStudyData;
   const parts=(commercial||'').split('|');
   const commName=parts[0]||'';
   const commTel=parts[1]||'';
@@ -829,7 +829,7 @@ function preparePrint(noPrint=false){
           <div class="cv-kpi-card-lbl">Montant du devis TTC</div>
         </div>
         <div class="cv-kpi-card green">
-          <div class="cv-kpi-card-val">${pb||'—'}${pb?' ans':''}</div>
+          <div class="cv-kpi-card-val">${(pbMin&&pbMax&&pbMin!==pbMax)?pbMin+' à '+pbMax+' ans':(pb?pb+' ans':'—')}</div>
           <div class="cv-kpi-card-lbl">Retour sur investissement</div>
         </div>
         <div class="cv-kpi-card green">
@@ -857,7 +857,14 @@ function preparePrint(noPrint=false){
 
   </div>`;
 
-  if(!noPrint)setTimeout(()=>window.print(),100);
+  if(!noPrint){
+    const clientSlug=(client||'Etude').replace(/[^\w\sÀ-ÿ]/g,'').trim().replace(/\s+/g,'_')||'Etude';
+    const _dd=new Date();
+    const _dStr=String(_dd.getDate()).padStart(2,'0')+'-'+String(_dd.getMonth()+1).padStart(2,'0')+'-'+_dd.getFullYear();
+    const oldTitle=document.title;
+    document.title='Etude_PV_'+clientSlug+'_'+_dStr;
+    setTimeout(()=>{window.print();setTimeout(()=>{document.title=oldTitle;},2000);},100);
+  }
 }
 
 // ===== AMORTISSEMENT (avec dégradation panneaux) =====
@@ -984,7 +991,9 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
   h+='</tbody></table></div>';
   document.getElementById(divId).innerHTML=h;
   var resActif=buildAmort(invest,ecoAn,hausse,deg,duree,tauxActif,plafond,coutBatR,anneeR);
-  return{rows:resActif.rows,pb:resActif.pb};
+  // Scénario pessimiste : sans hausse tarifaire, sans déduction fiscale
+  var resPess=buildAmort(invest,ecoAn,0,deg,duree,0,0,coutBatR,anneeR);
+  return{rows:resActif.rows,pb:resActif.pb,pbMin:minPb||resActif.pb,pbMax:resPess.pb||duree+1};
 }
 
 // ===== RÉCAP INSTALLATION =====
@@ -1363,7 +1372,7 @@ function calcT1(){
     {k:'Économie annuelle (An 1)',v:`${fmt(ecoAn)} XPF`,g:true},
   ].filter(Boolean));
 
-  const {rows,pb}=renderCombinedAmort('tb1',devis,ecoAn,s.hau,s.deg,20,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0,taux);
+  const {rows,pb,pbMin,pbMax}=renderCombinedAmort('tb1',devis,ecoAn,s.hau,s.deg,20,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0,taux);
 
   const eco20=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   kpiGrid('k1_fin',[
@@ -1381,7 +1390,7 @@ function calcT1(){
   // Stocke les données pour la page de garde
   const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,eco10,eco15};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10,eco15};
 
   document.getElementById('r1').style.display='block';
   document.getElementById('r1').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1460,7 +1469,7 @@ function calcT2(){
     {v:`${fmt(ecoAn)} XPF`,l:'Économie batterie / an',s:'g'},
     {v:`${fmtD(txAuto)}%`,l:'Taux autoconsommation'},
   ]);
-  const {rows,pb}=renderCombinedAmort('tb2',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl,taux);
+  const {rows,pb,pbMin,pbMax}=renderCombinedAmort('tb2',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl,taux);
   const ecoTotale=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
 
   plotPile('g2_donut',autoconsoDirecteAn,bDischAn,newReinjAn,newAchatAn);
@@ -1470,7 +1479,7 @@ function calcT2(){
 
   const eco10_t2=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,eco10:eco10_t2,eco15:eco15_t2};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2};
 
   document.getElementById('r2').style.display='block';
   document.getElementById('r2').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1554,7 +1563,7 @@ function calcT3(){
     {v:`${fmt(devis)} XPF`,l:'Devis TTC',s:'b'},
   ]);
 
-  const {rows,pb}=renderCombinedAmort('tb3_amort',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl,0);
+  const {rows,pb,pbMin,pbMax}=renderCombinedAmort('tb3_amort',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl,0);
 
   // Pile répartition avec batterie
   plotPile('g3_donut',0,bDischAn,newInjAn,newAchatAn);
@@ -1583,7 +1592,7 @@ function calcT3(){
   const eco15_t3=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const fSansMean=fSansM.reduce((a,b)=>a+b,0)/12;
   const fAvecMean=fAvecM.reduce((a,b)=>a+b,0)/12;
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,eco10:eco10_t3,eco15:eco15_t3};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3};
 
   document.getElementById('r3').style.display='block';
   document.getElementById('r3').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1655,6 +1664,7 @@ function calcT4(){
   const prodMoy20=prod.map(p=>Math.round(p*factMoy20));
 
   const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded);
+  const pbMax_t4=buildAmort(devis,ecoAn,0,s.deg,s.dpv,0,0).pb||s.dpv+1;
   const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+r.eco,0);
 
   // === RAPPORT PRO — Charte Solar Concept ===
@@ -1748,7 +1758,7 @@ function calcT4(){
 
   const eco10_t4=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t4=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel:0,batQty:0,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,eco10:eco10_t4,eco15:eco15_t4};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel:0,batQty:0,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,pbMin:pb,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
 
   document.getElementById('r4').style.display='block';
   document.getElementById('r4').scrollIntoView({behavior:'smooth',block:'start'});
