@@ -1524,8 +1524,8 @@ function calcT3(){
   const bChargeM=[],bDischM=[],newInjM=[],newAchatM=[];
   for(let i=0;i<12;i++){
     const maxMois=batCap*DM[i];
-    const bC=Math.min(injM[i],maxMois);
-    const bD=Math.min(bC,achatM[i]);
+    const bC=Math.min(injM[i],maxMois,achatM[i]);
+    const bD=bC;
     bChargeM.push(bC); bDischM.push(bD);
     newInjM.push(injM[i]-bC);
     newAchatM.push(achatM[i]-bD);
