@@ -615,7 +615,7 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
       <div class="st">Hypothèses financières</div>
       <div class="fg"><label>Revalorisation tarif (%/an)</label><input type="number" id="s_hau" value="0" step="0.5"></div>
       <div class="fg"><label>Durée de vie PV (ans)</label><input type="number" id="s_dpv" value="25" step="1"></div>
-      <div class="fg"><label>Durée de vie batterie (ans)</label><input type="number" id="s_db" value="17" step="1"></div>
+      <div class="fg"><label>Durée de vie batterie (ans)</label><input type="number" id="s_db" value="20" step="1"></div>
       <div class="fg"><label>DoD batterie (%)</label><input type="number" id="s_dod" value="85" min="0" max="100" step="5"></div>
       <div class="fg"><label>Plafond déduction fiscale NC (XPF/an)</label><input type="number" id="s_ded" value="1000000" step="50000"></div>
     </div>
@@ -654,7 +654,7 @@ let lastStudyData={kwc:0,devis:0,ecoAn:0,ecoAn1:0,fSansAn:0,fAvecAn:0,batModel:0
 
 // ===== SETTINGS =====
 function getS(){
-  const d={tl:37.91,th:42.24,tp:29.62,rh:21,rs:15,pf:608.42,kva:6,tc:9,rc:703,tgc:3,en:4.2,pe:10,deg:0.2,hau:0,dpv:25,db:17,dod:85,ded:1000000};
+  const d={tl:37.91,th:42.24,tp:29.62,rh:21,rs:15,pf:608.42,kva:6,tc:9,rc:703,tgc:3,en:4.2,pe:10,deg:0.2,hau:0,dpv:25,db:20,dod:85,ded:1000000};
   Object.keys(d).forEach(k=>{const e=document.getElementById('s_'+k);if(e)d[k]=parseFloat(e.value)??d[k]});
   d.bat_repl=d.db; // Remplacement batterie = durée de vie batterie
   return d;
@@ -1431,8 +1431,8 @@ function calcT2(){
   const bChargeM=[],bDischM=[],newReinjM=[],newAchatM=[];
   for(let i=0;i<12;i++){
     const maxMois=batCap*DM[i];           // capacité cyclable sur le mois
-    const bC=Math.min(reinjM[i],maxMois); // charge depuis réinjection
-    const bD=Math.min(bC,achatM[i]);      // décharge couvre achat nuit
+    const bC=Math.min(reinjM[i],maxMois,achatM[i]); // charge depuis réinjection, limitée par achat
+    const bD=bC;                                     // décharge = charge (on ne stocke que l'utile)
     bChargeM.push(bC); bDischM.push(bD);
     newReinjM.push(reinjM[i]-bC);         // injection réseau résiduelle
     newAchatM.push(achatM[i]-bD);         // achat réseau réduit
