@@ -445,8 +445,18 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
     </div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
-      <div id="g1_roi" style="height:300px"></div>
-      <div id="k1_pb"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Sans déduction fiscale</div>
+          <div id="g1_roi" style="height:260px"></div>
+          <div id="k1_pb"></div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#009966;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Avec déduction fiscale 40%</div>
+          <div id="g1_roi40" style="height:260px"></div>
+          <div id="k1_pb40"></div>
+        </div>
+      </div>
     </div>
     <div class="ps ps-table">
       <div class="tw" id="tb1"></div>
@@ -487,8 +497,18 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
     </div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
-      <div id="g2_roi" style="height:300px"></div>
-      <div id="k2_pb"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Sans déduction fiscale</div>
+          <div id="g2_roi" style="height:260px"></div>
+          <div id="k2_pb"></div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#009966;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Avec déduction fiscale 40%</div>
+          <div id="g2_roi40" style="height:260px"></div>
+          <div id="k2_pb40"></div>
+        </div>
+      </div>
     </div>
     <div class="ps ps-table">
       <div class="tw" id="tb2"></div>
@@ -531,8 +551,18 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
     </div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
-      <div id="g3_roi" style="height:300px"></div>
-      <div id="k3_pb"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Sans déduction fiscale</div>
+          <div id="g3_roi" style="height:260px"></div>
+          <div id="k3_pb"></div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#009966;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Avec déduction fiscale 40%</div>
+          <div id="g3_roi40" style="height:260px"></div>
+          <div id="k3_pb40"></div>
+        </div>
+      </div>
     </div>
     <div class="ps ps-table">
       <div class="st">Comparatif modèles</div>
@@ -575,8 +605,18 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
     <div class="ps-page2">
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
-      <div id="g4_roi" style="height:300px"></div>
-      <div id="k4_pb"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Sans déduction fiscale</div>
+          <div id="g4_roi" style="height:260px"></div>
+          <div id="k4_pb"></div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#009966;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Avec déduction fiscale 40%</div>
+          <div id="g4_roi40" style="height:260px"></div>
+          <div id="k4_pb40"></div>
+        </div>
+      </div>
     </div>
     <div class="ps ps-table">
       <div id="amort4_combined"></div>
@@ -1383,9 +1423,13 @@ function calcT1(){
   ]);
   plotPile('g1_donut',directAutoAn,batAutoAn,reinjAn,achatAn);
   plotAvantApres('g1_mois',fSansM,fAvecM,'Sans PV','Avec PV');
-  plotROI('g1_roi',rows);
-
-  if(pb)document.getElementById('k1_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  const rows0_t1=buildAmort(devis,ecoAn,s.hau,s.deg,20,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0).rows;
+  const rows40_t1=buildAmort(devis,ecoAn,s.hau,s.deg,20,40,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0).rows;
+  plotROI('g1_roi',rows0_t1);
+  plotROI('g1_roi40',rows40_t1);
+  const pb0_t1=rows0_t1.find(r=>r.cumul>=0);const pb40_t1=rows40_t1.find(r=>r.cumul>=0);
+  if(pb0_t1)document.getElementById('k1_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb0_t1.y}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  if(pb40_t1)document.getElementById('k1_pb40').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb40_t1.y}</div><div class="kl">Retour avec déduction 40%</div></div></div>`;
 
   // Stocke les données pour la page de garde
   const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
@@ -1474,8 +1518,13 @@ function calcT2(){
 
   plotPile('g2_donut',autoconsoDirecteAn,bDischAn,newReinjAn,newAchatAn);
   plotAvantApres('g2_mois',fSansM,fAvecM,'Sans batterie','Avec batterie');
-  plotROI('g2_roi',rows);
-  if(pb)document.getElementById('k2_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  const rows0_t2=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl).rows;
+  const rows40_t2=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,40,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl).rows;
+  plotROI('g2_roi',rows0_t2);
+  plotROI('g2_roi40',rows40_t2);
+  const pb0_t2=rows0_t2.find(r=>r.cumul>=0);const pb40_t2=rows40_t2.find(r=>r.cumul>=0);
+  if(pb0_t2)document.getElementById('k2_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb0_t2.y}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  if(pb40_t2)document.getElementById('k2_pb40').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb40_t2.y}</div><div class="kl">Retour avec déduction 40%</div></div></div>`;
 
   const eco10_t2=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
@@ -1569,8 +1618,13 @@ function calcT3(){
   plotPile('g3_donut',0,bDischAn,newInjAn,newAchatAn);
   plotAvantApres('g3_mois',fSansM,fAvecM,'Sans batterie','Avec batterie');
 
-  plotROI('g3_roi',rows);
-  if(pb)document.getElementById('k3_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  const rows0_t3=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl).rows;
+  const rows40_t3=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,40,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl).rows;
+  plotROI('g3_roi',rows0_t3);
+  plotROI('g3_roi40',rows40_t3);
+  const pb0_t3=rows0_t3.find(r=>r.cumul>=0);const pb40_t3=rows40_t3.find(r=>r.cumul>=0);
+  if(pb0_t3)document.getElementById('k3_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb0_t3.y}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  if(pb40_t3)document.getElementById('k3_pb40').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb40_t3.y}</div><div class="kl">Retour avec déduction 40%</div></div></div>`;
 
   let h=`<table class="bc"><thead><tr><th>Modèle</th><th>Capacité</th><th>Couverture</th><th>Éco. / an</th><th></th></tr></thead><tbody>`;
   models.forEach(m=>{
@@ -1752,8 +1806,13 @@ function calcT4(){
   ]);
   plotPile('g4_donut',autoAn,0,surpAn,achatAn);
   plotAvantApres('g4_mois_eco',fSansM,fAvecM,'Sans PV','Avec PV');
-  plotROI('g4_roi',rows);
-  if(pb)document.getElementById('k4_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  const rows0_t4=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,0,0).rows;
+  const rows40_t4=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,40,s.ded,0,0).rows;
+  plotROI('g4_roi',rows0_t4);
+  plotROI('g4_roi40',rows40_t4);
+  const pb0_t4=rows0_t4.find(r=>r.cumul>=0);const pb40_t4=rows40_t4.find(r=>r.cumul>=0);
+  if(pb0_t4)document.getElementById('k4_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb0_t4.y}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  if(pb40_t4)document.getElementById('k4_pb40').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb40_t4.y}</div><div class="kl">Retour avec déduction 40%</div></div></div>`;
   renderCombinedAmort('amort4_combined',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,0,0,0);
 
   const eco10_t4=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
