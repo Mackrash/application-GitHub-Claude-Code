@@ -275,9 +275,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   table.efy-fiscal td{padding:3pt 6pt;border-bottom:0.5pt solid #eee;color:#333;text-align:right}
   table.efy-fiscal td:first-child{color:#F07020!important;font-weight:700;text-align:center}
 
-  /* PAGE 4 : ROI + Tableau collés, pas de saut entre eux */
-  .ps-roi{break-before:page;break-after:avoid;break-inside:avoid}
-  .ps-table{break-before:avoid;break-inside:auto;margin-top:20pt}
+  /* PAGE 3 suite : ROI collé après le bilan énergie */
+  .ps-roi{break-before:avoid;break-after:avoid;break-inside:avoid}
+  /* PAGE 4 : Tableau seul */
+  .ps-table{break-before:page;break-inside:auto;margin-top:0}
 
   /* ── TITRE DE SECTION (bandeau orange) ── */
   .ps-label{
