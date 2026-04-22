@@ -138,13 +138,29 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 .fiscal-compare tr.best{background:rgba(0,212,160,.08);font-weight:600}
 .fiscal-compare tr:hover{background:rgba(240,112,32,.05)}
 @media(max-width:680px){.fiscal-compare{font-size:.75rem}.fiscal-compare th,.fiscal-compare td{padding:4px 6px}}
+/* ── ENERGY FISCAL RECAP (efy) ── */
+.efy-box{margin:14px 0;border:1px solid rgba(240,112,32,0.28);border-radius:10px;overflow:hidden;background:rgba(22,33,62,0.28)}
+.efy-section{padding:10px 14px;border-bottom:1px solid rgba(240,112,32,0.12)}
+.efy-section:last-child{border-bottom:none}
+.efy-title{font-family:'RAIDenmarkNeo',sans-serif;font-size:.76rem;color:var(--or);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:700}
+table.efy-tbl{width:100%;border-collapse:collapse;font-size:.83rem}
+table.efy-tbl td{padding:4px 8px;border-bottom:1px solid rgba(240,112,32,0.07);color:var(--tx)}
+table.efy-tbl .efy-v{text-align:right;font-weight:700;white-space:nowrap;padding-left:16px}
+table.efy-tbl tr.efy-pos td{color:var(--gr)}
+table.efy-tbl tr.efy-warn td{color:#FF7090}
+table.efy-tbl tr.efy-total td{color:var(--or);font-weight:700;font-size:.9rem;padding-top:7px;border-top:1px solid rgba(240,112,32,0.3)}
+table.efy-tbl tr.efy-total td:first-child{font-family:'RAIDenmarkNeo',sans-serif;letter-spacing:.5px}
+.efy-g{color:var(--gr)!important}
+table.efy-fiscal{width:100%;border-collapse:collapse;font-size:.83rem;margin-top:4px}
+table.efy-fiscal th{background:rgba(240,112,32,.14);color:var(--or);font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;padding:5px 8px;text-align:center;letter-spacing:.8px;font-size:.74rem;border-bottom:1px solid rgba(240,112,32,0.22)}
+table.efy-fiscal td{padding:5px 8px;border-bottom:1px solid rgba(240,112,32,.1);text-align:right;color:var(--tx)}
+table.efy-fiscal td:first-child{text-align:center;font-weight:700;color:var(--or);font-size:.88rem}
+table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 .at tr.section-head th{background:var(--ac);color:#fff;padding:7px 10px;text-align:right;font-weight:600;border-top:2px solid var(--d2)}
 .at tr.section-head th:first-child{text-align:left}
 @media print{.at tr.section-head th{background:#F07020!important;color:#fff!important}
-/* Impression : garder 0%,4%,25%,35%,45% — masquer 12%(col4), 30%(col6), 40%(col8) */
-table.at th:nth-child(4),table.at td:nth-child(4),
-table.at th:nth-child(6),table.at td:nth-child(6),
-table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
+/* Impression : 5 tranches (0%,5%,15%,30%,40%) — toutes les colonnes visibles */
+}
 
 /* MONTHLY DATA TABLE */
 .mg-wrap{overflow-x:auto;margin-bottom:14px}
@@ -241,8 +257,26 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
   .ps-page2 .ps-recap{break-before:avoid;break-after:avoid;break-inside:auto}
   .ps-page2 .ps-charts{break-before:avoid;break-after:avoid}
 
-  /* PAGE 3 : ROI + Tableau collés, pas de saut entre eux */
-  .ps-roi{break-before:avoid;break-after:avoid;break-inside:avoid}
+  /* PAGE 3 : Bilan énergie + Économies + Fiscal */
+  .ps-efy{break-before:page;break-inside:auto}
+  .efy-box{border:0.5pt solid rgba(240,112,32,0.5)!important;border-radius:3px;margin:5pt 0;break-inside:avoid;background:#fff!important}
+  .efy-section{padding:5pt 9pt;border-bottom:0.5pt solid #e0e0e0}
+  .efy-section:last-child{border-bottom:none}
+  .efy-title{color:#F07020!important;font-size:8pt;margin-bottom:3pt;letter-spacing:0.8pt;font-weight:700}
+  table.efy-tbl{font-size:9pt;width:100%;border-collapse:collapse}
+  table.efy-tbl td{padding:2pt 5pt;border-bottom:0.5pt solid #eee;color:#333}
+  table.efy-tbl .efy-v{text-align:right;font-weight:700}
+  table.efy-tbl tr.efy-pos td{color:#008040!important}
+  table.efy-tbl tr.efy-warn td{color:#CC2244!important}
+  table.efy-tbl tr.efy-total td{color:#F07020!important;font-weight:700;border-top:0.5pt solid #F07020;padding-top:4pt}
+  .efy-g{color:#008040!important}
+  table.efy-fiscal{font-size:9pt;width:100%;border-collapse:collapse;margin-top:3pt}
+  table.efy-fiscal th{background:#F07020!important;color:#fff!important;padding:3pt 6pt;font-size:8pt;text-align:center;font-weight:700}
+  table.efy-fiscal td{padding:3pt 6pt;border-bottom:0.5pt solid #eee;color:#333;text-align:right}
+  table.efy-fiscal td:first-child{color:#F07020!important;font-weight:700;text-align:center}
+
+  /* PAGE 4 : ROI + Tableau collés, pas de saut entre eux */
+  .ps-roi{break-before:page;break-after:avoid;break-inside:avoid}
   .ps-table{break-before:avoid;break-inside:auto;margin-top:20pt}
 
   /* ── TITRE DE SECTION (bandeau orange) ── */
@@ -382,6 +416,7 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
   <div class="header-right">
     <button class="btn-print" onclick="preparePrint()">🖨 Imprimer / PDF</button>
     <button class="btn-print" onclick="saveStudy()" id="btn-save" style="margin-left:6px">💾 Enregistrer l’étude</button>
+    <button class="btn-print" onclick="saveCalcs()" id="btn-calcs" style="margin-left:6px;opacity:.85">🧮 Détail des calculs</button>
     <div class="tel">☎ 47 03 02</div>
   </div>
 </div>
@@ -443,20 +478,11 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
       </div>
     </div>
     </div>
+    <div class="ps ps-efy"><div id="recap1_efy"></div></div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Sans déduction fiscale</div>
-          <div id="g1_roi" style="height:260px"></div>
-          <div id="k1_pb"></div>
-        </div>
-        <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#009966;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Avec déduction fiscale 40%</div>
-          <div id="g1_roi40" style="height:260px"></div>
-          <div id="k1_pb40"></div>
-        </div>
-      </div>
+      <div id="g1_roi" style="height:300px"></div>
+      <div id="k1_pb"></div>
     </div>
     <div class="ps ps-table">
       <div class="tw" id="tb1"></div>
@@ -495,20 +521,11 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
       </div>
     </div>
     </div>
+    <div class="ps ps-efy"><div id="recap2_efy"></div></div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Sans déduction fiscale</div>
-          <div id="g2_roi" style="height:260px"></div>
-          <div id="k2_pb"></div>
-        </div>
-        <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#009966;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Avec déduction fiscale 40%</div>
-          <div id="g2_roi40" style="height:260px"></div>
-          <div id="k2_pb40"></div>
-        </div>
-      </div>
+      <div id="g2_roi" style="height:300px"></div>
+      <div id="k2_pb"></div>
     </div>
     <div class="ps ps-table">
       <div class="tw" id="tb2"></div>
@@ -549,20 +566,11 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
       </div>
     </div>
     </div>
+    <div class="ps ps-efy"><div id="recap3_efy"></div></div>
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Sans déduction fiscale</div>
-          <div id="g3_roi" style="height:260px"></div>
-          <div id="k3_pb"></div>
-        </div>
-        <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#009966;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Avec déduction fiscale 40%</div>
-          <div id="g3_roi40" style="height:260px"></div>
-          <div id="k3_pb40"></div>
-        </div>
-      </div>
+      <div id="g3_roi" style="height:300px"></div>
+      <div id="k3_pb"></div>
     </div>
     <div class="ps ps-table">
       <div class="st">Comparatif modèles</div>
@@ -605,18 +613,8 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
     <div class="ps-page2">
     <div class="ps ps-roi">
       <div class="st">Retour sur investissement — 20 ans</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Sans déduction fiscale</div>
-          <div id="g4_roi" style="height:260px"></div>
-          <div id="k4_pb"></div>
-        </div>
-        <div>
-          <div style="font-size:0.75rem;font-weight:700;color:#009966;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Avec déduction fiscale 40%</div>
-          <div id="g4_roi40" style="height:260px"></div>
-          <div id="k4_pb40"></div>
-        </div>
-      </div>
+      <div id="g4_roi" style="height:300px"></div>
+      <div id="k4_pb"></div>
     </div>
     <div class="ps ps-table">
       <div id="amort4_combined"></div>
@@ -655,7 +653,7 @@ table.at th:nth-child(8),table.at td:nth-child(8){display:none!important}}
       <div class="st">Hypothèses financières</div>
       <div class="fg"><label>Revalorisation tarif (%/an)</label><input type="number" id="s_hau" value="0" step="0.5"></div>
       <div class="fg"><label>Durée de vie PV (ans)</label><input type="number" id="s_dpv" value="25" step="1"></div>
-      <div class="fg"><label>Durée de vie batterie (ans)</label><input type="number" id="s_db" value="20" step="1"></div>
+      <div class="fg"><label>Durée de vie batterie (ans)</label><input type="number" id="s_db" value="17" step="1"></div>
       <div class="fg"><label>DoD batterie (%)</label><input type="number" id="s_dod" value="85" min="0" max="100" step="5"></div>
       <div class="fg"><label>Plafond déduction fiscale NC (XPF/an)</label><input type="number" id="s_ded" value="1000000" step="50000"></div>
     </div>
@@ -677,13 +675,10 @@ const MO=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','D
 const DM=[31,28,31,30,31,30,31,31,30,31,30,31];
 const TRANCHES_NC=[
   {taux:0,  label:'0%',  desc:'≤ 1 000 000'},
-  {taux:4,  label:'4%',  desc:'1M→1,8M'},
-  {taux:12, label:'12%', desc:'1,8M→3M'},
-  {taux:25, label:'25%', desc:'3M→4,5M'},
-  {taux:30, label:'30%', desc:'4,5M→5,7M'},
-  {taux:35, label:'35%', desc:'5,7M→7,5M'},
-  {taux:40, label:'40%', desc:'7,5M→12,1M'},
-  {taux:45, label:'45%', desc:'> 12,1M'},
+  {taux:5,  label:'5%',  desc:'1 000 001 → 1 800 000'},
+  {taux:15, label:'15%', desc:'1 800 001 → 3 000 000'},
+  {taux:30, label:'30%', desc:'3 000 001 → 4 500 000'},
+  {taux:40, label:'40%', desc:'> 4 500 000'},
 ];
 const TD=DM.reduce((a,b)=>a+b,0);
 const BLBL={4800:'Élite',10650:'Prestige',14336:'Maestro'};
@@ -691,10 +686,11 @@ const BAT_REPL={4800:360000,10650:530000,14336:590000};
 
 // ===== STOCKAGE DONNÉES ÉTUDE =====
 let lastStudyData={kwc:0,devis:0,ecoAn:0,ecoAn1:0,fSansAn:0,fAvecAn:0,batModel:0,batQty:0,client:'',commercial:'',adresse:'',rows:[],pb:0,pbMin:0,pbMax:0,eco10:0,eco15:0};
+let lastCalcDetails=null;
 
 // ===== SETTINGS =====
 function getS(){
-  const d={tl:37.91,th:42.24,tp:29.62,rh:21,rs:15,pf:608.42,kva:6,tc:9,rc:703,tgc:3,en:4.2,pe:10,deg:0.2,hau:0,dpv:25,db:20,dod:85,ded:1000000};
+  const d={tl:37.91,th:42.24,tp:29.62,rh:21,rs:15,pf:608.42,kva:6,tc:9,rc:703,tgc:3,en:4.2,pe:10,deg:0.2,hau:0,dpv:25,db:17,dod:85,ded:1000000};
   Object.keys(d).forEach(k=>{const e=document.getElementById('s_'+k);if(e)d[k]=parseFloat(e.value)??d[k]});
   d.bat_repl=d.db; // Remplacement batterie = durée de vie batterie
   return d;
@@ -1040,6 +1036,70 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
 function renderRecap(id,data){
   const rows=data.map(r=>`<div class="recap-row"><span class="recap-key">${r.k}</span><span class="recap-val ${r.hi?'hi':r.r?'r':r.g?'g':''}">${r.v}</span></div>`).join('');
   document.getElementById(id).innerHTML=`<div class="recap-box"><div class="recap-title">📋 Récapitulatif installation</div><div class="recap-grid">${rows}</div></div>`;
+}
+
+// ===== BILAN ÉNERGIE + ÉCONOMIES + DÉDUCTION FISCALE =====
+function renderEnergyFiscalRecap(divId,cfg){
+  const {prodAn,consoAn,directAutoAn,batAutoAn,reinjAn,achatAn,
+         injAvantAn,newAchatAn,newInjAn,
+         ecoAutoAn,ecoBatAn,ecoTotal,
+         devis,s,batRepl,batReplAn,hasBat,isT3}=cfg;
+
+  // ─── BILAN ÉNERGÉTIQUE ───
+  let r1='';
+  if(isT3){
+    r1+=`<tr><td>Injection réseau (avant batterie)</td><td class="efy-v">${fmt(Math.round(injAvantAn))} kWh</td></tr>`;
+    r1+=`<tr class="efy-warn"><td>Achat réseau (avant batterie)</td><td class="efy-v">${fmt(Math.round(achatAn))} kWh</td></tr>`;
+    r1+=`<tr class="efy-pos"><td>Couverture via batterie</td><td class="efy-v">${fmt(Math.round(batAutoAn))} kWh</td></tr>`;
+    r1+=`<tr><td>Achat réseau (avec batterie)</td><td class="efy-v">${fmt(Math.round(newAchatAn))} kWh</td></tr>`;
+    r1+=`<tr><td>Injection réseau (avec batterie)</td><td class="efy-v">${fmt(Math.round(newInjAn))} kWh</td></tr>`;
+  } else {
+    if(prodAn!=null) r1+=`<tr><td>Production PV estimée</td><td class="efy-v">${fmt(Math.round(prodAn))} kWh</td></tr>`;
+    if(consoAn!=null) r1+=`<tr class="efy-warn"><td>Consommation totale</td><td class="efy-v">${fmt(Math.round(consoAn))} kWh</td></tr>`;
+    if(directAutoAn>0) r1+=`<tr class="efy-pos"><td>Autoconsommation solaire directe</td><td class="efy-v">${fmt(Math.round(directAutoAn))} kWh</td></tr>`;
+    if(hasBat&&batAutoAn>0) r1+=`<tr class="efy-pos"><td>Couverture via batterie</td><td class="efy-v">${fmt(Math.round(batAutoAn))} kWh</td></tr>`;
+    r1+=`<tr class="efy-warn"><td>Achat réseau</td><td class="efy-v">${fmt(Math.round(achatAn))} kWh</td></tr>`;
+    r1+=`<tr><td>Réinjection réseau (surplus)</td><td class="efy-v">${fmt(Math.round(reinjAn))} kWh</td></tr>`;
+  }
+
+  // ─── ÉCONOMIES ───
+  let r2='';
+  if(ecoAutoAn>0) r2+=`<tr><td>Par autoconsommation solaire</td><td class="efy-v efy-g">${fmt(Math.round(ecoAutoAn))} XPF</td></tr>`;
+  if(ecoBatAn>0)  r2+=`<tr><td>Par stockage batterie</td><td class="efy-v efy-g">${fmt(Math.round(ecoBatAn))} XPF</td></tr>`;
+  r2+=`<tr class="efy-total"><td>Total économie annuelle (An 1)</td><td class="efy-v">${fmt(Math.round(ecoTotal))} XPF</td></tr>`;
+
+  // ─── DÉDUCTION FISCALE NC ───
+  const plafond=s.ded;
+  let r3='';
+  TRANCHES_NC.filter(t=>t.taux>0).forEach(function(t){
+    const ded=calcDeduction(devis,t.taux,plafond);
+    const coutNet=devis-ded.eco;
+    const amort=buildAmort(devis,ecoTotal,s.hau,s.deg,s.dpv,t.taux,plafond,batRepl||0,batReplAn||0);
+    const pb=amort.pb?'An '+amort.pb:'> '+s.dpv+' ans';
+    r3+=`<tr>
+      <td>${t.label}</td>
+      <td>${ded.eco>0?fmt(Math.round(ded.eco))+' XPF':'—'}</td>
+      <td>${fmt(Math.round(coutNet))} XPF</td>
+      <td>${pb}</td>
+    </tr>`;
+  });
+
+  document.getElementById(divId).innerHTML=`<div class="efy-box">
+    <div class="efy-section">
+      <div class="efy-title">⚡ Bilan énergétique annuel</div>
+      <table class="efy-tbl"><tbody>${r1}</tbody></table>
+    </div>
+    <div class="efy-section">
+      <div class="efy-title">💰 Économies annuelles générées</div>
+      <table class="efy-tbl"><tbody>${r2}</tbody></table>
+    </div>
+    <div class="efy-section">
+      <div class="efy-title">🧾 Déduction fiscale NC — par tranche d'imposition</div>
+      <table class="efy-fiscal"><thead><tr>
+        <th>Tranche IR</th><th>Économie fiscale</th><th>Coût après déduction</th><th>Payback</th>
+      </tr></thead><tbody>${r3}</tbody></table>
+    </div>
+  </div>`;
 }
 
 // ===== TABLE PAR TRANCHES 5 ANS =====
@@ -1423,18 +1483,39 @@ function calcT1(){
   ]);
   plotPile('g1_donut',directAutoAn,batAutoAn,reinjAn,achatAn);
   plotAvantApres('g1_mois',fSansM,fAvecM,'Sans PV','Avec PV');
-  const rows0_t1=buildAmort(devis,ecoAn,s.hau,s.deg,20,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0).rows;
-  const rows40_t1=buildAmort(devis,ecoAn,s.hau,s.deg,20,40,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0).rows;
-  plotROI('g1_roi',rows0_t1);
-  plotROI('g1_roi40',rows40_t1);
-  const pb0_t1=rows0_t1.find(r=>r.cumul>=0);const pb40_t1=rows40_t1.find(r=>r.cumul>=0);
-  if(pb0_t1)document.getElementById('k1_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb0_t1.y}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  if(pb40_t1)document.getElementById('k1_pb40').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb40_t1.y}</div><div class="kl">Retour avec déduction 40%</div></div></div>`;
+  plotROI('g1_roi',rows);
+
+  if(pb)document.getElementById('k1_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
 
   // Stocke les données pour la page de garde
   const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10,eco15};
+
+  // Bilan énergie — différentiel Option B (autoconso vs batterie)
+  const consoAn_t1=consoM.reduce((a,b)=>a+b,0);
+  let ecoAutoAn,ecoBatAn;
+  if(batWh>0){
+    const fNoBat=directAutoM.map((da,i)=>factureMois(Math.max(0,consoM[i]-da),Math.max(0,prod[i]-da),s,false,rev));
+    const fNoBatAn=fNoBat.reduce((a,b)=>a+b,0);
+    ecoAutoAn=fSansAn-fNoBatAn;
+    ecoBatAn=fNoBatAn-fAvecAn;
+  } else {
+    ecoAutoAn=ecoAn; ecoBatAn=0;
+  }
+  renderEnergyFiscalRecap('recap1_efy',{
+    prodAn,consoAn:consoAn_t1,directAutoAn,batAutoAn,reinjAn,achatAn,
+    ecoAutoAn,ecoBatAn,ecoTotal:ecoAn,
+    devis,s,batRepl:batModel>0?BAT_REPL[batModel]*batQty:0,
+    batReplAn:batModel>0?s.bat_repl:0,hasBat:batWh>0
+  });
+  lastCalcDetails={tab:1,tabName:'Installation complète',
+    client:document.getElementById('t1_client').value,adresse:document.getElementById('t1_adresse').value,
+    kwc,panWc,nbP,surf,devis,rev,batModel,batQty,batWh,tauxAuto,
+    prodAn,consoAn:consoAn_t1,directAutoAn,batAutoAn,reinjAn,achatAn,
+    fSansAn,fAvecAn,ecoAn,ecoAutoAn,ecoBatAn,
+    pb,pbMin,pbMax,
+    batRepl:batModel>0?BAT_REPL[batModel]*batQty:0,batReplAn:batModel>0?s.bat_repl:0};
 
   document.getElementById('r1').style.display='block';
   document.getElementById('r1').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1475,8 +1556,8 @@ function calcT2(){
   const bChargeM=[],bDischM=[],newReinjM=[],newAchatM=[];
   for(let i=0;i<12;i++){
     const maxMois=batCap*DM[i];           // capacité cyclable sur le mois
-    const bC=Math.min(reinjM[i],maxMois,achatM[i]); // charge depuis réinjection, limitée par achat
-    const bD=bC;                                     // décharge = charge (on ne stocke que l'utile)
+    const bC=Math.min(reinjM[i],maxMois); // charge depuis réinjection
+    const bD=Math.min(bC,achatM[i]);      // décharge couvre achat nuit
     bChargeM.push(bC); bDischM.push(bD);
     newReinjM.push(reinjM[i]-bC);         // injection réseau résiduelle
     newAchatM.push(achatM[i]-bD);         // achat réseau réduit
@@ -1518,17 +1599,27 @@ function calcT2(){
 
   plotPile('g2_donut',autoconsoDirecteAn,bDischAn,newReinjAn,newAchatAn);
   plotAvantApres('g2_mois',fSansM,fAvecM,'Sans batterie','Avec batterie');
-  const rows0_t2=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl).rows;
-  const rows40_t2=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,40,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl).rows;
-  plotROI('g2_roi',rows0_t2);
-  plotROI('g2_roi40',rows40_t2);
-  const pb0_t2=rows0_t2.find(r=>r.cumul>=0);const pb40_t2=rows40_t2.find(r=>r.cumul>=0);
-  if(pb0_t2)document.getElementById('k2_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb0_t2.y}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  if(pb40_t2)document.getElementById('k2_pb40').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb40_t2.y}</div><div class="kl">Retour avec déduction 40%</div></div></div>`;
+  plotROI('g2_roi',rows);
+  if(pb)document.getElementById('k2_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
 
   const eco10_t2=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2};
+
+  renderEnergyFiscalRecap('recap2_efy',{
+    prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
+    reinjAn:newReinjAn,achatAn:newAchatAn,
+    ecoAutoAn:0,ecoBatAn:ecoAn,ecoTotal:ecoAn,
+    devis,s,batRepl:BAT_REPL[batModel]*batQty,batReplAn:s.bat_repl,hasBat:true
+  });
+  lastCalcDetails={tab:2,tabName:'Batterie + données complètes',
+    client:document.getElementById('t1_client').value,adresse:document.getElementById('t1_adresse').value,
+    kwc,panWc,nbP,surf,devis,rev,batModel,batQty,batWh,
+    prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
+    reinjAn:newReinjAn,achatAn:newAchatAn,
+    fSansAn:fSansBat,fAvecAn:fAvecBat,ecoAn,ecoAutoAn:0,ecoBatAn:ecoAn,
+    pb,pbMin,pbMax,
+    batRepl:BAT_REPL[batModel]*batQty,batReplAn:s.bat_repl};
 
   document.getElementById('r2').style.display='block';
   document.getElementById('r2').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1618,13 +1709,8 @@ function calcT3(){
   plotPile('g3_donut',0,bDischAn,newInjAn,newAchatAn);
   plotAvantApres('g3_mois',fSansM,fAvecM,'Sans batterie','Avec batterie');
 
-  const rows0_t3=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl).rows;
-  const rows40_t3=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,40,s.ded,BAT_REPL[batModel]*batQty,s.bat_repl).rows;
-  plotROI('g3_roi',rows0_t3);
-  plotROI('g3_roi40',rows40_t3);
-  const pb0_t3=rows0_t3.find(r=>r.cumul>=0);const pb40_t3=rows40_t3.find(r=>r.cumul>=0);
-  if(pb0_t3)document.getElementById('k3_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb0_t3.y}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  if(pb40_t3)document.getElementById('k3_pb40').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb40_t3.y}</div><div class="kl">Retour avec déduction 40%</div></div></div>`;
+  plotROI('g3_roi',rows);
+  if(pb)document.getElementById('k3_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
 
   let h=`<table class="bc"><thead><tr><th>Modèle</th><th>Capacité</th><th>Couverture</th><th>Éco. / an</th><th></th></tr></thead><tbody>`;
   models.forEach(m=>{
@@ -1647,6 +1733,21 @@ function calcT3(){
   const fSansMean=fSansM.reduce((a,b)=>a+b,0)/12;
   const fAvecMean=fAvecM.reduce((a,b)=>a+b,0)/12;
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3};
+
+  renderEnergyFiscalRecap('recap3_efy',{
+    isT3:true,
+    injAvantAn:injAn,achatAn,batAutoAn:bDischAn,
+    newAchatAn,newInjAn,
+    ecoAutoAn:0,ecoBatAn:ecoAn,ecoTotal:ecoAn,
+    devis,s,batRepl:BAT_REPL[batModel]*batQty,batReplAn:s.bat_repl,hasBat:true
+  });
+  lastCalcDetails={tab:3,tabName:'Estimation batterie',isT3:true,
+    client:document.getElementById('t1_client').value,adresse:document.getElementById('t1_adresse').value,
+    kwc,nbP,surf,devis,rev,batModel,batQty,
+    injAvantAn:injAn,achatAn,batAutoAn:bDischAn,newAchatAn,newInjAn,
+    fSansAn:fSansBat,fAvecAn:fAvecBat,ecoAn,ecoAutoAn:0,ecoBatAn:ecoAn,
+    pb,pbMin,pbMax,
+    batRepl:BAT_REPL[batModel]*batQty,batReplAn:s.bat_repl};
 
   document.getElementById('r3').style.display='block';
   document.getElementById('r3').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1806,13 +1907,8 @@ function calcT4(){
   ]);
   plotPile('g4_donut',autoAn,0,surpAn,achatAn);
   plotAvantApres('g4_mois_eco',fSansM,fAvecM,'Sans PV','Avec PV');
-  const rows0_t4=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,0,0).rows;
-  const rows40_t4=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,40,s.ded,0,0).rows;
-  plotROI('g4_roi',rows0_t4);
-  plotROI('g4_roi40',rows40_t4);
-  const pb0_t4=rows0_t4.find(r=>r.cumul>=0);const pb40_t4=rows40_t4.find(r=>r.cumul>=0);
-  if(pb0_t4)document.getElementById('k4_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb0_t4.y}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  if(pb40_t4)document.getElementById('k4_pb40').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb40_t4.y}</div><div class="kl">Retour avec déduction 40%</div></div></div>`;
+  plotROI('g4_roi',rows);
+  if(pb)document.getElementById('k4_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
   renderCombinedAmort('amort4_combined',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,0,0,0);
 
   const eco10_t4=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
@@ -1953,12 +2049,165 @@ async function saveStudy(){
 }
 
 
+// ===== FICHE DE CALCUL INTERNE =====
+function saveCalcs(){
+  if(!lastCalcDetails){alert('Calculez d\'abord une étude.');return;}
+  const d=lastCalcDetails;
+  const s=getS();
+  const f=n=>Math.round(n).toLocaleString('fr-FR');
+  const fd=(n,dec=1)=>parseFloat(n).toFixed(dec).replace('.',',');
+  const date=new Date().toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'});
+
+  // Pré-calcul fiscal (contexte page principale — accès aux fonctions globales)
+  const fiscData=TRANCHES_NC.filter(t=>t.taux>0).map(t=>{
+    const ded=calcDeduction(d.devis,t.taux,s.ded);
+    const amort=buildAmort(d.devis,d.ecoAn,s.hau,s.deg,s.dpv,t.taux,s.ded,d.batRepl||0,d.batReplAn||0);
+    return{label:t.label,desc:t.desc,eco:ded.eco,coutNet:d.devis-ded.eco,pb:amort.pb,nbAns:ded.nbAns};
+  });
+
+  // Section énergie selon onglet
+  let secEnergie='';
+  if(d.isT3){
+    secEnergie=`
+    <tr><td class="k">Injection réseau (avant batterie)</td><td class="v">${f(d.injAvantAn)} kWh</td></tr>
+    <tr><td class="k">Achat réseau (avant batterie)</td><td class="v r">${f(d.achatAn)} kWh</td></tr>
+    <tr><td class="k">Énergie captée par la batterie</td><td class="v g">${f(d.batAutoAn)} kWh <span class="fm">= min(injection, cap_bat/j × jours)</span></td></tr>
+    <tr><td class="k">Achat réseau réduit (avec batterie)</td><td class="v r">${f(d.newAchatAn)} kWh</td></tr>
+    <tr><td class="k">Injection résiduelle (avec batterie)</td><td class="v">${f(d.newInjAn)} kWh</td></tr>`;
+  } else {
+    secEnergie=`
+    <tr><td class="k">Consommation annuelle totale</td><td class="v r">${f(d.consoAn)} kWh</td></tr>
+    <tr><td class="k">Production PV annuelle estimée</td><td class="v">${f(d.prodAn)} kWh <span class="fm">= ${fd(d.kwc)} kWc × ${fd(s.en,2)} kWh/kWc/j × 365 × coeff_mensuel × (1−${fd(s.pe)}%)</span></td></tr>
+    ${d.directAutoAn>0?`<tr><td class="k">Autoconsommation directe</td><td class="v g">${f(d.directAutoAn)} kWh${d.tab===1?' <span class="fm">= conso × '+d.tauxAuto+'% (limité à la production)</span>':''}</td></tr>`:''}
+    ${d.batAutoAn>0?`<tr><td class="k">Couverture via batterie</td><td class="v g">${f(d.batAutoAn)} kWh <span class="fm">= min(surplus, cap_utilisable/j × jours) → décharge la nuit</span></td></tr>`:''}
+    <tr><td class="k">Achat réseau résiduel</td><td class="v r">${f(d.achatAn)} kWh</td></tr>
+    <tr><td class="k">Réinjection réseau (surplus)</td><td class="v">${f(d.reinjAn)} kWh</td></tr>`;
+  }
+
+  // Batterie si présente
+  const secBat=d.batWh>0?`
+  <h2>3 — Batterie de stockage</h2>
+  <table>
+    <tr><td class="k">Modèle</td><td class="v">${BLBL[d.batModel]||''} × ${d.batQty}</td></tr>
+    <tr><td class="k">Capacité brute</td><td class="v">${fd(d.batWh/1000,2)} kWh</td></tr>
+    <tr><td class="k">DoD appliqué</td><td class="v">${s.dod}% <span class="fm">→ capacité utile : ${fd(d.batWh/1000*s.dod/100,2)} kWh</span></td></tr>
+    <tr><td class="k">Coût remplacement (an ${s.bat_repl})</td><td class="v">${f(d.batRepl)} XPF</td></tr>
+  </table>`:'';
+
+  const html=`<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Fiche de calcul — ${d.client||'Client'}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;font-size:15px;color:#333;padding:28px;max-width:860px;margin:0 auto}
+  h1{font-size:22px;color:#F07020;border-bottom:2px solid #F07020;padding-bottom:8px;margin-bottom:16px}
+  h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#F07020;
+     border-left:4px solid #F07020;padding-left:9px;margin:20px 0 8px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px}
+  td,th{padding:7px 10px;border-bottom:1px solid #ececec;vertical-align:middle}
+  td.k{color:#555;width:52%}
+  td.v{font-weight:700;text-align:right}
+  td.v.g{color:#008040}
+  td.v.r{color:#CC2244}
+  td.v.o{color:#F07020}
+  tr.sep td{border-top:2px solid #F07020;padding-top:7px}
+  th{background:#F07020;color:#fff;font-weight:700;font-size:13px;text-align:right;padding:7px 10px}
+  th:first-child{text-align:left}
+  .fm{font-family:monospace;font-size:12px;color:#999;font-weight:400;margin-left:8px}
+  .meta{font-size:14px;color:#666;margin-bottom:16px;display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding-bottom:10px}
+  .note{font-size:13px;color:#888;font-style:italic;margin:4px 0 9px 0}
+  .footer{font-size:12px;color:#aaa;font-style:italic;margin-top:24px;border-top:1px solid #eee;padding-top:10px}
+  @media print{body{padding:12px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+  <h1>Fiche de calcul interne — Solar Concept</h1>
+  <div class="meta">
+    <span>Client : <strong>${d.client||'—'}</strong>${d.adresse?' &nbsp;|&nbsp; '+d.adresse:''} &nbsp;|&nbsp; Onglet : <strong>${d.tabName}</strong></span>
+    <span>${date}</span>
+  </div>
+
+  <h2>1 — Paramètres de calcul utilisés</h2>
+  <p class="note">Ces valeurs sont configurables dans l'onglet Paramètres. Elles s'appliquent à tous les calculs.</p>
+  <table>
+    <tr><td class="k">Irradiance Nouméa (ensoleillement moyen)</td><td class="v">${fd(s.en,2)} kWh/kWc/jour</td></tr>
+    <tr><td class="k">Pertes système (câblage, onduleur, température…)</td><td class="v">${fd(s.pe)}% <span class="fm">→ facteur de correction : ${fd(1-s.pe/100,3)}</span></td></tr>
+    <tr><td class="k">Dégradation panneaux par an</td><td class="v">${fd(s.deg,2)}%/an</td></tr>
+    <tr><td class="k">Revalorisation tarif EEC hypothèse</td><td class="v">${fd(s.hau)}%/an</td></tr>
+    <tr><td class="k">Durée de vie PV retenue</td><td class="v">${s.dpv} ans</td></tr>
+    <tr><td class="k">Tarif basse tranche EEC (0–150 kWh/mois)</td><td class="v">${fd(s.tl,2)} XPF/kWh</td></tr>
+    <tr><td class="k">Tarif haute tranche EEC (&gt; 150 kWh/mois)</td><td class="v">${fd(s.th,2)} XPF/kWh</td></tr>
+    <tr><td class="k">Plafond déduction fiscale NC</td><td class="v">${f(s.ded)} XPF/an</td></tr>
+  </table>
+
+  <h2>2 — Installation photovoltaïque</h2>
+  <table>
+    <tr><td class="k">Puissance installée</td><td class="v o">${fd(d.kwc)} kWc</td></tr>
+    ${d.nbP?`<tr><td class="k">Nombre de panneaux</td><td class="v">${d.nbP} × ${d.panWc||450} Wc</td></tr>`:''}
+    ${d.surf?`<tr><td class="k">Surface au sol approximative</td><td class="v">${fd(d.surf,0)} m²</td></tr>`:''}
+    ${d.batWh>0?`<tr><td class="k">Batterie</td><td class="v">${BLBL[d.batModel]||''} × ${d.batQty} — ${fd(d.batWh/1000,2)} kWh brut</td></tr>`:''}
+    <tr><td class="k">Investissement TTC</td><td class="v">${f(d.devis)} XPF</td></tr>
+    ${d.rev>0?`<tr><td class="k">Revente surplus réseau</td><td class="v">${fd(d.rev,0)} XPF/kWh</td></tr>`:''}
+  </table>
+
+  ${secBat}
+
+  <h2>${d.batWh>0?4:3} — Flux d'énergie annuels</h2>
+  <p class="note">${d.isT3?'Données saisies = achat réseau et injection actuels (avec PV déjà installé). La batterie intercepte l\'injection pour la restituer la nuit.':d.tab===1?'Production calculée par mois via les coefficients d\'irradiation Nouméa. Autoconsommation = taux saisi appliqué à la consommation journalière, limité à la production.':'Données saisies = relevés EEC réels. La batterie intercepte le surplus d\'injection pour le restituer la nuit et réduire l\'achat réseau.'}</p>
+  <table>${secEnergie}</table>
+
+  <h2>${d.batWh>0?5:4} — Impact financier annuel (An 1)</h2>
+  <p class="note">Calcul EEC : abonnement + tranche basse (${fd(s.tl,2)} XPF/kWh pour les 150 premiers kWh/mois) + tranche haute (${fd(s.th,2)} XPF/kWh au-delà). Revente à ${fd(d.rev||0,0)} XPF/kWh déduite.</p>
+  <table>
+    <tr><td class="k">Facture annuelle <strong>AVANT</strong> installation</td><td class="v r">${f(d.fSansAn)} XPF</td></tr>
+    <tr><td class="k">Facture annuelle <strong>APRÈS</strong> installation</td><td class="v g">${f(d.fAvecAn)} XPF</td></tr>
+    ${d.ecoAutoAn>0?`<tr><td class="k">&nbsp;&nbsp;↳ dont économie autoconsommation</td><td class="v g">${f(d.ecoAutoAn)} XPF</td></tr>`:''}
+    ${d.ecoBatAn>0?`<tr><td class="k">&nbsp;&nbsp;↳ dont économie batterie (différentiel)</td><td class="v g">${f(d.ecoBatAn)} XPF</td></tr>`:''}
+    <tr class="sep"><td class="k"><strong>Économie annuelle totale (An 1)</strong></td><td class="v g">${f(d.ecoAn)} XPF</td></tr>
+  </table>
+
+  <h2>${d.batWh>0?6:5} — Retour sur investissement</h2>
+  <p class="note">Chaque année, l'économie augmente avec la revalorisation du tarif EEC (+${fd(s.hau)}%/an) et diminue légèrement avec la dégradation des panneaux (−${fd(s.deg,2)}%/an). Le payback est l'année où le cumul des économies dépasse l'investissement.</p>
+  <table>
+    <tr><td class="k">Investissement net</td><td class="v">${f(d.devis)} XPF</td></tr>
+    <tr><td class="k">Payback sans hausse tarifaire, sans déduction fiscale (cas pessimiste)</td><td class="v">${d.pbMax&&d.pbMax<=s.dpv?'An '+d.pbMax:'> '+s.dpv+' ans'}</td></tr>
+    <tr><td class="k">Payback avec meilleure déduction fiscale (cas optimiste)</td><td class="v g">${d.pbMin&&d.pbMin<=s.dpv?'An '+d.pbMin:'> '+s.dpv+' ans'}</td></tr>
+  </table>
+
+  <h2>${d.batWh>0?7:6} — Déduction fiscale NC</h2>
+  <p class="note">En NC, le montant de l'installation est déductible du revenu imposable, plafonné à ${f(s.ded)} XPF/an. L'économie fiscale = montant déduit × taux marginal d'imposition. Elle réduit le coût net réel de l'installation et raccourcit le payback.</p>
+  <table>
+    <tr>
+      <th>Tranche IR</th><th style="text-align:left">Revenus concernés</th>
+      <th>Économie fiscale</th><th>Coût net installation</th><th>Payback</th>
+    </tr>
+    ${fiscData.map(r=>`<tr>
+      <td style="font-weight:700;color:#F07020;text-align:center">${r.label}</td>
+      <td style="color:#666;font-size:14px">${r.desc}</td>
+      <td style="text-align:right;font-weight:700;color:#008040">${r.eco>0?f(r.eco)+' XPF':'—'}</td>
+      <td style="text-align:right;font-weight:700">${f(r.coutNet)} XPF</td>
+      <td style="text-align:right">${r.pb?'An '+r.pb:'> '+s.dpv+' ans'}</td>
+    </tr>`).join('')}
+  </table>
+
+  <div class="footer">Document interne Solar Concept — Calculs estimatifs non contractuels — ${date}</div>
+</body>
+</html>`;
+
+  const win=window.open('','_blank','width=900,height=750');
+  if(win){win.document.write(html);win.document.close();}
+  else{alert('Fenêtre pop-up bloquée. Autorisez les pop-ups pour ce site.');}
+}
+
 // ===== IMPRESSION — préparation Plotly fond blanc =====
 function setPrintLabels(){
   // Injecte les bandeaux de titre dans chaque .ps si pas encore présents
   const labels={
     'ps-recap':'Récapitulatif de l\'étude',
     'ps-charts':'Répartition & Factures avant / après',
+    'ps-efy':'Bilan énergétique & Déduction fiscale NC',
     'ps-roi':'Retour sur investissement',
     'ps-table':'Tableau d\'amortissement'
   };
