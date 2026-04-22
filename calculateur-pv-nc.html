@@ -255,17 +255,21 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   /* PAGE 2 : Recap + Charts groupés — saut de page APRES le groupe */
   .ps-page2{break-after:page;break-inside:auto}
   .ps-page2 .ps-recap{break-before:avoid;break-after:avoid;break-inside:auto}
-  .ps-page2 .ps-charts{break-before:avoid;break-after:avoid;margin-top:32pt}
-  .ps-page2 .ps-charts::before{
+  /* Séparateur recap → donut (page 2 suite) */
+  .ps-donut{break-before:avoid;break-after:avoid;margin-top:32pt}
+  .ps-donut::before{
     content:'';display:block;
     height:3pt;
     background:radial-gradient(ellipse at center,rgba(240,112,32,0.55) 0%,transparent 72%);
     margin:0 15% 38pt;
     -webkit-print-color-adjust:exact;print-color-adjust:exact;
   }
+  .ps-donut [id$="_donut"]{height:260px!important;overflow:hidden!important}
 
-  /* PAGE 3 : Bilan énergie + Économies + Fiscal */
-  .ps-efy{break-before:page;break-inside:auto}
+  /* PAGE 3 : Financier — économies + factures + ROI + fiscal */
+  .ps-financial{break-before:page;break-after:page;break-inside:auto}
+  .ps-financial [id$="_mois"],.ps-financial [id$="_mois_eco"]{height:210px!important}
+  .ps-financial [id$="_roi"]{height:195px!important}
   .efy-box{border:0.5pt solid rgba(240,112,32,0.5)!important;border-radius:3px;margin:5pt 0;break-inside:avoid;background:#fff!important}
   .efy-section{padding:5pt 9pt;border-bottom:0.5pt solid #e0e0e0}
   .efy-section:last-child{border-bottom:none}
@@ -282,15 +286,9 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   table.efy-fiscal td{padding:3pt 6pt;border-bottom:0.5pt solid #eee;color:#333;text-align:right}
   table.efy-fiscal td:first-child{color:#F07020!important;font-weight:700;text-align:center}
 
-  /* PAGE 3 suite : ROI collé après le bilan énergie */
-  .ps-roi{break-before:avoid;break-after:avoid;break-inside:avoid;margin-top:32pt}
-  .ps-roi::before{
-    content:'';display:block;
-    height:3pt;
-    background:radial-gradient(ellipse at center,rgba(240,112,32,0.55) 0%,transparent 72%);
-    margin:0 15% 38pt;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;
-  }
+  /* ROI — Tab 4 uniquement (tabs 1-2-3 utilisent ps-financial) */
+  .ps-roi{break-before:avoid;break-after:avoid;break-inside:avoid;margin-top:14pt}
+  .ps-roi [id$="_roi"]{height:210px!important}
   /* PAGE 4 : Tableau seul */
   .ps-table{break-before:page;break-inside:auto;margin-top:0}
 
@@ -343,16 +341,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   .col{flex:1;min-width:0}
   .col2{flex:2;min-width:0}
 
-  /* ── GRAPHIQUES RÉPARTITION + FACTURES : empilement vertical ── */
-  /* Donut en haut → Factures Avant/Après en dessous, chacun pleine largeur */
-  .ps-charts .row{flex-direction:column!important;gap:10pt!important}
-  .ps-charts .col,.ps-charts .col2{flex:none!important;width:100%!important}
-  /* Hauteurs compactes pour tenir avec le récap sur une page A4 */
-  /* Pile horizontale : viewBox ~260px de haut, 230px suffit */
-  .ps-charts [id$="_donut"]{height:200px!important;overflow:hidden!important}
-  .ps-charts [id$="_mois"],.ps-charts [id$="_mois_eco"]{height:230px!important}
-  /* ROI compact pour laisser de la place au tableau sur la même page */
-  .ps-roi [id$="_roi"]{height:210px!important}
+  /* Donut pleine largeur sur page 2 — hauteur gérée via .ps-donut [id$="_donut"] */
+  /* Factures + ROI sur page 3 — hauteurs gérées via .ps-financial */
 
   /* ── TABLEAUX ── */
   .tw{overflow:visible!important;margin:8pt 0}
@@ -485,19 +475,19 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="ps ps-recap">
       <div id="recap1"></div>
       <div class="kpi-grid" id="k1_fin" style="margin:12px 0 6px"></div>
+      <div id="recap1_efy_bilan"></div>
     </div>
-    <div class="ps ps-charts">
-      <div class="row" style="margin-top:14px">
-        <div class="col"><div id="g1_donut" style="height:340px"></div></div>
-        <div class="col2"><div id="g1_mois" style="height:340px"></div></div>
-      </div>
+    <div class="ps ps-donut">
+      <div id="g1_donut" style="height:340px"></div>
     </div>
     </div>
-    <div class="ps ps-efy"><div id="recap1_efy"></div></div>
-    <div class="ps ps-roi">
-      <div class="st">Retour sur investissement — 20 ans</div>
-      <div id="g1_roi" style="height:300px"></div>
+    <div class="ps ps-financial">
+      <div id="recap1_efy_eco"></div>
+      <div id="g1_mois" style="height:310px;margin-top:12px"></div>
+      <div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
+      <div id="g1_roi" style="height:270px"></div>
       <div id="k1_pb"></div>
+      <div id="recap1_efy_fiscal" style="margin-top:12px"></div>
     </div>
     <div class="ps ps-table">
       <div class="tw" id="tb1"></div>
@@ -528,19 +518,19 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="ps ps-recap">
       <div id="recap2"></div>
       <div class="kpi-grid" id="k2_fin" style="margin:12px 0 6px"></div>
+      <div id="recap2_efy_bilan"></div>
     </div>
-    <div class="ps ps-charts">
-      <div class="row" style="margin-top:14px">
-        <div class="col"><div id="g2_donut" style="height:340px"></div></div>
-        <div class="col2"><div id="g2_mois" style="height:340px"></div></div>
-      </div>
+    <div class="ps ps-donut">
+      <div id="g2_donut" style="height:340px"></div>
     </div>
     </div>
-    <div class="ps ps-efy"><div id="recap2_efy"></div></div>
-    <div class="ps ps-roi">
-      <div class="st">Retour sur investissement — 20 ans</div>
-      <div id="g2_roi" style="height:300px"></div>
+    <div class="ps ps-financial">
+      <div id="recap2_efy_eco"></div>
+      <div id="g2_mois" style="height:310px;margin-top:12px"></div>
+      <div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
+      <div id="g2_roi" style="height:270px"></div>
       <div id="k2_pb"></div>
+      <div id="recap2_efy_fiscal" style="margin-top:12px"></div>
     </div>
     <div class="ps ps-table">
       <div class="tw" id="tb2"></div>
@@ -573,19 +563,19 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="ps ps-recap">
       <div id="recap3"></div>
       <div class="kpi-grid" id="k3_fin" style="margin:12px 0 6px"></div>
+      <div id="recap3_efy_bilan"></div>
     </div>
-    <div class="ps ps-charts">
-      <div class="row" style="margin-top:14px">
-        <div class="col"><div id="g3_donut" style="height:340px"></div></div>
-        <div class="col2"><div id="g3_mois" style="height:340px"></div></div>
-      </div>
+    <div class="ps ps-donut">
+      <div id="g3_donut" style="height:340px"></div>
     </div>
     </div>
-    <div class="ps ps-efy"><div id="recap3_efy"></div></div>
-    <div class="ps ps-roi">
-      <div class="st">Retour sur investissement — 20 ans</div>
-      <div id="g3_roi" style="height:300px"></div>
+    <div class="ps ps-financial">
+      <div id="recap3_efy_eco"></div>
+      <div id="g3_mois" style="height:310px;margin-top:12px"></div>
+      <div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
+      <div id="g3_roi" style="height:270px"></div>
       <div id="k3_pb"></div>
+      <div id="recap3_efy_fiscal" style="margin-top:12px"></div>
     </div>
     <div class="ps ps-table">
       <div class="st">Comparatif modèles</div>
@@ -1054,7 +1044,7 @@ function renderRecap(id,data){
 }
 
 // ===== BILAN ÉNERGIE + ÉCONOMIES + DÉDUCTION FISCALE =====
-function renderEnergyFiscalRecap(divId,cfg){
+function renderEnergyFiscalRecap(divId,cfg){ // divId = {bilan, eco, fiscal}
   const {prodAn,consoAn,directAutoAn,batAutoAn,reinjAn,achatAn,
          injAvantAn,newAchatAn,newInjAn,
          ecoAutoAn,ecoBatAn,ecoTotal,
@@ -1099,22 +1089,23 @@ function renderEnergyFiscalRecap(divId,cfg){
     </tr>`;
   });
 
-  document.getElementById(divId).innerHTML=`<div class="efy-box">
-    <div class="efy-section">
-      <div class="efy-title">⚡ Bilan énergétique annuel</div>
-      <table class="efy-tbl"><tbody>${r1}</tbody></table>
-    </div>
-    <div class="efy-section">
-      <div class="efy-title">💰 Économies annuelles générées</div>
-      <table class="efy-tbl"><tbody>${r2}</tbody></table>
-    </div>
-    <div class="efy-section">
-      <div class="efy-title">🧾 Déduction fiscale NC — par tranche d'imposition</div>
-      <table class="efy-fiscal"><thead><tr>
-        <th>Tranche IR</th><th>Économie fiscale</th><th>Coût après déduction</th><th>Payback</th>
-      </tr></thead><tbody>${r3}</tbody></table>
-    </div>
-  </div>`;
+  // Rendu dans 3 divs séparés (bilan p2 / économies+fiscal p3)
+  document.getElementById(divId.bilan).innerHTML=`<div class="efy-box"><div class="efy-section">
+    <div class="efy-title">⚡ Bilan énergétique annuel</div>
+    <table class="efy-tbl"><tbody>${r1}</tbody></table>
+  </div></div>`;
+
+  document.getElementById(divId.eco).innerHTML=`<div class="efy-box"><div class="efy-section">
+    <div class="efy-title">💰 Économies annuelles générées</div>
+    <table class="efy-tbl"><tbody>${r2}</tbody></table>
+  </div></div>`;
+
+  document.getElementById(divId.fiscal).innerHTML=`<div class="efy-box"><div class="efy-section">
+    <div class="efy-title">🧾 Déduction fiscale NC — par tranche d'imposition</div>
+    <table class="efy-fiscal"><thead><tr>
+      <th>Tranche IR</th><th>Économie fiscale</th><th>Coût après déduction</th><th>Payback</th>
+    </tr></thead><tbody>${r3}</tbody></table>
+  </div></div>`;
 }
 
 // ===== TABLE PAR TRANCHES 5 ANS =====
@@ -1518,7 +1509,7 @@ function calcT1(){
   } else {
     ecoAutoAn=ecoAn; ecoBatAn=0;
   }
-  renderEnergyFiscalRecap('recap1_efy',{
+  renderEnergyFiscalRecap({bilan:'recap1_efy_bilan',eco:'recap1_efy_eco',fiscal:'recap1_efy_fiscal'},{
     prodAn,consoAn:consoAn_t1,directAutoAn,batAutoAn,reinjAn,achatAn,
     ecoAutoAn,ecoBatAn,ecoTotal:ecoAn,
     devis,s,batRepl:batModel>0?BAT_REPL[batModel]*batQty:0,
@@ -1621,7 +1612,7 @@ function calcT2(){
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2};
 
-  renderEnergyFiscalRecap('recap2_efy',{
+  renderEnergyFiscalRecap({bilan:'recap2_efy_bilan',eco:'recap2_efy_eco',fiscal:'recap2_efy_fiscal'},{
     prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
     reinjAn:newReinjAn,achatAn:newAchatAn,
     ecoAutoAn:0,ecoBatAn:ecoAn,ecoTotal:ecoAn,
@@ -1749,7 +1740,7 @@ function calcT3(){
   const fAvecMean=fAvecM.reduce((a,b)=>a+b,0)/12;
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3};
 
-  renderEnergyFiscalRecap('recap3_efy',{
+  renderEnergyFiscalRecap({bilan:'recap3_efy_bilan',eco:'recap3_efy_eco',fiscal:'recap3_efy_fiscal'},{
     isT3:true,
     injAvantAn:injAn,achatAn,batAutoAn:bDischAn,
     newAchatAn,newInjAn,
@@ -2221,8 +2212,8 @@ function setPrintLabels(){
   // Injecte les bandeaux de titre dans chaque .ps si pas encore présents
   const labels={
     'ps-recap':'Récapitulatif de l\'étude',
-    'ps-charts':'Répartition & Factures avant / après',
-    'ps-efy':'Bilan énergétique & Déduction fiscale NC',
+    'ps-donut':'Répartition énergétique',
+    'ps-financial':'Impact financier & Retour sur investissement',
     'ps-roi':'Retour sur investissement',
     'ps-table':'Tableau d\'amortissement'
   };
