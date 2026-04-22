@@ -1923,6 +1923,13 @@ function calcT4(){
   const eco10_t4=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t4=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel:0,batQty:0,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,pbMin:pb,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
+  lastCalcDetails={tab:4,tabName:'Entreprise',isT3:false,
+    kwc,devis,tarif,rev,nbP,panWc,surf,
+    prodAn,consoAn:conso,directAutoAn:autoAn,batAutoAn:0,reinjAn:surpAn,achatAn,
+    ecoAn,ecoAutoAn:ecoAn,ecoBatAn:0,fSansAn:fSans,fAvecAn:fAvec,
+    batWh:0,batModel:0,batQty:0,batRepl:0,batReplAn:0,
+    tIS,dAmort,amortAn,avantageAn,avantageTotal,coutNetImpot,rendement,rsi,
+    rows,pb,pbMin:pb,pbMax:pbMax_t4,tauxAuto:Math.round(partA*100)};
 
   document.getElementById('r4').style.display='block';
   document.getElementById('r4').scrollIntoView({behavior:'smooth',block:'start'});
@@ -2152,9 +2159,11 @@ function saveCalcs(){
     <tr><td class="k">Dégradation panneaux par an</td><td class="v">${fd(s.deg,2)}%/an</td></tr>
     <tr><td class="k">Revalorisation tarif EEC hypothèse</td><td class="v">${fd(s.hau)}%/an</td></tr>
     <tr><td class="k">Durée de vie PV retenue</td><td class="v">${s.dpv} ans</td></tr>
-    <tr><td class="k">Tarif basse tranche EEC (0–150 kWh/mois)</td><td class="v">${fd(s.tl,2)} XPF/kWh</td></tr>
+    ${d.tab===4?
+      `<tr><td class="k">Tarif professionnel HT EEC (XPF/kWh)</td><td class="v">${fd(d.tarif,2)} XPF/kWh</td></tr>`:
+      `<tr><td class="k">Tarif basse tranche EEC (0–150 kWh/mois)</td><td class="v">${fd(s.tl,2)} XPF/kWh</td></tr>
     <tr><td class="k">Tarif haute tranche EEC (&gt; 150 kWh/mois)</td><td class="v">${fd(s.th,2)} XPF/kWh</td></tr>
-    <tr><td class="k">Plafond déduction fiscale NC</td><td class="v">${f(s.ded)} XPF/an</td></tr>
+    <tr><td class="k">Plafond déduction fiscale NC</td><td class="v">${f(s.ded)} XPF/an</td></tr>`}
   </table>
 
   <h2>2 — Installation photovoltaïque</h2>
@@ -2163,7 +2172,7 @@ function saveCalcs(){
     ${d.nbP?`<tr><td class="k">Nombre de panneaux</td><td class="v">${d.nbP} × ${d.panWc||450} Wc</td></tr>`:''}
     ${d.surf?`<tr><td class="k">Surface au sol approximative</td><td class="v">${fd(d.surf,0)} m²</td></tr>`:''}
     ${d.batWh>0?`<tr><td class="k">Batterie</td><td class="v">${BLBL[d.batModel]||''} × ${d.batQty} — ${fd(d.batWh/1000,2)} kWh brut</td></tr>`:''}
-    <tr><td class="k">Investissement TTC</td><td class="v">${f(d.devis)} XPF</td></tr>
+    <tr><td class="k">Investissement ${d.tab===4?'HT':'TTC'}</td><td class="v">${f(d.devis)} XPF</td></tr>
     ${d.rev>0?`<tr><td class="k">Revente surplus réseau</td><td class="v">${fd(d.rev,0)} XPF/kWh</td></tr>`:''}
   </table>
 
@@ -2174,7 +2183,9 @@ function saveCalcs(){
   <table>${secEnergie}</table>
 
   <h2>${d.batWh>0?5:4} — Impact financier annuel (An 1)</h2>
-  <p class="note">Calcul EEC : abonnement + tranche basse (${fd(s.tl,2)} XPF/kWh pour les 150 premiers kWh/mois) + tranche haute (${fd(s.th,2)} XPF/kWh au-delà). Revente à ${fd(d.rev||0,0)} XPF/kWh déduite.</p>
+  <p class="note">${d.tab===4?
+    `Calcul HT professionnel : consommation × ${fd(d.tarif,2)} XPF/kWh (tarif pro EEC HT, sans TGC). Revente surplus à ${fd(d.rev||0,0)} XPF/kWh déduite.`:
+    `Calcul EEC : abonnement + tranche basse (${fd(s.tl,2)} XPF/kWh pour les 150 premiers kWh/mois) + tranche haute (${fd(s.th,2)} XPF/kWh au-delà). Revente à ${fd(d.rev||0,0)} XPF/kWh déduite.`}</p>
   <table>
     <tr><td class="k">Facture annuelle <strong>AVANT</strong> installation</td><td class="v r">${f(d.fSansAn)} XPF</td></tr>
     <tr><td class="k">Facture annuelle <strong>APRÈS</strong> installation</td><td class="v g">${f(d.fAvecAn)} XPF</td></tr>
@@ -2191,6 +2202,17 @@ function saveCalcs(){
     <tr><td class="k">Payback avec meilleure déduction fiscale (cas optimiste)</td><td class="v g">${d.pbMin&&d.pbMin<=s.dpv?'An '+d.pbMin:'> '+s.dpv+' ans'}</td></tr>
   </table>
 
+  ${d.tab===4?`
+  <h2>5 — Avantage fiscal IS</h2>
+  <p class="note">L'installation est amortissable sur ${d.dAmort} ans (amortissement linéaire). La dotation annuelle réduit la base imposable à l'IS (${d.tIS}%). L'économie d'IS vient s'ajouter aux économies d'énergie pour calculer la rentabilité réelle.</p>
+  <table>
+    <tr><td class="k">Dotation amortissement annuelle</td><td class="v">${f(d.amortAn)} XPF/an <span class="fm">= ${f(d.devis)} ÷ ${d.dAmort} ans</span></td></tr>
+    <tr><td class="k">Économie d'IS annuelle (taux ${d.tIS}%)</td><td class="v g">${f(d.avantageAn)} XPF/an</td></tr>
+    <tr><td class="k">Économie IS totale sur ${d.dAmort} ans</td><td class="v g">${f(d.avantageTotal)} XPF</td></tr>
+    <tr class="sep"><td class="k"><strong>Coût net après déduction IS</strong></td><td class="v o">${f(d.coutNetImpot)} XPF</td></tr>
+    <tr><td class="k">Rendement annuel (éco énergie + éco IS) / invest.</td><td class="v g">${fd(d.rendement,1)}%</td></tr>
+    <tr><td class="k">RSI (retour sur invest. net IS)</td><td class="v">${fd(d.rsi,1)} ans</td></tr>
+  </table>`:`
   <h2>${d.batWh>0?7:6} — Déduction fiscale NC</h2>
   <p class="note">En NC, le montant de l'installation est déductible du revenu imposable, plafonné à ${f(s.ded)} XPF/an. L'économie fiscale = montant déduit × taux marginal d'imposition. Elle réduit le coût net réel de l'installation et raccourcit le payback.</p>
   <table>
@@ -2205,7 +2227,7 @@ function saveCalcs(){
       <td style="text-align:right;font-weight:700">${f(r.coutNet)} XPF</td>
       <td style="text-align:right">${r.pb?'An '+r.pb:'> '+s.dpv+' ans'}</td>
     </tr>`).join('')}
-  </table>
+  </table>`}
 
   <div class="footer">Document interne Solar Concept — Calculs estimatifs non contractuels — ${date}</div>
 </body>
