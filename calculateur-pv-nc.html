@@ -416,7 +416,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   <div class="header-right">
     <button class="btn-print" onclick="preparePrint()">🖨 Imprimer / PDF</button>
     <button class="btn-print" onclick="saveStudy()" id="btn-save" style="margin-left:6px">💾 Enregistrer l’étude</button>
-    <button class="btn-print" onclick="saveCalcs()" id="btn-calcs" style="margin-left:6px;opacity:.85">🧮 Détail des calculs</button>
+    <button class="btn-print" onclick="saveCalcs()" id="btn-calcs" style="margin-left:6px;opacity:.85">🧮 Exporter calculs PDF</button>
     <div class="tel">☎ 47 03 02</div>
   </div>
 </div>
@@ -2122,7 +2122,7 @@ function saveCalcs(){
   @media print{body{padding:12px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
 </style>
 </head>
-<body>
+<body onload="window.print()">
   <h1>Fiche de calcul interne — Solar Concept</h1>
   <div class="meta">
     <span>Client : <strong>${d.client||'—'}</strong>${d.adresse?' &nbsp;|&nbsp; '+d.adresse:''} &nbsp;|&nbsp; Onglet : <strong>${d.tabName}</strong></span>
