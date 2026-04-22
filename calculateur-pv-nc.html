@@ -255,7 +255,14 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   /* PAGE 2 : Recap + Charts groupés — saut de page APRES le groupe */
   .ps-page2{break-after:page;break-inside:auto}
   .ps-page2 .ps-recap{break-before:avoid;break-after:avoid;break-inside:auto}
-  .ps-page2 .ps-charts{break-before:avoid;break-after:avoid}
+  .ps-page2 .ps-charts{break-before:avoid;break-after:avoid;margin-top:32pt}
+  .ps-page2 .ps-charts::before{
+    content:'';display:block;
+    height:3pt;
+    background:radial-gradient(ellipse at center,rgba(240,112,32,0.55) 0%,transparent 72%);
+    margin:0 15% 38pt;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
 
   /* PAGE 3 : Bilan énergie + Économies + Fiscal */
   .ps-efy{break-before:page;break-inside:auto}
