@@ -372,6 +372,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   #amort4_combined table.at tbody tr:nth-child(23) td:last-child::after{content:none}
   /* T4 — supprimer le saut de page avant le tableau (provoquait une page blanche) */
   #r4 .ps-table{break-before:auto!important}
+  /* T4 — masquer les KPI cards (k4_fin) à l'impression : déjà résumés dans le rapport */
+  #r4 #k4_fin{display:none!important}
+  /* T4 — pas de saut après .ps-page2 (sinon page blanche en fin de doc) */
+  #r4 .ps-page2{break-after:auto!important}
   table.at thead,table.bc thead{display:table-header-group}
 
   /* ── RAPPORT ENTREPRISE (onglet 4) — P2=rapport seul, P3=charts, P4=ROI+tableau ── */
