@@ -812,7 +812,8 @@ function preparePrint(noPrint=false){
   const d=new Date();
   const dateStr=d.toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'});
 
-  const {kwc=6.3,devis=0,ecoAn=0,fSansAn=0,fAvecAn=0,batModel=0,batQty=1,client='',commercial='',adresse='',pb=0,pbMin=0,pbMax=0,eco10=0,eco15=0}=lastStudyData;
+  const {tab=1,kwc=6.3,devis=0,ecoAn=0,fSansAn=0,fAvecAn=0,batModel=0,batQty=1,client='',commercial='',adresse='',pb=0,pbMin=0,pbMax=0,eco10=0,eco15=0,coutNetImpot=0,avantageTotal=0,tIS=0,dAmort=0}=lastStudyData;
+  const isPro=tab===4;
   const parts=(commercial||'').split('|');
   const commName=parts[0]||'';
   const commTel=parts[1]||'';
@@ -923,20 +924,24 @@ function preparePrint(noPrint=false){
       <div class="cv-kpi-grid">
         <div class="cv-kpi-card">
           <div class="cv-kpi-card-val">${fmt(devis)} F</div>
-          <div class="cv-kpi-card-lbl">Montant du devis TTC</div>
+          <div class="cv-kpi-card-lbl">${isPro?'Total HT du devis':'Montant du devis TTC'}</div>
         </div>
+        ${isPro?`<div class="cv-kpi-card">
+          <div class="cv-kpi-card-val">${fmt(Math.round(coutNetImpot))} F</div>
+          <div class="cv-kpi-card-lbl">Prix HT après déduction fiscale (IS ${tIS}% × ${dAmort} ans)</div>
+        </div>`:''}
         <div class="cv-kpi-card green">
-          <div class="cv-kpi-card-val">${(pbMin&&pbMax&&pbMin!==pbMax)?pbMin+' à '+pbMax+' ans':(pb?pb+' ans':'—')}</div>
+          <div class="cv-kpi-card-val">${isPro?(pb?'An '+pb:'> 25 ans'):((pbMin&&pbMax&&pbMin!==pbMax)?pbMin+' à '+pbMax+' ans':(pb?pb+' ans':'—'))}</div>
           <div class="cv-kpi-card-lbl">Retour sur investissement</div>
         </div>
         <div class="cv-kpi-card green">
           <div class="cv-kpi-card-val">${fmt(Math.round(ecoAn))} F</div>
           <div class="cv-kpi-card-lbl">Économie annuelle estimée</div>
         </div>
-        <div class="cv-kpi-card green">
+        ${!isPro?`<div class="cv-kpi-card green">
           <div class="cv-kpi-card-val">${fmt(Math.round(eco15))} F</div>
           <div class="cv-kpi-card-lbl">Économies cumulées sur 15 ans</div>
-        </div>
+        </div>`:''}
       </div>
     </div>
 
@@ -2073,15 +2078,25 @@ function calcT4(){
 
       <!-- DONNÉES ÉCONOMIQUES -->
       <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Données économiques</div>
-      <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:18px">
+      <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:14px">
         ${R({k:'Coût total investissement HT',v:`${fmt(devis)} F.CFP`,or:true})}
         ${R({k:'Prix du kWh payé actuellement (HT)',v:`${fmtD(tarif,2)} F/kWh`})}
         ${R({k:'Économie hypothèse / an',v:`${fmt(Math.round(ecoAn))} F.CFP`,g:true})}
         ${R({k:'Économies réalisées sur 15 ans',v:`${fmt(Math.round(eco15))} F.CFP`,g:true})}
         ${R({k:`Avantage amortissement comptable / an (${dAmort} ans)`,v:`${fmt(avantageAn)} F.CFP`,g:true})}
-        ${R({k:'Prise en compte amortissement comptable total',v:`${fmt(avantageTotal)} F.CFP`,g:true})}
-        ${R({k:`Économies d'impôt — IS ${tIS}%`,v:`${fmt(avantageTotal)} F.CFP`,g:true})}
-        ${R({k:'Coût installation net d\'impôt',v:`${fmt(Math.round(coutNetImpot))} F.CFP`,or:true})}
+        ${R({k:`Économies d'impôt — IS ${tIS}% sur ${dAmort} ans`,v:`${fmt(avantageTotal)} F.CFP`,g:true})}
+      </div>
+
+      <!-- COÛT NET APRÈS DÉDUCTION FISCALE — bannière vedette -->
+      <div class="rpt-cout-net" style="background:linear-gradient(135deg,#1a7a3c,#0f5e2a);border-radius:12px;padding:18px 24px;margin-bottom:14px;color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px">
+        <div>
+          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.85);text-transform:uppercase;margin-bottom:4px">Coût HT après déduction fiscale</div>
+          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.6rem;font-weight:700;color:#fff;line-height:1">${fmt(Math.round(coutNetImpot))} F.CFP</div>
+        </div>
+        <div style="text-align:right;font-size:.78rem;color:rgba(255,255,255,.9);line-height:1.6;border-left:1px solid rgba(255,255,255,.3);padding-left:18px">
+          <div>Invest. brut HT : <strong>${fmt(devis)} F.CFP</strong></div>
+          <div>− Éco IS ${tIS}% × ${dAmort} ans : <strong>−${fmt(avantageTotal)} F.CFP</strong></div>
+        </div>
       </div>
 
       <!-- INDICATEURS CLÉS -->
@@ -2117,7 +2132,7 @@ function calcT4(){
   // Eco cumulée 10/15 ans depuis le tableau pro (éco énergie + éco IS - remp.)
   const eco10_t4=_proRows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t4=_proRows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:document.getElementById('t4_commercial').value||'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
+  lastStudyData={tab:4,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:document.getElementById('t4_commercial').value||'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4,coutNetImpot,avantageTotal,tIS,dAmort};
   lastCalcDetails={tab:4,tabName:'Entreprise',isT3:false,
     kwc,devis,tarif,rev,nbP,panWc,surf,
     prodAn,consoAn:conso,directAutoAn:autoAn,batAutoAn,reinjAn:surpAn,achatAn,
