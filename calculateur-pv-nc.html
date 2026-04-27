@@ -126,8 +126,9 @@ table.bc tr.rec td{color:var(--gr);background:rgba(0,212,160,.06)}
 /* FORM GRIDS */
 .fgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 18px;margin-bottom:6px}
 .fgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:0 18px;margin-bottom:6px}
+.fgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:0 18px;margin-bottom:6px}
 .fgrid3 .sep,.fgrid2 .sep{grid-column:1/-1;height:1px;background:rgba(240,112,32,.1);margin:4px 0 8px}
-@media(max-width:680px){.fgrid3,.fgrid2{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.fgrid3,.fgrid2,.fgrid4{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.fgrid3,.fgrid2,.fgrid3 .fg,.fgrid2 .fg{grid-template-columns:1fr}.mg{grid-template-columns:repeat(3,1fr)}}
 .fiscal-compare-container{margin:15px 0;overflow-x:auto}
 .fiscal-compare{width:100%;border-collapse:collapse;font-size:.85rem}
@@ -594,14 +595,53 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="fg"><label>Nom du projet / Client</label><input type="text" id="t4_nom" value="SCI Client"></div>
     <div class="fg"><label>Référence dossier</label><input type="text" id="t4_ref" value="P 0001"></div>
     <div class="fg"><label>Commune / Code postal</label><input type="text" id="t4_commune" value="98800 Nouméa"></div>
-    <div class="fg"><label>Type d'onduleur</label><input type="text" id="t4_onduleur" value="Micro-onduleurs Enphase IQ7A"></div>
+    <div class="fg"><label>Type d'onduleur</label>
+      <select id="t4_ond_type" onchange="t4_toggleOnd()">
+        <option value="micro" selected>Micro-onduleurs</option>
+        <option value="hybride">Hybride</option>
+        <option value="string">String</option>
+        <option value="hybride_string">Hybride + String</option>
+      </select>
+    </div>
+  </div>
+  <div id="t4_ond_blocks" style="margin-bottom:10px">
+    <div id="t4_ond_micro_block" class="fgrid2" style="background:#fff8f0;padding:8px 12px;border-radius:8px;border:1px solid #f0c89c;margin-bottom:6px">
+      <div class="fg"><label>Micro-onduleurs — marque / modèle</label><input type="text" id="t4_ond_micro_marque" value="Enphase IQ7A"></div>
+      <div class="fg"><label>Quantité (= nb panneaux)</label><input type="text" id="t4_ond_micro_qty" value="—" readonly style="background:#f5f5f5;color:#888"></div>
+    </div>
+    <div id="t4_ond_hybride_block" class="fgrid3" style="display:none;background:#fff8f0;padding:8px 12px;border-radius:8px;border:1px solid #f0c89c;margin-bottom:6px">
+      <div class="fg"><label>Hybride — marque / modèle</label><input type="text" id="t4_ond_hyb_marque" value="Sungrow SH25T"></div>
+      <div class="fg"><label>Hybride — puissance (kW)</label><input type="number" id="t4_ond_hyb_kw" value="25" min="0" step="0.5"></div>
+      <div class="fg"><label>Hybride — quantité</label><input type="number" id="t4_ond_hyb_qty" value="1" min="1" step="1"></div>
+    </div>
+    <div id="t4_ond_string_block" class="fgrid3" style="display:none;background:#fff8f0;padding:8px 12px;border-radius:8px;border:1px solid #f0c89c;margin-bottom:6px">
+      <div class="fg"><label>String — marque / modèle</label><input type="text" id="t4_ond_str_marque" value="SMA Sunny Tripower"></div>
+      <div class="fg"><label>String — puissance (kW)</label><input type="number" id="t4_ond_str_kw" value="15" min="0" step="0.5"></div>
+      <div class="fg"><label>String — quantité</label><input type="number" id="t4_ond_str_qty" value="1" min="1" step="1"></div>
+    </div>
   </div>
   <p style="color:var(--tx2);font-size:.8rem;margin-bottom:9px">Consommation mensuelle HT (kWh) — Total : <strong id="t4_tot">20 000</strong> kWh/an</p>
   <div class="mg" id="mg4"></div>
+
+  <!-- Bloc facture EEC pro -->
+  <div style="background:#f7f7f7;padding:8px 12px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px">
+    <div style="font-size:.78rem;font-weight:700;color:#F07020;margin-bottom:6px;letter-spacing:1px">FACTURE EEC PROFESSIONNEL — paramètres</div>
+    <div class="fgrid4">
+      <div class="fg"><label>Puissance souscrite (kVA)</label><input type="number" id="t4_kva" value="19.8" min="1" max="250" step="0.5"></div>
+      <div class="fg"><label>Prime fixe (F/kVA/mois)</label><input type="number" id="t4_primefix" value="964" min="0" step="1"></div>
+      <div class="fg"><label>Redevance comptage (F/mois)</label><input type="number" id="t4_redev" value="681" min="0" step="1"></div>
+      <div class="fg"><label>Taxe communale (%)</label><input type="number" id="t4_tc" value="9" min="0" max="20" step="0.5"></div>
+    </div>
+  </div>
+
   <div class="fgrid3">
-    <div class="fg"><label>Puissance PV (kWc)</label><input type="number" id="t4_kwc" value="20" min="0.5" step="1"></div>
-    <div class="fg"><label>Puissance panneau (Wc)</label><input type="number" id="t4_wc" value="450" min="100" max="800" step="10"></div>
+    <div class="fg"><label>Puissance PV (kWc)</label><input type="number" id="t4_kwc" value="20" min="0.5" step="1" oninput="t4_updMicroQty()"></div>
+    <div class="fg"><label>Puissance panneau (Wc)</label><input type="number" id="t4_wc" value="450" min="100" max="800" step="10" oninput="t4_updMicroQty()"></div>
     <div class="fg"><label>Tarif HT EEC (XPF/kWh)</label><input type="number" id="t4_tarif" value="29.62" min="1" step="0.5"></div>
+    <div class="fg"><label>Batterie — modèle</label>
+      <select id="t4_bat"><option value="0" selected>Aucune</option><option value="4800">Élite (4,8 kWh)</option><option value="10650">Prestige (10,65 kWh)</option><option value="14336">Maestro (14,3 kWh)</option></select>
+    </div>
+    <div class="fg"><label>Batterie — quantité</label><input type="number" id="t4_bat_qty" value="1" min="1" max="20" step="1"></div>
     <div class="fg"><label>Montant du devis HT (XPF)</label><input type="number" id="t4_devis" value="6000000" min="0" step="100000"></div>
     <div class="fg"><label>Tarif revente réseau (XPF/kWh)</label><select id="t4_rev"><option value="0">0 XPF/kWh — pas de revente</option><option value="15" selected>15 XPF/kWh — standard</option><option value="21">21 XPF/kWh — haute</option></select></div>
     <div class="fg"><label>Part autoconsommée estimée : <span id="t4_al">70</span>%</label>
@@ -1762,6 +1802,45 @@ function calcT3(){
   document.getElementById('r3').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+// ===== HELPERS T4 — Onduleurs =====
+function t4_toggleOnd(){
+  const v=document.getElementById('t4_ond_type').value;
+  document.getElementById('t4_ond_micro_block').style.display=(v==='micro')?'':'none';
+  document.getElementById('t4_ond_hybride_block').style.display=(v==='hybride'||v==='hybride_string')?'':'none';
+  document.getElementById('t4_ond_string_block').style.display=(v==='string'||v==='hybride_string')?'':'none';
+  t4_updMicroQty();
+}
+function t4_updMicroQty(){
+  const kwc=parseFloat(document.getElementById('t4_kwc').value)||0;
+  const wc=parseInt(document.getElementById('t4_wc').value)||450;
+  const nbP=Math.ceil(kwc*1000/wc);
+  const el=document.getElementById('t4_ond_micro_qty');
+  if(el) el.value=nbP+' unités';
+}
+function t4_getOndList(){
+  const type=document.getElementById('t4_ond_type').value;
+  const list=[];
+  const kwc=parseFloat(document.getElementById('t4_kwc').value)||0;
+  const wc=parseInt(document.getElementById('t4_wc').value)||450;
+  const nbP=Math.ceil(kwc*1000/wc);
+  if(type==='micro'){
+    list.push({label:'Micro-onduleurs '+(document.getElementById('t4_ond_micro_marque').value||''),qty:nbP,unit:'unités'});
+  }
+  if(type==='hybride'||type==='hybride_string'){
+    const m=document.getElementById('t4_ond_hyb_marque').value||'Hybride';
+    const kw=parseFloat(document.getElementById('t4_ond_hyb_kw').value)||0;
+    const q=parseInt(document.getElementById('t4_ond_hyb_qty').value)||1;
+    list.push({label:`Hybride ${m} ${kw} kW`,qty:q,unit:q>1?'unités':'unité'});
+  }
+  if(type==='string'||type==='hybride_string'){
+    const m=document.getElementById('t4_ond_str_marque').value||'String';
+    const kw=parseFloat(document.getElementById('t4_ond_str_kw').value)||0;
+    const q=parseInt(document.getElementById('t4_ond_str_qty').value)||1;
+    list.push({label:`String ${m} ${kw} kW`,qty:q,unit:q>1?'unités':'unité'});
+  }
+  return list;
+}
+
 // ===== CALCUL TAB 4 =====
 function calcT4(){
   const s=getS();
@@ -1778,29 +1857,61 @@ function calcT4(){
   const nom=document.getElementById('t4_nom').value||'Client';
   const ref=document.getElementById('t4_ref').value||'';
   const commune=document.getElementById('t4_commune').value||'Nouméa';
-  const onduleur=document.getElementById('t4_onduleur').value||'Micro-onduleurs';
+  const batModel=parseInt(document.getElementById('t4_bat').value)||0;
+  const batQty=Math.max(0,parseInt(document.getElementById('t4_bat_qty').value)||0);
+  const dod=s.dod/100;
+  const batWh=batModel*batQty;
+  const batCap=batWh/1000*dod; // kWh utiles / jour
+  const ondList=t4_getOndList();
+  // Paramètres facture EEC pro
+  const kva=Math.max(0,parseFloat(document.getElementById('t4_kva').value)||0);
+  const primeFix=Math.max(0,parseFloat(document.getElementById('t4_primefix').value)||0); // F/kVA/mois
+  const redev=Math.max(0,parseFloat(document.getElementById('t4_redev').value)||0); // F/mois
+  const tc=Math.max(0,parseFloat(document.getElementById('t4_tc').value)||0); // %
+  const primeM=kva*primeFix; // prime fixe mensuelle HT
+  const redevM=redev;
+  const tcMul=1+tc/100;
 
   const prod=prodM(kwc,s.en,s.pe);
   const prodAn=prod.reduce((a,b)=>a+b,0);
   const auto=prod.map((p,i)=>Math.min(p*partA,consoM[i]));
-  const surp=prod.map((p,i)=>p-auto[i]);
-  const achat=consoM.map((c,i)=>c-auto[i]);
+  const surp=prod.map((p,i)=>p-auto[i]); // surplus PV avant batterie
+  const achatAvant=consoM.map((c,i)=>c-auto[i]); // achat réseau avant batterie
   const autoAn=auto.reduce((a,b)=>a+b,0);
-  const surpAn=surp.reduce((a,b)=>a+b,0);
-  const achatAn=achat.reduce((a,b)=>a+b,0);
+  const surpAvantAn=surp.reduce((a,b)=>a+b,0);
+  const achatAvantAn=achatAvant.reduce((a,b)=>a+b,0);
   const txAuto=autoAn/prodAn*100;
   const nbP=Math.ceil(kwc*1000/panWc);
   const surf=nbP*2.1;
 
-  // Financier HT (pas de TGC pour pro)
-  const fSans=conso*tarif;
-  const fAvec=achatAn*tarif-surpAn*rev;
-  const ecoAn=fSans-fAvec;
+  // === SIMULATION BATTERIE ===
+  // Surplus PV charge la batterie en journée → décharge réduit l'achat réseau
+  const bChargeM=[],bDischM=[],newSurpM=[],achatM=[];
+  for(let i=0;i<12;i++){
+    const maxMois=batCap*DM[i];
+    const bC=batWh>0?Math.min(surp[i],maxMois,achatAvant[i]):0;
+    bChargeM.push(bC); bDischM.push(bC);
+    newSurpM.push(surp[i]-bC);
+    achatM.push(achatAvant[i]-bC);
+  }
+  const batAutoAn=bDischM.reduce((a,b)=>a+b,0);
+  const surpAn=newSurpM.reduce((a,b)=>a+b,0);
+  const achatAn=achatM.reduce((a,b)=>a+b,0);
 
-  // Factures mensuelles avant / après PV
-  const fSansM=consoM.map(c=>c*tarif);
-  const fAvecM=achat.map((a,i)=>a*tarif-surp[i]*rev);
+  // Financier HT pro (énergie + prime fixe + redevance + taxe communale, pas de TGC)
+  // Formule : facture_HT = (1+tc%) × (énergie + prime_fixe) + redevance - revente
+  const fSansM=consoM.map(c=>tcMul*(c*tarif+primeM)+redevM);
+  const fAvecM=achatM.map((a,i)=>tcMul*(a*tarif+primeM)+redevM-newSurpM[i]*rev);
+  const fSans=fSansM.reduce((a,b)=>a+b,0);
+  const fAvec=fAvecM.reduce((a,b)=>a+b,0);
+  const ecoAn=fSans-fAvec;
   const ecoMois=fSansM.map((f,i)=>f-fAvecM[i]);
+  // Décomposition économie (info)
+  const ecoAutoAn=tcMul*(autoAn)*tarif+surpAvantAn*rev; // éco PV directe (énergie évitée + revente brute si pas de batterie)
+  const ecoBatAn=tcMul*batAutoAn*tarif-(surpAvantAn-surpAn)*rev; // éco batterie nette (achat évité - revente perdue)
+  // Détails facture HT (hors énergie variable) pour le rapport
+  const aboAn=primeM*12+redevM*12; // abonnement annuel HT (prime + redevance)
+  const tcAn_sans=fSansM.reduce((a,b)=>a,0)*0; // placeholder (calcul détaillé dans rapport via differentiel)
 
   // CO2 & compensation carbone (1 kWh PV = 600g CO2 évité au fioul)
   const co2Tonnes=Math.round(prodAn*0.0006*10)/10;
@@ -1856,8 +1967,9 @@ function calcT4(){
         <div>
           <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Générateur PV</div>
           ${R({k:'Puissance crête',v:`${fmtD(kwc)} kWc`,or:true})}
-          ${R({k:onduleur,v:`${nbP} unités`})}
           ${R({k:`Panneaux ${panWc} Wc`,v:`${nbP} panneaux`})}
+          ${ondList.map(o=>R({k:o.label,v:`${o.qty} ${o.unit}`})).join('')}
+          ${batWh>0?R({k:`Batterie ${BLBL[batModel]} (${(batModel/1000).toFixed(2)} kWh)`,v:`${batQty} ${batQty>1?'unités':'unité'}`,or:true}):''}
           ${R({k:'Surface générateur',v:`${fmtD(surf,0)} m²`})}
         </div>
         <div>
@@ -1876,6 +1988,19 @@ function calcT4(){
           <thead><tr>${MO.map(m=>`<th style="background:#F07020;color:#fff;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;padding:5px 6px;text-align:center">${m}</th>`).join('')}<th style="background:#333;color:#fff;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;padding:5px 8px;text-align:center">Total</th></tr></thead>
           <tbody><tr>${prodMoy20.map(v=>`<td style="text-align:center;padding:5px 4px;border-bottom:1px solid #eee;color:#333;font-weight:600">${fmt(v)}</td>`).join('')}<td style="text-align:center;padding:5px 8px;background:#fff8f0;color:#F07020;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;font-size:.9rem">${fmt(prodMoy20.reduce((a,b)=>a+b,0))}</td></tr></tbody>
         </table>
+      </div>
+
+      <!-- FACTURE EEC PRO -->
+      <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Facture EEC professionnel — paramètres</div>
+      <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:18px">
+        ${R({k:'Puissance souscrite',v:`${fmtD(kva,2)} kVA`})}
+        ${R({k:'Tarif HT énergie',v:`${fmtD(tarif,2)} F/kWh`})}
+        ${R({k:'Prime fixe HT',v:`${fmt(primeFix)} F/kVA/mois`})}
+        ${R({k:'Redevance comptage',v:`${fmt(redevM)} F/mois`})}
+        ${R({k:'Taxe communale',v:`${fmtD(tc,2)} %`})}
+        ${R({k:'Abonnement annuel HT (prime + redevance)',v:`${fmt(Math.round(aboAn))} F.CFP`})}
+        ${R({k:'Facture annuelle HT — avant PV',v:`${fmt(Math.round(fSans))} F.CFP`})}
+        ${R({k:'Facture annuelle HT — avec PV'+(batWh>0?' + batterie':''),v:`${fmt(Math.round(fAvec>0?fAvec:0))} F.CFP`,g:true})}
       </div>
 
       <!-- DONNÉES ÉCONOMIQUES -->
@@ -1914,22 +2039,27 @@ function calcT4(){
     {v:`${fmt(ecoAn)} XPF`,l:'Économie annuelle (An 1)',s:'g'},
     {v:`${fmtD(txAuto)}%`,l:'Taux autoconsommation'},
   ]);
-  plotPile('g4_donut',autoAn,0,surpAn,achatAn);
+  plotPile('g4_donut',autoAn,batAutoAn,surpAn,achatAn);
   plotAvantApres('g4_mois_eco',fSansM,fAvecM,'Sans PV','Avec PV');
   plotROI('g4_roi',rows);
   if(pb)document.getElementById('k4_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  renderCombinedAmort('amort4_combined',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,0,0,0);
+  const batRepl=batWh>0?BAT_REPL[batModel]*batQty:0;
+  const batReplAn=batWh>0?s.bat_repl:0;
+  renderCombinedAmort('amort4_combined',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,batRepl,batReplAn,0);
 
   const eco10_t4=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t4=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel:0,batQty:0,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,pbMin:pb,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,pbMin:pb,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
   lastCalcDetails={tab:4,tabName:'Entreprise',isT3:false,
     kwc,devis,tarif,rev,nbP,panWc,surf,
-    prodAn,consoAn:conso,directAutoAn:autoAn,batAutoAn:0,reinjAn:surpAn,achatAn,
-    ecoAn,ecoAutoAn:ecoAn,ecoBatAn:0,fSansAn:fSans,fAvecAn:fAvec,
-    batWh:0,batModel:0,batQty:0,batRepl:0,batReplAn:0,
+    prodAn,consoAn:conso,directAutoAn:autoAn,batAutoAn,reinjAn:surpAn,achatAn,
+    injAvantAn:surpAvantAn,achatAvantAn,newAchatAn:achatAn,newInjAn:surpAn,
+    ecoAn,ecoAutoAn,ecoBatAn,fSansAn:fSans,fAvecAn:fAvec,
+    batWh,batModel,batQty,batRepl,batReplAn,
+    kva,primeFix,redev,tc,aboAn,
     tIS,dAmort,amortAn,avantageAn,avantageTotal,coutNetImpot,rendement,rsi,
-    rows,pb,pbMin:pb,pbMax:pbMax_t4,tauxAuto:Math.round(partA*100)};
+    rows,pb,pbMin:pb,pbMax:pbMax_t4,tauxAuto:Math.round(partA*100),
+    ondList};
 
   document.getElementById('r4').style.display='block';
   document.getElementById('r4').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1970,6 +2100,8 @@ function calcT4(){
     const t4t=document.getElementById('t4_tarif');
     if(stp&&t4t) t4t.value=parseFloat(stp.value)||29.62;
   }
+  // Init T4 — affichage onduleur conditionnel + qty micro-onduleurs
+  if(typeof t4_toggleOnd==='function') t4_toggleOnd();
   if(isSaved){
     updTot('m1_','t1_tot');
     updTot('m4_','t4_tot');
@@ -2160,7 +2292,12 @@ function saveCalcs(){
     <tr><td class="k">Revalorisation tarif EEC hypothèse</td><td class="v">${fd(s.hau)}%/an</td></tr>
     <tr><td class="k">Durée de vie PV retenue</td><td class="v">${s.dpv} ans</td></tr>
     ${d.tab===4?
-      `<tr><td class="k">Tarif professionnel HT EEC (XPF/kWh)</td><td class="v">${fd(d.tarif,2)} XPF/kWh</td></tr>`:
+      `<tr><td class="k">Tarif professionnel HT EEC (XPF/kWh)</td><td class="v">${fd(d.tarif,2)} XPF/kWh</td></tr>
+    <tr><td class="k">Puissance souscrite</td><td class="v">${fd(d.kva||0,2)} kVA</td></tr>
+    <tr><td class="k">Prime fixe HT</td><td class="v">${f(d.primeFix||0)} XPF/kVA/mois</td></tr>
+    <tr><td class="k">Redevance comptage</td><td class="v">${f(d.redev||0)} XPF/mois</td></tr>
+    <tr><td class="k">Taxe communale</td><td class="v">${fd(d.tc||0,2)}%</td></tr>
+    <tr><td class="k">Abonnement annuel HT (prime + redevance)</td><td class="v">${f(d.aboAn||0)} XPF/an</td></tr>`:
       `<tr><td class="k">Tarif basse tranche EEC (0–150 kWh/mois)</td><td class="v">${fd(s.tl,2)} XPF/kWh</td></tr>
     <tr><td class="k">Tarif haute tranche EEC (&gt; 150 kWh/mois)</td><td class="v">${fd(s.th,2)} XPF/kWh</td></tr>
     <tr><td class="k">Plafond déduction fiscale NC</td><td class="v">${f(s.ded)} XPF/an</td></tr>`}
@@ -2184,7 +2321,7 @@ function saveCalcs(){
 
   <h2>${d.batWh>0?5:4} — Impact financier annuel (An 1)</h2>
   <p class="note">${d.tab===4?
-    `Calcul HT professionnel : consommation × ${fd(d.tarif,2)} XPF/kWh (tarif pro EEC HT, sans TGC). Revente surplus à ${fd(d.rev||0,0)} XPF/kWh déduite.`:
+    `Calcul HT professionnel : (1 + ${fd(d.tc||0,2)}%) × (énergie × ${fd(d.tarif,2)} XPF/kWh + ${fd(d.kva||0,2)} kVA × ${f(d.primeFix||0)} XPF/kVA/mois × 12) + ${f(d.redev||0)} XPF/mois × 12 − revente surplus × ${fd(d.rev||0,0)} XPF/kWh.`:
     `Calcul EEC : abonnement + tranche basse (${fd(s.tl,2)} XPF/kWh pour les 150 premiers kWh/mois) + tranche haute (${fd(s.th,2)} XPF/kWh au-delà). Revente à ${fd(d.rev||0,0)} XPF/kWh déduite.`}</p>
   <table>
     <tr><td class="k">Facture annuelle <strong>AVANT</strong> installation</td><td class="v r">${f(d.fSansAn)} XPF</td></tr>
