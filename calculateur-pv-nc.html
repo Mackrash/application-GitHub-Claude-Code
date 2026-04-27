@@ -361,9 +361,17 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   table.bc tr.rec td{color:#008040!important;background:#F0FBF6!important}
   /* Pagination tableau : autoriser les sauts de ligne */
   table.at tbody tr,table.bc tbody tr{break-inside:avoid}
-  /* Tableau d'amortissement limité à 20 ans en impression (3 lignes d'en-tête + 20 années = 23) */
+  /* Tableau d'amortissement T1/T2/T3 limité à 20 ans (3 lignes d'en-tête + 20 années = 23) */
   table.at tbody tr:nth-child(n+24){display:none!important}
   table.at tbody tr:nth-child(23) td:last-child::after{content:" ⚠ Limité à 20 ans";font-size:7pt;color:#888;font-style:italic}
+  /* Tableau d'amortissement T4 (renderProAmort) — pas d'en-tête tbody, limite à 15 ans */
+  #amort4_combined table.at tbody tr:nth-child(n+16){display:none!important}
+  #amort4_combined table.at tbody tr:nth-child(15) td:last-child::after{content:" ⚠ Limité à 15 ans";font-size:7pt;color:#888;font-style:italic}
+  /* Annule la limite générique n+24 pour le tableau T4 (qui n'a pas de header tbody) */
+  #amort4_combined table.at tbody tr:nth-child(n+24){display:revert}
+  #amort4_combined table.at tbody tr:nth-child(23) td:last-child::after{content:none}
+  /* T4 — supprimer le saut de page avant le tableau (provoquait une page blanche) */
+  #r4 .ps-table{break-before:auto!important}
   table.at thead,table.bc thead{display:table-header-group}
 
   /* ── RAPPORT ENTREPRISE (onglet 4) — P2=rapport seul, P3=charts, P4=ROI+tableau ── */
