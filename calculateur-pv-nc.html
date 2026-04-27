@@ -1909,9 +1909,11 @@ function calcT4(){
 
   const prod=prodM(kwc,s.en,s.pe);
   const prodAn=prod.reduce((a,b)=>a+b,0);
-  const auto=prod.map((p,i)=>Math.min(p*partA,consoM[i]));
-  const surp=prod.map((p,i)=>p-auto[i]); // surplus PV avant batterie
-  const achatAvant=consoM.map((c,i)=>c-auto[i]); // achat réseau avant batterie
+  // Autoconso = part de la conso couverte directement par PV le jour (limité par la prod dispo)
+  // Le reste de la conso (1-partA) est consommé hors prod (nuit) → achat ou décharge batterie
+  const auto=consoM.map((c,i)=>Math.min(c*partA,prod[i]));
+  const surp=prod.map((p,i)=>Math.max(0,p-auto[i])); // surplus PV avant batterie
+  const achatAvant=consoM.map((c,i)=>Math.max(0,c-auto[i])); // achat réseau avant batterie (la part nuit + débordement)
   const autoAn=auto.reduce((a,b)=>a+b,0);
   const surpAvantAn=surp.reduce((a,b)=>a+b,0);
   const achatAvantAn=achatAvant.reduce((a,b)=>a+b,0);
