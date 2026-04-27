@@ -2087,7 +2087,9 @@ function calcT4(){
     {v:`${fmt(fAvec>0?fAvec:0)} XPF`,l:'Facture annuelle APRÈS PV',s:'g'},
     {v:`${fmt(ecoAn)} XPF`,l:'Économie annuelle (An 1)',s:'g'},
     {v:`${fmtD(txAuto)}%`,l:'Taux autoconsommation'},
-  ]);
+    batWh>0?{v:`${fmt(Math.round(batAutoAn))} kWh`,l:'Énergie captée par la batterie'}:null,
+    batWh>0?{v:`${fmt(Math.round(ecoBatAn))} XPF`,l:'Éco supp. batterie / an',s:'g'}:null,
+  ].filter(Boolean));
   plotPile('g4_donut',autoAn,batAutoAn,surpAn,achatAn);
   plotAvantApres('g4_mois_eco',fSansM,fAvecM,'Sans PV','Avec PV');
   // Tableau d'amortissement pro (Année | Éco énergie | Éco IS | Remp. batterie | Bénéfice | Cumul)
