@@ -591,10 +591,19 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 <!-- TAB 4 -->
 <div class="tab-content" id="tab3">
-  <div class="fgrid2" style="margin-bottom:8px">
+  <div class="fgrid3" style="margin-bottom:8px">
     <div class="fg"><label>Nom du projet / Client</label><input type="text" id="t4_nom" value="SCI Client"></div>
     <div class="fg"><label>Référence dossier</label><input type="text" id="t4_ref" value="P 0001"></div>
     <div class="fg"><label>Commune / Code postal</label><input type="text" id="t4_commune" value="98800 Nouméa"></div>
+    <div class="fg"><label>Commercial</label>
+      <select id="t4_commercial">
+        <option value="">-- Sélectionner --</option>
+        <option value="Geoffrey|91.85.76|geoffrey.dupont@solarconcept.nc">Geoffrey Dupont — 91.85.76</option>
+        <option value="Tony|74.96.99|tony.iorio@solarconcept.nc">Tony Iorio — 74.96.99</option>
+        <option value="Patrice|76.51.97|patrice.mussard@solarconcept.nc">Patrice Mussard — 76.51.97</option>
+        <option value="Michel|80.93.01|michel.devine@solarconcept.nc">Michel Devine — 80.93.01</option>
+      </select>
+    </div>
     <div class="fg"><label>Type d'onduleur</label>
       <select id="t4_ond_type" onchange="t4_toggleOnd()">
         <option value="micro" selected>Micro-onduleurs</option>
@@ -2100,7 +2109,7 @@ function calcT4(){
   // Eco cumulée 10/15 ans depuis le tableau pro (éco énergie + éco IS - remp.)
   const eco10_t4=_proRows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t4=_proRows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:document.getElementById('t4_commercial').value||'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
   lastCalcDetails={tab:4,tabName:'Entreprise',isT3:false,
     kwc,devis,tarif,rev,nbP,panWc,surf,
     prodAn,consoAn:conso,directAutoAn:autoAn,batAutoAn,reinjAn:surpAn,achatAn,
