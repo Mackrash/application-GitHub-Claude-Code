@@ -657,14 +657,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div id="r4_rapport"></div>
       <div class="kpi-grid" id="k4_fin" style="margin:12px 0 6px"></div>
     </div>
-    <!-- P3 : ROI + Tableau + Graphiques -->
+    <!-- P3 : Tableau d'amortissement pro + Graphiques -->
     <div class="ps-page2">
-    <div class="ps ps-roi">
-      <div class="st">Retour sur investissement — 20 ans</div>
-      <div id="g4_roi" style="height:300px"></div>
-      <div id="k4_pb"></div>
-    </div>
     <div class="ps ps-table">
+      <div class="st">Tableau d'amortissement professionnel</div>
       <div id="amort4_combined"></div>
     </div>
     <div class="ps ps-charts">
@@ -1802,6 +1798,45 @@ function calcT3(){
   document.getElementById('r3').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+// ===== TABLEAU AMORTISSEMENT PRO (T4) =====
+// Colonnes : An | Éco énergie | Éco IS | Remp. batterie | Bénéfice | Cumul
+function renderProAmort(divId,devis,ecoAn,hausse,deg,duree,ecoISan,dAmort,coutBatR,anneeR){
+  let cumul=-devis,pb=null;
+  const rows=[];
+  for(let y=1;y<=duree;y++){
+    const facteur=Math.pow((1+hausse/100)*(1-deg/100),y-1);
+    const eco=Math.round(ecoAn*facteur);
+    const is=y<=dAmort?Math.round(ecoISan):0;
+    const remp=y===anneeR?Math.round(coutBatR):0;
+    const ben=eco+is-remp;
+    cumul+=ben;
+    if(!pb&&cumul>=0)pb=y;
+    rows.push({y,eco,is,remp,ben,cumul:Math.round(cumul)});
+  }
+  let h='<div style="overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch"><table class="at" style="min-width:560px"><thead><tr>';
+  h+='<th style="text-align:left">Année</th>';
+  h+='<th>Éco énergie</th>';
+  h+='<th>Éco IS</th>';
+  h+='<th>Remp. batterie</th>';
+  h+='<th>Bénéfice</th>';
+  h+='<th>Cumul</th>';
+  h+='</tr></thead><tbody>';
+  for(const r of rows){
+    const isPb=r.y===pb;
+    h+='<tr'+(isPb?' class="pos"':'')+'>';
+    h+='<td style="text-align:left">An '+r.y+(isPb?' <small style="opacity:.7">★ payback</small>':'')+'</td>';
+    h+='<td>'+fmt(r.eco)+' XPF</td>';
+    h+='<td>'+(r.is>0?fmt(r.is)+' XPF':'—')+'</td>';
+    h+='<td'+(r.remp>0?' style="color:#cc4422"':'')+'>'+(r.remp>0?'−'+fmt(r.remp)+' XPF':'—')+'</td>';
+    h+='<td'+(r.ben>=0?' class="pos"':' style="color:#cc4422"')+'>'+(r.ben<0?'−':'')+fmt(Math.abs(r.ben))+' XPF</td>';
+    h+='<td'+(r.cumul>=0?' class="pos"':'')+'>'+(r.cumul<0?'−':'')+fmt(Math.abs(r.cumul))+' XPF</td>';
+    h+='</tr>';
+  }
+  h+='</tbody></table></div>';
+  document.getElementById(divId).innerHTML=h;
+  return{rows,pb};
+}
+
 // ===== HELPERS T4 — Onduleurs =====
 function t4_toggleOnd(){
   const v=document.getElementById('t4_ond_type').value;
@@ -1938,9 +1973,23 @@ function calcT4(){
   const factMoy20=sumFact/20;
   const prodMoy20=prod.map(p=>Math.round(p*factMoy20));
 
-  const {rows,pb}=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded);
+  // Calcul payback pro intégrant éco énergie + éco IS + remp. batterie + hausse + dégradation
+  const batRepl=batWh>0?BAT_REPL[batModel]*batQty:0;
+  const batReplAn=batWh>0?s.bat_repl:0;
+  let _cumul=-devis,pbPro=null;
+  const _proRows=[];
+  for(let y=1;y<=s.dpv;y++){
+    const f=Math.pow((1+s.hau/100)*(1-s.deg/100),y-1);
+    const e=Math.round(ecoAn*f);
+    const i=y<=dAmort?avantageAn:0;
+    const r=y===batReplAn?batRepl:0;
+    const ben=e+i-r;
+    _cumul+=ben;
+    if(!pbPro&&_cumul>=0)pbPro=y;
+    _proRows.push({y,eco:e,is:i,remp:r,ben:Math.round(ben),cumul:Math.round(_cumul)});
+  }
   const pbMax_t4=buildAmort(devis,ecoAn,0,s.deg,s.dpv,0,0).pb||s.dpv+1;
-  const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+r.eco,0);
+  const eco15=_proRows.filter(r=>r.y<=15).reduce((a,r)=>a+r.eco,0);
 
   // === RAPPORT PRO — Charte Solar Concept ===
   const R=s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"><span style="font-size:.82rem;color:#555">${s.k}</span><span style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.95rem;font-weight:700;color:${s.or?'#F07020':s.g?'#1a7a3c':'#333'}">${s.v}</span></div>`;
@@ -2024,8 +2073,8 @@ function calcT4(){
         </div>
         <div class="rpt-kpi-card" style="background:#f0fff8;border:2px solid #1a7a3c;border-radius:10px;padding:16px;text-align:center">
           <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:2px;color:#1a7a3c;text-transform:uppercase;margin-bottom:4px">Retour sur investissement</div>
-          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.2rem;font-weight:700;color:#1a7a3c;line-height:1">${fmtD(rsi)} ans</div>
-          <div style="font-size:.72rem;color:#555;margin-top:2px">après amortissement comptable</div>
+          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.2rem;font-weight:700;color:#1a7a3c;line-height:1">${pbPro?'An '+pbPro:'> '+s.dpv+' ans'}</div>
+          <div style="font-size:.72rem;color:#555;margin-top:2px">éco énergie + amort. IS, hausse tarif et dégradation incluses</div>
         </div>
       </div>
 
@@ -2041,15 +2090,13 @@ function calcT4(){
   ]);
   plotPile('g4_donut',autoAn,batAutoAn,surpAn,achatAn);
   plotAvantApres('g4_mois_eco',fSansM,fAvecM,'Sans PV','Avec PV');
-  plotROI('g4_roi',rows);
-  if(pb)document.getElementById('k4_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
-  const batRepl=batWh>0?BAT_REPL[batModel]*batQty:0;
-  const batReplAn=batWh>0?s.bat_repl:0;
-  renderCombinedAmort('amort4_combined',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,batRepl,batReplAn,0);
+  // Tableau d'amortissement pro (Année | Éco énergie | Éco IS | Remp. batterie | Bénéfice | Cumul)
+  renderProAmort('amort4_combined',devis,ecoAn,s.hau,s.deg,s.dpv,avantageAn,dAmort,batRepl,batReplAn);
 
-  const eco10_t4=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  const eco15_t4=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows,pb,pbMin:pb,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
+  // Eco cumulée 10/15 ans depuis le tableau pro (éco énergie + éco IS - remp.)
+  const eco10_t4=_proRows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
+  const eco15_t4=_proRows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4};
   lastCalcDetails={tab:4,tabName:'Entreprise',isT3:false,
     kwc,devis,tarif,rev,nbP,panWc,surf,
     prodAn,consoAn:conso,directAutoAn:autoAn,batAutoAn,reinjAn:surpAn,achatAn,
@@ -2058,7 +2105,7 @@ function calcT4(){
     batWh,batModel,batQty,batRepl,batReplAn,
     kva,primeFix,redev,tc,aboAn,
     tIS,dAmort,amortAn,avantageAn,avantageTotal,coutNetImpot,rendement,rsi,
-    rows,pb,pbMin:pb,pbMax:pbMax_t4,tauxAuto:Math.round(partA*100),
+    rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,tauxAuto:Math.round(partA*100),
     ondList};
 
   document.getElementById('r4').style.display='block';
