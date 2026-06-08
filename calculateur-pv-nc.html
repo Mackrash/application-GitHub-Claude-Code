@@ -186,6 +186,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 /* RESULTS HIDDEN */
 .results{display:none}
+/* Bandeau de section : visible seulement à l'impression (doublon du .st à l'écran) */
+.ps-label{display:none}
 
 /* PRINT */
 #cover-page{display:none}
@@ -435,8 +437,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div><div class="slogan">Votre meilleure source d'énergie</div></div>
   </div>
   <div class="header-right">
-    <button class="btn-print" onclick="preparePrint()">🖨 Imprimer / PDF</button>
-    <button class="btn-print" onclick="saveStudy()" id="btn-save" style="margin-left:6px">💾 Enregistrer l’étude</button>
+    <button class="btn-print" onclick="preparePrint()">📄 Enregistrer en PDF</button>
+    <button class="btn-print" onclick="saveStudy()" id="btn-save" style="margin-left:6px">💾 Enregistrer (HTML)</button>
     <button class="btn-print" onclick="saveCalcs()" id="btn-calcs" style="margin-left:6px;opacity:.85">🧮 Exporter calculs PDF</button>
     <div class="tel">☎ 47 03 02</div>
   </div>
@@ -481,8 +483,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="fg"><label>Taux d'autoconsommation (%)</label>
       <select id="t1_auto"><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30">30%</option><option value="35">35%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option><option value="55">55%</option><option value="60" selected>60%</option><option value="65">65%</option><option value="70">70%</option><option value="75">75%</option><option value="80">80%</option><option value="85">85%</option><option value="90">90%</option><option value="95">95%</option><option value="100">100%</option></select>
     </div>
-    <div style="display:flex;align-items:center;gap:18px;padding-top:18px">
-      <label class="cb" style="margin:0"><input type="checkbox" id="t1_pisc"><span>Piscine (+350 kWh/mois)</span></label>
+    <div style="display:flex;align-items:center;gap:10px;padding-top:18px;flex-wrap:wrap">
+      <label class="cb" style="margin:0"><input type="checkbox" id="t1_pisc"><span>Piscine</span></label>
+      <input type="number" id="t1_pisc_kwh" value="300" min="0" step="10" style="width:78px" title="kWh/mois de votre conso absorbés directement par le solaire (pompe le jour)">
+      <span style="font-size:.72rem;color:var(--tx2)">kWh/mois en autoconso. directe</span>
     </div>
   </div>
   <button class="btn-calc" onclick="calcT1()">⚡ CALCULER</button>
@@ -508,6 +512,16 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="ps ps-table">
       <div class="tw" id="tb1"></div>
     </div>
+    <div class="ps ps-table">
+      <span class="ps-label">Estimation de vos factures</span>
+      <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
+      <div class="tw" id="t1_facture"></div>
+    </div>
+    <div class="ps ps-table">
+      <span class="ps-label">Bilan énergétique mensuel</span>
+      <div class="st">Bilan énergétique mensuel</div>
+      <div class="tw" id="t1_bilan"></div>
+    </div>
   </div>
 </div>
 
@@ -524,9 +538,6 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="fg"><label>Batterie — quantité</label><input type="number" id="t2_bat_qty" value="1" min="1" max="10" step="1"></div>
     <div class="fg"><label>Montant du devis TTC (XPF)</label><input type="number" id="t2_devis" value="1200000" min="0" step="50000"></div>
     <div class="fg"><label>Tarif revente réseau (XPF/kWh)</label><select id="t2_rev"><option value="0">0 XPF/kWh — pas de revente</option><option value="15" selected>15 XPF/kWh — standard</option><option value="21">21 XPF/kWh — haute</option></select></div>
-    <div style="display:flex;align-items:center;gap:18px;padding-top:18px">
-      <label class="cb" style="margin:0"><input type="checkbox" id="t2_pisc"><span>Piscine (+350 kWh/mois)</span></label>
-    </div>
   </div>
   <button class="btn-calc" onclick="calcT2()">⚡ CALCULER</button>
   <div class="results" id="r2">
@@ -551,6 +562,16 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="ps ps-table">
       <div class="tw" id="tb2"></div>
     </div>
+    <div class="ps ps-table">
+      <span class="ps-label">Estimation de vos factures</span>
+      <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
+      <div class="tw" id="t2_facture"></div>
+    </div>
+    <div class="ps ps-table">
+      <span class="ps-label">Bilan énergétique mensuel</span>
+      <div class="st">Bilan énergétique mensuel</div>
+      <div class="tw" id="t2_bilan"></div>
+    </div>
   </div>
 </div>
 
@@ -562,16 +583,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="fg"><label>Puissance PV (kWc)</label><input type="number" id="t3_kwc" value="6.3" min="0.5" step="0.5"></div>
     <div class="fg"><label>Montant du devis TTC (XPF)</label><input type="number" id="t3_devis" value="1200000" min="0" step="50000"></div>
     <div class="fg"><label>Tarif revente réseau (XPF/kWh)</label><select id="t3_rev"><option value="0">0 XPF/kWh — pas de revente</option><option value="15" selected>15 XPF/kWh — standard</option><option value="21">21 XPF/kWh — haute</option></select></div>
-    <div class="fg"><label>Couverture achat souhaitée : <span id="t3_al">50</span>%</label>
-      <input type="range" id="t3_auto" min="0" max="100" value="50" oninput="document.getElementById('t3_al').textContent=this.value">
-    </div>
     <div class="fg"><label>Batterie — modèle</label>
       <select id="t3_bat"><option value="4800">Élite (4,8 kWh)</option><option value="10650">Prestige (10,65 kWh)</option><option value="14336" selected>Maestro (14,3 kWh)</option></select>
     </div>
     <div class="fg"><label>Batterie — quantité</label><input type="number" id="t3_bat_qty" value="1" min="1" max="10" step="1"></div>
-    <div style="display:flex;align-items:center;padding-top:18px">
-      <label class="cb" style="margin:0"><input type="checkbox" id="t3_pisc"><span>Piscine (+350 kWh/mois)</span></label>
-    </div>
   </div>
   <button class="btn-calc" onclick="calcT3()">⚡ CALCULER</button>
   <div class="results" id="r3">
@@ -597,6 +612,16 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div class="st">Comparatif modèles</div>
       <div class="tw" id="tb3"></div>
       <div class="tw" id="tb3_amort" style="margin-top:14px"></div>
+    </div>
+    <div class="ps ps-table">
+      <span class="ps-label">Estimation de vos factures</span>
+      <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
+      <div class="tw" id="t3_facture"></div>
+    </div>
+    <div class="ps ps-table">
+      <span class="ps-label">Bilan énergétique mensuel</span>
+      <div class="st">Bilan énergétique mensuel</div>
+      <div class="tw" id="t3_bilan"></div>
     </div>
   </div>
 </div>
@@ -796,6 +821,73 @@ function factureMois(achatKwh,reinjKwh,s,isPro=false,rev=0){
   const totalHT=e+prime+taxeComm+s.rc; // Total HT (énergie + prime + taxe communale + redevance)
   const tgc=totalHT*s.tgc/100;  // TGC sur TOTAL HT
   return totalHT+tgc-reinjKwh*rev; // Total TTC - crédit injection
+}
+
+// ===== DÉTAIL FACTURE (tableau "Estimation de vos factures") =====
+function factureDetailObj(achatKwh,reinjKwh,s,rev=0){
+  const tarif=s.kva<=3.3?s.tl:s.th;
+  const e=achatKwh*tarif;
+  const prime=s.pf*s.kva;
+  const taxeComm=(e+prime)*s.tc/100;
+  const totalHT=e+prime+taxeComm+s.rc;
+  const tgc=totalHT*s.tgc/100;
+  const injCredit=reinjKwh*rev;
+  return {achatKwh,tarif,e,prime,taxeComm,reinjKwh,rev,injCredit,totalHT,tgc,totalTTC:totalHT+tgc-injCredit};
+}
+// cols : [{label, achatAn, reinjAn, rev}] — totaux annuels → moyenne mensuelle (/12)
+function renderFactureTable(containerId,cols){
+  const el=document.getElementById(containerId);if(!el)return;
+  const s=getS();
+  const tarif=s.kva<=3.3?s.tl:s.th;
+  const amp=Math.round(s.kva*1000/220);
+  const D=cols.map(c=>factureDetailObj((c.achatAn||0)/12,(c.reinjAn||0)/12,s,c.rev||0));
+  let h=`<div style="text-align:center;font-weight:700;color:var(--bl);margin:2px 0 8px;letter-spacing:.5px">Puissance souscrite : ${fmtD(s.kva,1)} kVA (~${amp} A)</div>`;
+  h+=`<table class="bc"><thead><tr><th>Détails</th>`;
+  cols.forEach(c=>h+=`<th>${c.label}</th>`);
+  h+=`</tr></thead><tbody>`;
+  const row=(lbl,fn,cls)=>{h+=`<tr${cls?` class="${cls}"`:''}><td>${lbl}</td>`;D.forEach(d=>h+=`<td>${fn(d)}</td>`);h+=`</tr>`;};
+  row(`Énergie consommée (${fmtD(tarif,2)} XPF/kWh)`,d=>`${fmt(d.achatKwh)} kWh — ${fmt(d.e)}`);
+  row(`Prime fixe (${fmtD(s.kva,1)} kVA × ${fmt(s.pf)})`,d=>`${fmt(d.prime)}`);
+  row(`Redevance comptage`,()=>`${fmt(s.rc)}`);
+  row(`Taxe communale (${fmtD(s.tc,0)} %)`,d=>`${fmt(d.taxeComm)}`);
+  row(`Énergie injectée${cols.some(c=>c.rev>0)?'':' (non rémunérée)'}`,d=>`${fmt(d.reinjKwh)} kWh${d.rev>0?` — −${fmt(d.injCredit)}`:''}`);
+  row(`Total HT`,d=>`${fmt(d.totalHT)}`,'rec');
+  row(`TGC (${fmtD(s.tgc,0)} %)`,d=>`${fmt(d.tgc)}`);
+  row(`<strong>Total TTC à régler</strong>`,d=>`<strong>${fmt(d.totalTTC)} XPF</strong>`,'rec');
+  el.innerHTML=h+`</tbody></table>`;
+}
+// rows : {prod, besoins, autoconso, batInj, surplus, reseau} — chaque = array[12] ou null
+function renderBilanMensuel(containerId,rows){
+  const el=document.getElementById(containerId);if(!el)return;
+  const defs=[
+    ['Énergie produite (kWh)','prod'],
+    ['Besoins énergétiques (kWh)','besoins'],
+    ['Autoconsommation (kWh)','autoconso'],
+    ['Production injectée batterie (kWh)','batInj'],
+    ['Surplus revendu (kWh)','surplus'],
+    ['Consommation sur réseau (kWh)','reseau'],
+  ];
+  const half=start=>{
+    let t=`<table class="bc" style="font-size:.72rem;margin-top:8px"><thead><tr><th>Poste</th>`;
+    for(let i=start;i<start+6;i++)t+=`<th>${MO[i]}</th>`;
+    t+=`</tr></thead><tbody>`;
+    defs.forEach(([lbl,key])=>{
+      const arr=rows[key];
+      t+=`<tr><td>${lbl}</td>`;
+      for(let i=start;i<start+6;i++)t+=`<td>${arr?fmt(arr[i]):'—'}</td>`;
+      t+=`</tr>`;
+    });
+    return t+`</tbody></table>`;
+  };
+  const sum=arr=>arr?arr.reduce((a,b)=>a+b,0):null;
+  const totals=[
+    ['Production estimée','prod'],['Consommation totale','besoins'],
+    ['Autoconsommation solaire','autoconso'],['Consommation batteries','batInj'],
+    ['Surplus réinjecté','surplus'],['Consommation réseau','reseau'],
+  ];
+  let tot=`<table class="bc" style="margin-top:12px;max-width:460px"><tbody>`;
+  totals.forEach(([lbl,key])=>{const v=sum(rows[key]);tot+=`<tr><td>${lbl}</td><td><strong>${v==null?'—':fmt(v)+' kWh/an'}</strong></td></tr>`;});
+  el.innerHTML=`<div style="overflow-x:auto">${half(0)}${half(6)}</div>${tot+'</tbody></table>'}`;
 }
 
 // ===== DÉDUCTION FISCALE CORRIGÉE =====
@@ -1477,7 +1569,10 @@ function plotAvantApres(div,fSansM,fAvecM,lblAvant,lblApres){
 function calcT1(){
   const s=getS();
   const consoM=getMths('m1_');
-  if(document.getElementById('t1_pisc').checked)consoM.forEach((_,i)=>consoM[i]+=350);
+  // Piscine : ne CHANGE PAS la conso totale — force une part de la conso saisie en
+  // autoconsommation directe (pompe le jour) → moins de surplus pour charger la batterie.
+  const piscOn=document.getElementById('t1_pisc').checked;
+  const piscKwh=Math.max(0,parseFloat(document.getElementById('t1_pisc_kwh').value)||0);
   const tauxAuto=parseInt(document.getElementById('t1_auto').value)||60; // taux autoconsommation fixe (%)
   const taux=0;
   const kwc=Math.max(0.5,parseFloat(document.getElementById('t1_kwc').value)||3);
@@ -1498,7 +1593,8 @@ function calcT1(){
   // Calcul mensuel : autoconsommation fixe (taux%) + batterie + injection + achat
   const directAutoM=[],batAutoM=[],reinjM=[],achatM=[];
   for(let i=0;i<12;i++){
-    const autoDir=Math.min(consoM[i]*tauxAuto/100,prod[i]); // autoconso fixe, plafonnée à prod
+    let autoDir=Math.min(consoM[i]*tauxAuto/100,prod[i]); // autoconso fixe, plafonnée à prod
+    if(piscOn)autoDir=Math.min(Math.max(autoDir,piscKwh),prod[i],consoM[i]); // plancher piscine (jour)
     const surp=prod[i]-autoDir;                              // surplus après autoconso directe
     const reste=consoM[i]-autoDir;                          // besoin restant (réseau ou batterie)
     let bCharge=0,bDisch=0,reinj=surp;
@@ -1588,6 +1684,14 @@ function calcT1(){
     pb,pbMin,pbMax,
     batRepl:batModel>0?BAT_REPL[batModel]*batQty:0,batReplAn:batModel>0?s.bat_repl:0};
 
+  // Tableaux Estimation factures + Bilan mensuel
+  renderFactureTable('t1_facture',[
+    {label:'Sans PV',achatAn:consoAn_t1,reinjAn:0,rev:0},
+    {label:'Avec PV',achatAn:Math.max(0,consoAn_t1-directAutoAn),reinjAn:Math.max(0,prodAn-directAutoAn),rev},
+    ...(batWh>0?[{label:'Avec PV + batterie',achatAn,reinjAn,rev}]:[])
+  ]);
+  renderBilanMensuel('t1_bilan',{prod,besoins:consoM,autoconso:directAutoM,batInj:batAutoM,surplus:reinjM,reseau:achatM});
+
   document.getElementById('r1').style.display='block';
   document.getElementById('r1').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -1608,7 +1712,6 @@ function calcT2(){
   const panWc=Math.max(100,parseInt(document.getElementById('t2_wc').value)||450);
   const rev=parseFloat(document.getElementById('t2_rev').value);
   const taux=0;
-  if(document.getElementById('t2_pisc').checked)consoM.forEach((_,i)=>consoM[i]+=350);
   const dod=s.dod/100;
 
   // Données réelles (état actuel : PV sans batterie)
@@ -1692,6 +1795,14 @@ function calcT2(){
     pb,pbMin,pbMax,
     batRepl:BAT_REPL[batModel]*batQty,batReplAn:s.bat_repl};
 
+  // Tableaux Estimation factures + Bilan mensuel
+  renderFactureTable('t2_facture',[
+    {label:'Sans PV',achatAn:consoAn,reinjAn:0,rev:0},
+    {label:'Avec PV',achatAn,reinjAn,rev},
+    {label:'Avec PV + batterie',achatAn:newAchatAn,reinjAn:newReinjAn,rev}
+  ]);
+  renderBilanMensuel('t2_bilan',{prod:prodM2,besoins:consoM,autoconso:autoconsoDirecteM,batInj:bDischM,surplus:newReinjM,reseau:newAchatM});
+
   document.getElementById('r2').style.display='block';
   document.getElementById('r2').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(err){
@@ -1707,10 +1818,8 @@ function calcT3(){
   const s=getS();
   const achatM=getMGTrow('t3_achat');
   const injM=getMGTrow('t3_inj');
-  if(document.getElementById('t3_pisc').checked)achatM.forEach((_,i)=>achatM[i]+=350);
   const kwc=Math.max(0.5,parseFloat(document.getElementById('t3_kwc').value)||6.3);
   const devis=Math.max(0,parseFloat(document.getElementById('t3_devis').value)||0);
-  const auto_nuit=parseInt(document.getElementById('t3_auto').value);
   const batModel=parseInt(document.getElementById('t3_bat').value)||14336;
   const batQty=parseInt(document.getElementById('t3_bat_qty').value)||1;
   const dod=s.dod/100;
@@ -1723,7 +1832,7 @@ function calcT3(){
 
   // Recommandation batterie (pic journalier × couverture souhaitée)
   const peakAchat=Math.max(...achatM.map((a,i)=>a/DM[i]));
-  const besoin=peakAchat*auto_nuit/100;
+  const besoin=peakAchat; // couverture cible = 100% du besoin nuit (curseur "couverture souhaitée" retiré)
   const models=[{wh:4800,l:'Élite (4,8 kWh)'},{wh:10650,l:'Prestige (10,65 kWh)'},{wh:14336,l:'Maestro (14,3 kWh)'}];
   let rec=models[models.length-1];
   for(const m of models){if(m.wh/1000*dod>=besoin){rec=m;break;}}
@@ -1819,6 +1928,13 @@ function calcT3(){
     fSansAn:fSansBat,fAvecAn:fAvecBat,ecoAn,ecoAutoAn:0,ecoBatAn:ecoAn,
     pb,pbMin,pbMax,
     batRepl:BAT_REPL[batModel]*batQty,batReplAn:s.bat_repl};
+
+  // Tableaux Estimation factures + Bilan mensuel (T3 : prod/conso/autoconso non saisis)
+  renderFactureTable('t3_facture',[
+    {label:'Avec PV (sans batterie)',achatAn,reinjAn:injAn,rev},
+    {label:'Avec PV + batterie',achatAn:newAchatAn,reinjAn:newInjAn,rev}
+  ]);
+  renderBilanMensuel('t3_bilan',{prod:null,besoins:null,autoconso:null,batInj:bDischM,surplus:newInjM,reseau:newAchatM});
 
   document.getElementById('r3').style.display='block';
   document.getElementById('r3').scrollIntoView({behavior:'smooth',block:'start'});
@@ -2186,7 +2302,7 @@ function calcT4(){
     updTot('m1_','t1_tot');
     updTot('m4_','t4_tot');
     ['t2_prod','t2_conso','t2_reinj','t2_achat','t3_achat','t3_inj'].forEach(id=>updMGT(id));
-    ['t1_auto:t1_al','t3_auto:t3_al','t4_auto:t4_al'].forEach(pair=>{
+    ['t1_auto:t1_al','t4_auto:t4_al'].forEach(pair=>{
       const [sid,lid]=pair.split(':');
       const s=document.getElementById(sid);
       const l=document.getElementById(lid);
