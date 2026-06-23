@@ -541,8 +541,9 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="fg"><label>Batterie — quantité</label><input type="number" id="t2_bat_qty" value="1" min="1" max="10" step="1"></div>
     <div class="fg"><label>Montant du devis TTC (XPF)</label><input type="number" id="t2_devis" value="1200000" min="0" step="50000"></div>
     <div class="fg"><label>Tarif revente réseau (XPF/kWh)</label><select id="t2_rev"><option value="0">0 XPF/kWh — pas de revente</option><option value="15" selected>15 XPF/kWh — standard</option><option value="21">21 XPF/kWh — haute</option></select></div>
-    <div class="fg"><label>Panneaux dédiés batterie — nombre</label><input type="number" id="t2_pan_bat_nb" value="0" min="0" max="100" step="1"></div>
-    <div class="fg"><label>Panneaux dédiés batterie — puissance (Wc)</label><input type="number" id="t2_pan_bat_wc" value="450" min="100" max="800" step="10"></div>
+    <div class="fg" style="grid-column:1/-1;margin-top:8px;border-top:1px solid var(--org);padding-top:10px"><div style="color:var(--or);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px">☀️ Panneaux dédiés à la recharge batterie <span style="color:var(--tx2);font-weight:600;text-transform:none;letter-spacing:0">— en plus du PV ci-dessus, laisser à 0 si aucun</span></div></div>
+    <div class="fg"><label>Panneaux dédiés — nombre</label><input type="number" id="t2_pan_bat_nb" value="0" min="0" max="100" step="1"></div>
+    <div class="fg"><label>Panneaux dédiés — puissance (Wc)</label><input type="number" id="t2_pan_bat_wc" value="450" min="100" max="800" step="10"></div>
   </div>
   <button class="btn-calc" onclick="calcT2()">⚡ CALCULER</button>
   <div class="results" id="r2">
