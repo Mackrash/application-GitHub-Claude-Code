@@ -760,7 +760,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 <script>
 // ===== CONSTANTES =====
 // Facteurs solaires mensuels calibrés SAM/PySAM — Nouméa NC (lat -22.27, lon 166.44, tilt 15°, azimuth 0°)
-const SF=[1.15,1.08,1.05,0.92,0.82,0.75,0.78,0.85,0.95,1.05,1.12,1.18];
+const IDX=[1.38,1.38,1.32,0.90,0.80,0.65,0.80,0.95,1.25,1.25,1.40,1.50];
+const IDXSUM=IDX.reduce((a,b)=>a+b,0);
 const MO=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 const DM=[31,28,31,30,31,30,31,31,30,31,30,31];
 const TRANCHES_NC=[
@@ -804,7 +805,8 @@ const fmtD=(n,d=1)=>n.toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFra
 
 function prodM(kwc,en,pe){
   const f=1-pe/100;
-  return SF.map((sf,i)=>kwc*en*sf*f*DM[i]);
+  const annual=kwc*en*f*365;            // productible annuel piloté par les réglages
+  return IDX.map(ix=>annual*ix/IDXSUM); // réparti selon la courbe métier NC
 }
 
 function factureMois(achatKwh,reinjKwh,s,isPro=false,rev=0){
@@ -2269,8 +2271,7 @@ function calcT4(){
   initMG('mg4','m4_',20000,'t4_tot',isSaved);
 
   // Tab 2 — defaults basés sur 6.3 kWc / 4500 kWh/an conso
-  const f2=6.3*4.2*0.85;
-  const p2=SF.map((sf,i)=>Math.round(f2*sf*DM[i]));
+  const p2=prodM(6.3,4.2,15).map(v=>Math.round(v));
   const c2=DM.map(d=>Math.round(4500*d/TD));
   const r2=p2.map((p,i)=>Math.max(0,Math.round(p-c2[i]*0.28)));
   const a2=c2.map((c,i)=>Math.max(0,Math.round(c-(p2[i]-r2[i]))));
