@@ -573,6 +573,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div class="tw" id="t2_facture"></div>
     </div>
     <div class="ps ps-table">
+      <div id="t2_dedie_card"></div>
       <span class="ps-label">Bilan énergétique mensuel</span>
       <div class="st">Bilan énergétique mensuel</div>
       <div class="tw" id="t2_bilan"></div>
@@ -879,13 +880,15 @@ function renderBilanMensuel(containerId,rows){
     ['Surplus revendu (kWh)','surplus'],
     ['Consommation sur réseau (kWh)','reseau'],
   ];
+  if(rows.dedieCharge)defs.splice(4,0,['↳ rechargé par panneaux dédiés (kWh)','dedieCharge','dedie']);
+  const cellStyle=cls=>cls==='dedie'?' style="color:var(--or);font-weight:700"':'';
   const half=start=>{
     let t=`<table class="bc" style="font-size:.72rem;margin-top:8px"><thead><tr><th>Poste</th>`;
     for(let i=start;i<start+6;i++)t+=`<th>${MO[i]}</th>`;
     t+=`</tr></thead><tbody>`;
-    defs.forEach(([lbl,key])=>{
+    defs.forEach(([lbl,key,cls])=>{
       const arr=rows[key];
-      t+=`<tr><td>${lbl}</td>`;
+      t+=`<tr${cellStyle(cls)}><td>${lbl}</td>`;
       for(let i=start;i<start+6;i++)t+=`<td>${arr?fmt(arr[i]):'—'}</td>`;
       t+=`</tr>`;
     });
@@ -897,9 +900,26 @@ function renderBilanMensuel(containerId,rows){
     ['Autoconsommation solaire','autoconso'],['Consommation batteries','batInj'],
     ['Surplus réinjecté','surplus'],['Consommation réseau','reseau'],
   ];
+  if(rows.dedieCharge)totals.splice(4,0,['↳ rechargé par panneaux dédiés','dedieCharge','dedie']);
   let tot=`<table class="bc" style="margin-top:12px;max-width:460px"><tbody>`;
-  totals.forEach(([lbl,key])=>{const v=sum(rows[key]);tot+=`<tr><td>${lbl}</td><td><strong>${v==null?'—':fmt(v)+' kWh/an'}</strong></td></tr>`;});
+  totals.forEach(([lbl,key,cls])=>{const v=sum(rows[key]);tot+=`<tr${cellStyle(cls)}><td>${lbl}</td><td><strong>${v==null?'—':fmt(v)+' kWh/an'}</strong></td></tr>`;});
   el.innerHTML=`<div style="overflow-x:auto">${half(0)}${half(6)}</div>${tot+'</tbody></table>'}`;
+}
+function renderDedieCard(id,d){
+  const el=document.getElementById(id);if(!el)return;
+  if(!d||!(d.kwc>0)){el.innerHTML='';return;}
+  const lbl='color:var(--tx2);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px';
+  const val='font-size:1.05rem;font-weight:800';
+  const u='font-size:.7rem;color:var(--tx2);font-weight:600';
+  const cell='padding:12px 14px';
+  el.innerHTML=`<div style="background:var(--ors);border:1px solid var(--org);border-radius:10px;overflow:hidden;max-width:580px;margin-bottom:8px">
+    <div style="background:var(--or);color:#fff;font-weight:800;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;padding:8px 14px">☀️ Panneaux dédiés → recharge batterie</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+      <div style="${cell};border-right:1px solid var(--org)"><div style="${lbl}">Lot installé</div><div style="${val};color:var(--tx)">${d.nb} × ${d.wc} Wc</div><div style="${u}">= ${fmtD(d.kwc)} kWc</div></div>
+      <div style="${cell};border-right:1px solid var(--org)"><div style="${lbl}">Recharge batterie apportée</div><div style="${val};color:var(--or)">${fmt(d.bCDedieAn)}</div><div style="${u}">kWh/an</div></div>
+      <div style="${cell}"><div style="${lbl}">Part de la recharge totale</div><div style="${val};color:var(--tx)">${fmtD(d.part,0)} %</div><div style="${u}">de la charge batterie</div></div>
+    </div>
+  </div>`;
 }
 
 // ===== DÉDUCTION FISCALE CORRIGÉE =====
@@ -1743,22 +1763,25 @@ function calcT2(){
   // === SIMULATION AJOUT BATTERIE ===
   // La réinjection réseau charge la batterie en journée → décharge la nuit → réduit achat réseau
   const batCap=batWh/1000*dod; // kWh utile/jour (DoD appliqué)
-  const bChargeM=[],bDischM=[],newReinjM=[],newAchatM=[],lostDedieM=[];
+  const bChargeM=[],bDischM=[],newReinjM=[],newAchatM=[],lostDedieM=[],bCM=[],bCDedieM=[];
   for(let i=0;i<12;i++){
     const maxMois=batCap*DM[i];                  // capacité cyclable sur le mois
     const bC=Math.min(reinjM[i],maxMois);        // charge depuis réinjection PV principal
     const capRest=Math.max(0,maxMois-bC);        // capacité restante après PV principal
     const bCDedie=Math.min(prodDedieM[i],capRest); // le lot dédié complète la charge
-    const lost=prodDedieM[i]-bCDedie;            // surplus dédié écrêté (perdu)
+    const lost=prodDedieM[i]-bCDedie;            // surplus dédié écrêté (perdu, non affiché)
     const bTot=bC+bCDedie;                        // charge totale du mois
     const bD=Math.min(bTot,achatM[i]);           // décharge couvre achat nuit
     bChargeM.push(bTot); bDischM.push(bD);
     newReinjM.push(reinjM[i]-bC);                // injection réseau résiduelle (lot dédié ne réinjecte pas)
     newAchatM.push(achatM[i]-bD);                // achat réseau réduit
-    lostDedieM.push(lost);
+    lostDedieM.push(lost); bCM.push(bC); bCDedieM.push(bCDedie);
   }
   const lostDedieAn=lostDedieM.reduce((a,b)=>a+b,0);
   const prodDedieAn=prodDedieM.reduce((a,b)=>a+b,0);
+  const bCAn=bCM.reduce((a,b)=>a+b,0);
+  const bCDedieAn=bCDedieM.reduce((a,b)=>a+b,0);
+  const partDedie=(bCAn+bCDedieAn)>0?bCDedieAn/(bCAn+bCDedieAn)*100:0;
   const bDischAn=bDischM.reduce((a,b)=>a+b,0);
   const newAchatAn=newAchatM.reduce((a,b)=>a+b,0);
   const newReinjAn=newReinjM.reduce((a,b)=>a+b,0);
@@ -1784,11 +1807,6 @@ function calcT2(){
     {k:'Facture sans batterie / an',v:`${fmt(fSansBat)} XPF`,r:true},
     {k:'Facture avec batterie / an',v:`${fmt(fAvecBat)} XPF`,g:true},
     {k:'Économie batterie / an',v:`${fmt(ecoAn)} XPF`,g:true},
-    ...(kwcDedie>0?[
-      {k:'Panneaux dédiés batterie',v:`${panBatNb} × ${panBatWc} Wc (${fmtD(kwcDedie)} kWc)`},
-      {k:'Production dédiée / an',v:`${fmt(prodDedieAn)} kWh`},
-      {k:'Dont écrêté (batterie pleine)',v:`${fmt(lostDedieAn)} kWh`,r:true},
-    ]:[]),
   ]);
   kpiGrid('k2_fin',[
     {v:`${fmt(fSansBat)} XPF`,l:'Facture sans batterie / an',s:'r'},
@@ -1829,7 +1847,8 @@ function calcT2(){
     {label:'Avec PV',achatAn,reinjAn,rev},
     {label:'Avec PV + batterie',achatAn:newAchatAn,reinjAn:newReinjAn,rev}
   ]);
-  renderBilanMensuel('t2_bilan',{prod:prodM2,besoins:consoM,autoconso:autoconsoDirecteM,batInj:bDischM,surplus:newReinjM,reseau:newAchatM});
+  renderBilanMensuel('t2_bilan',{prod:prodM2,besoins:consoM,autoconso:autoconsoDirecteM,batInj:bDischM,surplus:newReinjM,reseau:newAchatM,dedieCharge:kwcDedie>0?bCDedieM:undefined});
+  renderDedieCard('t2_dedie_card',kwcDedie>0?{nb:panBatNb,wc:panBatWc,kwc:kwcDedie,bCDedieAn,part:partDedie}:null);
 
   document.getElementById('r2').style.display='block';
   document.getElementById('r2').scrollIntoView({behavior:'smooth',block:'start'});
