@@ -1838,6 +1838,7 @@ function calcT2(){
   lastCalcDetails={tab:2,tabName:'Batterie + données complètes',
     client:clientName(),adresse:clientAdresse(),
     kwc,panWc,nbP,surf,devis,rev,batModel,batQty,batWh,
+    panBatNb,panBatWc,kwcDedie,bCDedieAn,partDedie,
     prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
     reinjAn:newReinjAn,achatAn:newAchatAn,
     fSansAn:fSansBat,fAvecAn:fAvecBat,ecoAn,ecoAutoAn:0,ecoBatAn:ecoAn,
@@ -2490,6 +2491,9 @@ function saveCalcs(){
     <tr><td class="k">Capacité brute</td><td class="v">${fd(d.batWh/1000,2)} kWh</td></tr>
     <tr><td class="k">DoD appliqué</td><td class="v">${s.dod}% <span class="fm">→ capacité utile : ${fd(d.batWh/1000*s.dod/100,2)} kWh</span></td></tr>
     <tr><td class="k">Coût remplacement (an ${s.bat_repl})</td><td class="v">${f(d.batRepl)} XPF</td></tr>
+    ${d.kwcDedie>0?`<tr class="sep"><td class="k">Panneaux dédiés à la recharge batterie</td><td class="v o">${d.panBatNb} × ${d.panBatWc} Wc = ${fd(d.kwcDedie)} kWc</td></tr>
+    <tr><td class="k">Recharge batterie apportée par le lot dédié</td><td class="v g">${f(d.bCDedieAn)} kWh/an</td></tr>
+    <tr><td class="k">Part de la recharge totale via le lot dédié</td><td class="v">${fd(d.partDedie,0)} %</td></tr>`:''}
   </table>`:'';
 
   const html=`<!DOCTYPE html>
