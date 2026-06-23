@@ -191,6 +191,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 /* PRINT */
 #cover-page{display:none}
+#last-page{display:none}
 /* Marges : 1.5cm côtés, 1.8cm haut, 2.2cm bas (pied de page) */
 @page{size:A4 portrait;margin:20mm 18mm 22mm 18mm}
 @media print{
@@ -404,6 +405,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
   /* ── PAGE DE GARDE ── */
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
+  #last-page{display:block!important;break-before:page;margin:0;padding:0}
   .cv-foot{background:#333333!important;color:#fff!important}
   .cv-kpi-card{break-inside:avoid}
   .cv-kpi-card.green{background:#F0FBF6!important;border-left-color:#008040!important}
@@ -765,6 +767,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   <p style="color:var(--tx2);font-size:.72rem;margin-top:10px">Tarifs EEC 2024 — Nouméa, NC. Résultats estimatifs non contractuels.</p>
 </div>
 
+<div id="last-page" style="display:none"></div>
+
 <script>
 // ===== CONSTANTES =====
 // Indices de production saisonnière NC (courbe métier Solar Concept — creux d'hiver Juin 0.65, pic Déc 1.50)
@@ -1070,6 +1074,88 @@ function preparePrint(noPrint=false){
       <div>${dateStr}</div>
     </div>
 
+  </div>`;
+
+  // ===== DERNIÈRE PAGE : RÉCAPITULATIF + ROI =====
+  const s=getS();
+  const batRepl=batModel>0?BAT_REPL[batModel]*batQty:0;
+  const batReplAn=batModel>0?s.bat_repl:0;
+
+  // Cartes récap (variante pro / particulier)
+  const recapCards=isPro?`
+        <div class="lp-kpi"><div class="lp-kpi-v">${fmt(devis)} F</div><div class="lp-kpi-l">Total HT du devis</div></div>
+        <div class="lp-kpi"><div class="lp-kpi-v">${fmt(Math.round(coutNetImpot))} F</div><div class="lp-kpi-l">Prix HT après déduction fiscale (IS ${tIS}% × ${dAmort} ans)</div></div>
+        <div class="lp-kpi green"><div class="lp-kpi-v">${pb?'An '+pb:'> '+s.dpv+' ans'}</div><div class="lp-kpi-l">Retour sur investissement</div></div>
+        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>`:`
+        <div class="lp-kpi"><div class="lp-kpi-v">${fmt(devis)} F</div><div class="lp-kpi-l">Montant du devis TTC</div></div>
+        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>
+        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(eco15))} F</div><div class="lp-kpi-l">Économies cumulées sur 15 ans</div></div>`;
+
+  // Section ROI : tranche par tranche (particuliers) — sinon rien (pro garde son ROI dans les cartes)
+  let roiSection='';
+  if(!isPro){
+    const trRows=TRANCHES_NC.map(t=>{
+      const ded=calcDeduction(devis,t.taux,s.ded);
+      const amort=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,t.taux,s.ded,batRepl,batReplAn);
+      const coutNet=devis-ded.eco;
+      const roi=amort.pb?amort.pb+' ans':'> '+s.dpv+' ans';
+      return {label:t.label,eco:ded.eco,coutNet,roi};
+    });
+    const lastIdx=trRows.length-1;
+    const body=trRows.map((r,i)=>`<tr${i===lastIdx?' class="best"':''}><td class="tr">${r.label}</td><td>${r.eco>0?fmt(Math.round(r.eco))+' F':'—'}</td><td>${fmt(Math.round(r.coutNet))} F</td><td class="roi">${r.roi}</td></tr>`).join('');
+    roiSection=`
+      <h2 class="lp-h2">Retour sur investissement selon votre tranche fiscale</h2>
+      <table class="lp-roi">
+        <thead><tr><th>Tranche d'imposition</th><th>Déduction fiscale</th><th>Coût net après déduction</th><th>Retour sur investissement</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <div class="lp-note">Le retour sur investissement dépend de votre tranche marginale d'imposition : plus elle est élevée, plus la déduction fiscale réduit le coût net et accélère l'amortissement.</div>`;
+  }
+
+  document.getElementById('last-page').innerHTML=`
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+    .lp{font-family:'Nunito',sans-serif;color:#333;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .lp-head{display:flex;align-items:center;justify-content:space-between;padding:1.2cm 1.5cm 0.6cm;border-bottom:3px solid #F07020}
+    .lp-head-logo{font-family:'RAIDenmarkNeo',sans-serif;font-size:1.6rem;font-weight:700;color:#F07020;letter-spacing:3px;text-transform:uppercase}
+    .lp-head-logo span{color:#333}
+    .lp-head-right{text-align:right;font-size:0.78rem;color:#666;line-height:1.6}
+    .lp-head-right strong{color:#333}
+    .lp-body{padding:1.1cm 1.5cm}
+    .lp-h2{font-family:'Nunito',sans-serif;font-weight:800;font-size:1.4rem;color:#F07020;text-transform:uppercase;letter-spacing:1.5px;border-bottom:2px solid #F07020;padding-bottom:0.2cm;margin:0 0 0.6cm}
+    .lp-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5cm;margin-bottom:1.1cm}
+    .lp-kpi{background:#FFF8F4;border:1px solid rgba(240,112,32,0.30);border-left:5px solid #F07020;border-radius:7px;padding:0.6cm 0.5cm}
+    .lp-kpi.green{background:#F0FBF6;border-left-color:#008040}
+    .lp-kpi-v{font-family:'Nunito',sans-serif;font-size:1.55rem;font-weight:900;color:#F07020;line-height:1;white-space:nowrap}
+    .lp-kpi.green .lp-kpi-v{color:#008040}
+    .lp-kpi-l{font-size:0.72rem;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-top:0.3cm;font-weight:700}
+    .lp-roi{width:100%;border-collapse:collapse;margin-top:0.2cm}
+    .lp-roi th,.lp-roi td{padding:9px 11px;border-bottom:1px solid #ececec;text-align:right;font-size:1rem}
+    .lp-roi th{background:#F07020;color:#fff;font-weight:800;text-transform:uppercase;font-size:0.78rem;letter-spacing:0.5px}
+    .lp-roi th:first-child,.lp-roi td:first-child{text-align:left}
+    .lp-roi td.tr{font-weight:800;color:#333}
+    .lp-roi td.roi{font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;color:#008040;font-size:1.15rem}
+    .lp-roi tr.best td{background:#F0FBF6}
+    .lp-note{font-size:0.8rem;color:#888;font-style:italic;margin-top:0.5cm}
+    .lp-foot{background:#333;color:#fff;padding:0.35cm 1.5cm;display:flex;justify-content:space-between;align-items:center;font-size:0.7rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;margin-top:auto}
+    .lp-foot-brand{font-family:'RAIDenmarkNeo',sans-serif;font-size:1rem;font-weight:700;color:#F07020;letter-spacing:2px;text-transform:uppercase}
+    #last-page .lp{min-height:29.7cm;display:flex;flex-direction:column}
+  </style>
+  <div class="lp">
+    <div class="lp-head">
+      <div class="lp-head-logo">SOLAR <span>CONCEPT</span></div>
+      <div class="lp-head-right"><strong>RÉCAPITULATIF DU DOSSIER</strong><br>${client||'—'} — ${dateStr}</div>
+    </div>
+    <div class="lp-body">
+      <h2 class="lp-h2">Récapitulatif du dossier</h2>
+      <div class="lp-kpis">${recapCards}</div>
+      ${roiSection}
+    </div>
+    <div class="lp-foot">
+      <div class="lp-foot-brand">Solar Concept</div>
+      <div>${commName?commName+' &nbsp;|&nbsp; ':''}☎ ${commTel||'47 03 02'}${commEmail?' &nbsp;|&nbsp; '+commEmail:''}</div>
+      <div>${dateStr}</div>
+    </div>
   </div>`;
 
   if(!noPrint){
