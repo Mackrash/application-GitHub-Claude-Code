@@ -23,3 +23,28 @@ resco/
 *.xlsx
 *.xls
 *.dwg
+
+# Artefacts de build PyInstaller (l'exe se régénère)
+build/
+dist/
+*.spec
+*.ico
+
+# Captures d'écran et images de travail
+Capture d*
+Battery-Chart-PowerPoint.png
+
+# Fichiers temporaires / de vérification
+_check.js
+_b64.txt
+_step.txt
+
+# Anciennes versions du calculateur (historique géré par git)
+_old_*.html
+
+# Assets sources (logos, typo, visuels) — copie de travail, canon dans Données/
+Graphique/
+
+# Notes / specs de travail
+PROMPT-SAM-COMPARATIF.md
+Cahier des charges calculateur PV.txt
