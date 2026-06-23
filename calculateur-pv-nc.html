@@ -193,7 +193,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 #cover-page{display:none}
 #last-page{display:none}
 /* Marges : 1.5cm côtés, 1.8cm haut, 2.2cm bas (pied de page) */
-@page{size:A4 portrait;margin:20mm 18mm 22mm 18mm}
+@page{size:A4 portrait;margin:12mm 9mm 14mm 9mm}
 @media print{
 
   /* ── FIDÉLITÉ COULEURS ── */
@@ -1139,7 +1139,7 @@ function preparePrint(noPrint=false){
     .lp-note{font-size:0.8rem;color:#888;font-style:italic;margin-top:0.5cm}
     .lp-foot{background:#333;color:#fff;padding:0.35cm 1.5cm;display:flex;justify-content:space-between;align-items:center;font-size:0.7rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;margin-top:auto}
     .lp-foot-brand{font-family:'RAIDenmarkNeo',sans-serif;font-size:1rem;font-weight:700;color:#F07020;letter-spacing:2px;text-transform:uppercase}
-    #last-page .lp{min-height:29.7cm;display:flex;flex-direction:column}
+    #last-page .lp{display:flex;flex-direction:column}
   </style>
   <div class="lp">
     <div class="lp-head">
