@@ -446,6 +446,21 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 <div id="cover-page" style="display:none;page-break-after:always"></div>
 
+<div class="study-id no-print" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+  <div class="fg" style="flex:1;min-width:140px"><label>Nom client</label><input type="text" id="hdr_nom" value="" placeholder="Ex: DUPONT"></div>
+  <div class="fg" style="flex:1;min-width:140px"><label>Prénom</label><input type="text" id="hdr_prenom" value="" placeholder="Ex: Jean"></div>
+  <div class="fg" style="flex:2;min-width:200px"><label>Adresse client</label><input type="text" id="hdr_adresse" value="" placeholder="Ex: 123 Rue de la Paix, 98800 Nouméa"></div>
+  <div class="fg" style="flex:1;min-width:180px"><label>Commercial</label>
+    <select id="hdr_commercial">
+      <option value="">-- Sélectionner --</option>
+      <option value="Geoffrey|91.85.76|geoffrey.dupont@solarconcept.nc">Geoffrey Dupont — 91.85.76</option>
+      <option value="Tony|74.96.99|tony.iorio@solarconcept.nc">Tony Iorio — 74.96.99</option>
+      <option value="Patrice|76.51.97|patrice.mussard@solarconcept.nc">Patrice Mussard — 76.51.97</option>
+      <option value="Michel|80.93.01|michel.devine@solarconcept.nc">Michel Devine — 80.93.01</option>
+    </select>
+  </div>
+</div>
+
 <div class="tabs">
   <button class="tab-btn active" onclick="showTab(0)">⚡ Installation</button>
   <button class="tab-btn" onclick="showTab(1)">🔋 Batterie + données</button>
@@ -456,19 +471,6 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 <!-- TAB 1 -->
 <div class="tab-content active" id="tab0">
-  <div class="fgrid3" style="margin-bottom:14px">
-    <div class="fg"><label>Nom client</label><input type="text" id="t1_client" value="" placeholder="Ex: M. DUPONT"></div>
-    <div class="fg"><label>Commercial</label>
-      <select id="t1_commercial">
-        <option value="">-- Sélectionner --</option>
-        <option value="Geoffrey|91.85.76|geoffrey.dupont@solarconcept.nc">Geoffrey Dupont — 91.85.76</option>
-        <option value="Tony|74.96.99|tony.iorio@solarconcept.nc">Tony Iorio — 74.96.99</option>
-        <option value="Patrice|76.51.97|patrice.mussard@solarconcept.nc">Patrice Mussard — 76.51.97</option>
-        <option value="Michel|80.93.01|michel.devine@solarconcept.nc">Michel Devine — 80.93.01</option>
-      </select>
-    </div>
-    <div class="fg"><label>Adresse client</label><input type="text" id="t1_adresse" value="" placeholder="Ex: 123 Rue de la Paix, 98800 Nouméa"></div>
-  </div>
   <p style="color:var(--tx2);font-size:.8rem;margin-bottom:9px">Consommation mensuelle (kWh) — Total : <strong id="t1_tot">4 500</strong> kWh/an</p>
   <div class="mg" id="mg1"></div>
   <div class="fgrid3">
@@ -802,6 +804,10 @@ function loadSettings(){
 // ===== UTILS =====
 const fmt=n=>Math.round(n).toLocaleString('fr-FR');
 const fmtD=(n,d=1)=>n.toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+// ===== IDENTITÉ CLIENT (header global) =====
+function clientName(){const n=(document.getElementById('hdr_nom')?.value||'').trim();const p=(document.getElementById('hdr_prenom')?.value||'').trim();return (p+' '+n).trim();}
+function clientAdresse(){return document.getElementById('hdr_adresse')?.value||'';}
+function clientCommercial(){return document.getElementById('hdr_commercial')?.value||'';}
 
 function prodM(kwc,en,pe){
   const f=1-pe/100;
@@ -1659,7 +1665,7 @@ function calcT1(){
   // Stocke les données pour la page de garde
   const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10,eco15};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10,eco15};
 
   // Bilan énergie — différentiel Option B (autoconso vs batterie)
   const consoAn_t1=consoM.reduce((a,b)=>a+b,0);
@@ -1679,7 +1685,7 @@ function calcT1(){
     batReplAn:batModel>0?s.bat_repl:0,hasBat:batWh>0
   });
   lastCalcDetails={tab:1,tabName:'Installation complète',
-    client:document.getElementById('t1_client').value,adresse:document.getElementById('t1_adresse').value,
+    client:clientName(),adresse:clientAdresse(),
     kwc,panWc,nbP,surf,devis,rev,batModel,batQty,batWh,tauxAuto,
     prodAn,consoAn:consoAn_t1,directAutoAn,batAutoAn,reinjAn,achatAn,
     fSansAn,fAvecAn,ecoAn,ecoAutoAn,ecoBatAn,
@@ -1780,7 +1786,7 @@ function calcT2(){
 
   const eco10_t2=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2};
 
   renderEnergyFiscalRecap({bilan:'recap2_efy_bilan',eco:'recap2_efy_eco',fiscal:'recap2_efy_fiscal'},{
     prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
@@ -1789,7 +1795,7 @@ function calcT2(){
     devis,s,batRepl:BAT_REPL[batModel]*batQty,batReplAn:s.bat_repl,hasBat:true
   });
   lastCalcDetails={tab:2,tabName:'Batterie + données complètes',
-    client:document.getElementById('t1_client').value,adresse:document.getElementById('t1_adresse').value,
+    client:clientName(),adresse:clientAdresse(),
     kwc,panWc,nbP,surf,devis,rev,batModel,batQty,batWh,
     prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
     reinjAn:newReinjAn,achatAn:newAchatAn,
@@ -1914,7 +1920,7 @@ function calcT3(){
   const eco15_t3=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const fSansMean=fSansM.reduce((a,b)=>a+b,0)/12;
   const fAvecMean=fAvecM.reduce((a,b)=>a+b,0)/12;
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:document.getElementById('t1_client').value,commercial:document.getElementById('t1_commercial').value,adresse:document.getElementById('t1_adresse').value,rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3};
+  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3};
 
   renderEnergyFiscalRecap({bilan:'recap3_efy_bilan',eco:'recap3_efy_eco',fiscal:'recap3_efy_fiscal'},{
     isT3:true,
@@ -1924,7 +1930,7 @@ function calcT3(){
     devis,s,batRepl:BAT_REPL[batModel]*batQty,batReplAn:s.bat_repl,hasBat:true
   });
   lastCalcDetails={tab:3,tabName:'Estimation batterie',isT3:true,
-    client:document.getElementById('t1_client').value,adresse:document.getElementById('t1_adresse').value,
+    client:clientName(),adresse:clientAdresse(),
     kwc,nbP,surf,devis,rev,batModel,batQty,
     injAvantAn:injAn,achatAn,batAutoAn:bDischAn,newAchatAn,newInjAn,
     fSansAn:fSansBat,fAvecAn:fAvecBat,ecoAn,ecoAutoAn:0,ecoBatAn:ecoAn,
@@ -2353,8 +2359,7 @@ async function saveStudy(){
     metaTag.content='true';
 
     // --- Capturer le HTML complet ---
-    const clientEl=document.getElementById('t1_client')||document.getElementById('t4_nom');
-    const clientRaw=(clientEl&&clientEl.value)||'Etude';
+    const clientRaw=clientName()||document.getElementById('t4_nom')?.value||'Etude';
     const client=clientRaw.replace(/[^\w\sÀ-ÿ]/g,'').trim().replace(/\s+/g,'_')||'Etude';
     const dd=new Date();
     const dStr=String(dd.getDate()).padStart(2,'0')+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+dd.getFullYear();
