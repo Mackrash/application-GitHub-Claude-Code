@@ -765,7 +765,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 <script>
 // ===== CONSTANTES =====
-// Facteurs solaires mensuels calibrés SAM/PySAM — Nouméa NC (lat -22.27, lon 166.44, tilt 15°, azimuth 0°)
+// Indices de production saisonnière NC (courbe métier Solar Concept — creux d'hiver Juin 0.65, pic Déc 1.50)
 const IDX=[1.38,1.38,1.32,0.90,0.80,0.65,0.80,0.95,1.25,1.25,1.40,1.50];
 const IDXSUM=IDX.reduce((a,b)=>a+b,0);
 const MO=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
@@ -1762,7 +1762,7 @@ function calcT2(){
   const bDischAn=bDischM.reduce((a,b)=>a+b,0);
   const newAchatAn=newAchatM.reduce((a,b)=>a+b,0);
   const newReinjAn=newReinjM.reduce((a,b)=>a+b,0);
-  const txAuto=(autoconsoDirecteAn+bDischAn)/prodAn*100;
+  const txAuto=(autoconsoDirecteAn+bDischAn)/(prodAn+prodDedieAn)*100;
 
   // Financier — formule EEC exacte
   const fSansM=achatM.map((a,i)=>factureMois(a,reinjM[i],s,false,rev));
