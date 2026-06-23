@@ -1088,11 +1088,13 @@ function preparePrint(noPrint=false){
   </div>`;
 
   if(!noPrint){
-    const clientSlug=(client||'Etude').replace(/[^\w\sÀ-ÿ]/g,'').trim().replace(/\s+/g,'_')||'Etude';
+    const _nom=(document.getElementById('hdr_nom')?.value||'').trim();
+    const _prenom=(document.getElementById('hdr_prenom')?.value||'').trim();
+    const clientSlug=((_nom+' '+_prenom).trim()||client||'Etude').replace(/[^\w\sÀ-ÿ]/g,'').replace(/\s+/g,' ').trim()||'Etude';
     const _dd=new Date();
     const _dStr=String(_dd.getDate()).padStart(2,'0')+'-'+String(_dd.getMonth()+1).padStart(2,'0')+'-'+_dd.getFullYear();
     const oldTitle=document.title;
-    document.title='Etude_PV_'+clientSlug+'_'+_dStr;
+    document.title=clientSlug+' '+_dStr;
     setTimeout(()=>{window.print();setTimeout(()=>{document.title=oldTitle;},2000);},100);
   }
 }
