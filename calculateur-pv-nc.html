@@ -1166,7 +1166,11 @@ function preparePrint(noPrint=false){
     const _dStr=String(_dd.getDate()).padStart(2,'0')+'-'+String(_dd.getMonth()+1).padStart(2,'0')+'-'+_dd.getFullYear();
     const oldTitle=document.title;
     document.title=clientSlug+' '+_dStr;
-    setTimeout(()=>{window.print();setTimeout(()=>{document.title=oldTitle;},2000);},100);
+    // Restauration APRÈS fermeture de la fenêtre d'impression (pas sur timer) :
+    // garantit que le nom de fichier proposé reste « NOM Prénom date » même si l'utilisateur reste longtemps dans le dialogue.
+    const _restoreTitle=()=>{document.title=oldTitle;window.removeEventListener('afterprint',_restoreTitle);};
+    window.addEventListener('afterprint',_restoreTitle);
+    setTimeout(()=>window.print(),100);
   }
 }
 
@@ -1212,15 +1216,17 @@ function updTot(pfx,tid){
 function getMths(pfx){return MO.map((_,i)=>parseFloat(document.getElementById(pfx+i).value)||0)}
 
 // ===== MONTHS — tableau multi-lignes (onglets 2 & 3) =====
-function initMGTable(id,rows,skip){
+function initMGTable(id,rows,skip,colTab){
   const g=document.getElementById(id);
   if(skip&&g.querySelector('input')){rows.forEach(r=>updMGT(r.id));return;}
   let h=`<div class="mg-wrap"><table class="mg-table"><thead><tr><th></th>${MO.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
-  rows.forEach(r=>{
+  rows.forEach((r,ri)=>{
     const tot=r.def.reduce((a,b)=>a+b,0);
     h+=`<tr><td class="mgt-lbl" style="color:var(--${r.c||'tx'})">${r.label}</td>`;
     r.def.forEach((v,i)=>{
-      h+=`<td><input type="number" id="${r.id}_${i}" value="${Math.round(v)}" min="0" step="10" oninput="updMGT('${r.id}')"></td>`;
+      // colTab : tabulation colonne par colonne (un mois entier puis le suivant)
+      const ti=colTab?` tabindex="${i*rows.length+ri+1}"`:'';
+      h+=`<td><input type="number" id="${r.id}_${i}" value="${Math.round(v)}" min="0" step="10" oninput="updMGT('${r.id}')"${ti}></td>`;
     });
     h+=`<td class="mgt-tot" id="${r.id}_tot">${fmt(Math.round(tot))}</td></tr>`;
   });
@@ -2399,7 +2405,7 @@ function calcT4(){
     {id:'t2_conso',label:'Consommation',c:'bl',def:c2},
     {id:'t2_reinj',label:'Réinjection réseau',c:'gr',def:r2},
     {id:'t2_achat',label:'Achat réseau',c:'rd',def:a2},
-  ],isSaved);
+  ],isSaved,true);
 
   // Tab 3 — defaults génériques (achat ~80 kWh/mois, injection ~180 kWh/mois)
   const a3=DM.map(d=>Math.round(80*d/31));
