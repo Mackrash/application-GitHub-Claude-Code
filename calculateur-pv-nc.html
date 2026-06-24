@@ -1844,16 +1844,16 @@ function calcT2(){
   const batCap=batWh/1000*dod; // kWh utile/jour (DoD appliqué)
   const bChargeM=[],bDischM=[],newReinjM=[],newAchatM=[],lostDedieM=[],bCM=[],bCDedieM=[];
   for(let i=0;i<12;i++){
-    const maxMois=batCap*DM[i];                  // capacité cyclable sur le mois
-    const bC=Math.min(reinjM[i],maxMois);        // charge depuis réinjection PV principal
-    const capRest=Math.max(0,maxMois-bC);        // capacité restante après PV principal
-    const bCDedie=Math.min(prodDedieM[i],capRest); // le lot dédié complète la charge
-    const lost=prodDedieM[i]-bCDedie;            // surplus dédié écrêté (perdu, non affiché)
-    const bTot=bC+bCDedie;                        // charge totale du mois
-    const bD=Math.min(bTot,achatM[i]);           // décharge couvre achat nuit
+    const maxMois=batCap*DM[i];                    // capacité cyclable sur le mois
+    const bCDedie=Math.min(prodDedieM[i],maxMois); // le lot dédié charge la batterie EN PRIORITÉ (c'est son rôle)
+    const lost=prodDedieM[i]-bCDedie;              // surplus dédié écrêté si batterie déjà pleine
+    const capRest=Math.max(0,maxMois-bCDedie);     // capacité restante pour le PV principal
+    const bC=Math.min(reinjM[i],capRest);          // le surplus du PV principal ne complète que le reste
+    const bTot=bCDedie+bC;                          // charge totale du mois
+    const bD=Math.min(bTot,achatM[i]);             // décharge couvre achat nuit
     bChargeM.push(bTot); bDischM.push(bD);
-    newReinjM.push(reinjM[i]-bC);                // injection réseau résiduelle (lot dédié ne réinjecte pas)
-    newAchatM.push(achatM[i]-bD);                // achat réseau réduit
+    newReinjM.push(reinjM[i]-bC);                  // revente = surplus PV principal non capté par la batterie (↑ quand le lot dédié la charge)
+    newAchatM.push(achatM[i]-bD);                  // achat réseau réduit
     lostDedieM.push(lost); bCM.push(bC); bCDedieM.push(bCDedie);
   }
   const lostDedieAn=lostDedieM.reduce((a,b)=>a+b,0);
@@ -2479,10 +2479,10 @@ async function saveStudy(){
 
     // --- Capturer le HTML complet ---
     const clientRaw=clientName()||document.getElementById('t4_nom')?.value||'Etude';
-    const client=clientRaw.replace(/[^\w\sÀ-ÿ]/g,'').trim().replace(/\s+/g,'_')||'Etude';
+    const client=clientRaw.replace(/[^\w\sÀ-ÿ]/g,'').replace(/\s+/g,' ').trim()||'Etude';
     const dd=new Date();
     const dStr=String(dd.getDate()).padStart(2,'0')+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+dd.getFullYear();
-    const filename='Etude_PV_'+client+'_'+dStr+'.html';
+    const filename=client+' '+dStr+'.html';
     const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
 
     // --- Retirer le meta tag ---
@@ -2576,7 +2576,7 @@ function saveCalcs(){
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Fiche de calcul — ${d.client||'Client'}</title>
+<title>Fiche de calcul — ${d.client||'Client'} — ${date}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:Arial,sans-serif;font-size:15px;color:#333;padding:28px;max-width:860px;margin:0 auto}
