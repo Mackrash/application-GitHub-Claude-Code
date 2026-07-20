@@ -293,6 +293,9 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   }
   .ps-donut [id$="_donut"]{height:260px!important;overflow:hidden!important}
 
+  /* Sortie A synthèse : si la page financière est masquée, la dernière page suit directement */
+  body.psoff-gfact.psoff-groi .ps-page2{break-after:auto}
+
   /* PAGE 3 : Financier — économies + factures + ROI + fiscal */
   .ps-financial{break-before:page;break-after:page;break-inside:auto}
   .ps-financial [id$="_mois"],.ps-financial [id$="_mois_eco"]{height:210px!important;margin-top:32pt!important}
@@ -1891,9 +1894,6 @@ function calcT1(){
     {k:'Taux autoconsommation',v:`${fmtD(txAuto)}%`},
     batWh>0?{k:'Batterie',v:`${BLBL[batModel]} (${(batWh/1000).toFixed(1)} kWh)`}:null,
     {k:'Investissement TTC',v:`${fmt(devis)} XPF`},
-    {k:'Facture annuelle AVANT PV',v:`${fmt(fSansAn)} XPF`,r:true},
-    {k:'Facture annuelle APRÈS PV',v:`${fmt(fAvecAn)} XPF`,g:true},
-    {k:'Économie annuelle (An 1)',v:`${fmt(ecoAn)} XPF`,g:true},
   ].filter(Boolean));
 
   const {rows,pb,pbMin,pbMax}=renderCombinedAmort('tb1',devis,ecoAn,s.hau,s.deg,20,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0,taux);
