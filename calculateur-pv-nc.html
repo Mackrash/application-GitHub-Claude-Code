@@ -1737,9 +1737,9 @@ function calcT1(){
     const reste=consoM[i]-autoDir;                          // besoin restant (réseau ou batterie)
     let bCharge=0,bDisch=0,reinj=surp;
     if(batWh>0){
-      bCharge=Math.min(surp,batUtileJ*DM[i]);               // charge batterie (cap/jour × jours)
-      reinj=surp-bCharge;                                    // surplus injecté réseau
-      bDisch=Math.min(bCharge,reste);                        // batterie couvre le reste
+      bCharge=Math.min(surp,batUtileJ*DM[i],Math.max(0,reste)); // charge bornée par le besoin nuit (on ne charge pas ce qu'on ne pourra pas décharger)
+      reinj=surp-bCharge;                                    // surplus injecté réseau (le non-chargé reste revendu)
+      bDisch=bCharge;                                        // tout ce qui est chargé couvre le besoin restant
     }
     const achat=Math.max(0,reste-bDisch);                    // reste acheté réseau
     directAutoM.push(autoDir);
@@ -1872,12 +1872,13 @@ function calcT2(){
   const bChargeM=[],bDischM=[],newReinjM=[],newAchatM=[],lostDedieM=[],bCM=[],bCDedieM=[];
   for(let i=0;i<12;i++){
     const maxMois=batCap*DM[i];                    // capacité cyclable sur le mois
-    const bCDedie=Math.min(prodDedieM[i],maxMois); // le lot dédié charge la batterie EN PRIORITÉ (c'est son rôle)
-    const lost=prodDedieM[i]-bCDedie;              // surplus dédié écrêté si batterie déjà pleine
-    const capRest=Math.max(0,maxMois-bCDedie);     // capacité restante pour le PV principal
+    const utile=Math.min(maxMois,achatM[i]);       // cyclage UTILE : borné par le besoin nuit (on ne charge pas ce qu'on ne pourra pas décharger)
+    const bCDedie=Math.min(prodDedieM[i],utile);   // le lot dédié charge la batterie EN PRIORITÉ (c'est son rôle)
+    const lost=prodDedieM[i]-bCDedie;              // surplus dédié écrêté (batterie pleine ou besoin nuit couvert)
+    const capRest=Math.max(0,utile-bCDedie);       // besoin restant pour le PV principal
     const bC=Math.min(reinjM[i],capRest);          // le surplus du PV principal ne complète que le reste
     const bTot=bCDedie+bC;                          // charge totale du mois
-    const bD=Math.min(bTot,achatM[i]);             // décharge couvre achat nuit
+    const bD=bTot;                                  // tout ce qui est chargé est déchargé (≤ achat nuit par construction)
     bChargeM.push(bTot); bDischM.push(bD);
     newReinjM.push(reinjM[i]-bC);                  // revente = surplus PV principal non capté par la batterie (↑ quand le lot dédié la charge)
     newAchatM.push(achatM[i]-bD);                  // achat réseau réduit
