@@ -1037,7 +1037,8 @@ let pmSortie='A';
 function exportStudyJSON(){alert('Export JSON — à venir')} // stub, remplacé en Task 6
 function openPrintModal(){
   pmSortie=sortieActive();
-  const saved=JSON.parse(localStorage.getItem('printPrefs_'+pmSortie)||'null');
+  let saved=null;try{saved=JSON.parse(localStorage.getItem('printPrefs_'+pmSortie)||'null')}catch(e){saved=null}
+  if(saved&&!Array.isArray(saved.off))saved=null; // schéma inattendu → repartir des défauts
   const list=document.getElementById('pm-list');
   list.innerHTML=PRINT_CFG[pmSortie].map(s=>{
     const on=saved?!saved.off.includes(s.id):!!s.def;
