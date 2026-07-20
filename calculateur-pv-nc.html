@@ -407,6 +407,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   #r4 #k4_fin{display:none!important}
   /* T4 — pas de saut après .ps-page2 (sinon page blanche en fin de doc) */
   #r4 .ps-page2{break-after:auto!important}
+  /* Sortie C synthèse : tableau amort masqué → les graphes montent en page 3 */
+  body.print-C.psoff-amort #r4 .ps-charts{break-before:auto}
   table.at thead,table.bc thead{display:table-header-group}
 
   /* ── RAPPORT ENTREPRISE (onglet 4) — P2=rapport seul, P3=charts, P4=ROI+tableau ── */
