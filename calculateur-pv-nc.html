@@ -403,6 +403,23 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   #r4_rapport [style*="margin-bottom:18px"]{margin-bottom:9pt!important}
   #r4_rapport [style*="margin-bottom:12px"]{margin-bottom:6pt!important}
 
+  /* ── FILTRAGE SECTIONS (modal impression) ── */
+  body.psoff-pile [data-psec="pile"],
+  body.psoff-gfact [data-psec="gfact"],
+  body.psoff-groi [data-psec="groi"],
+  body.psoff-amort [data-psec="amort"],
+  body.psoff-factures [data-psec="factures"],
+  body.psoff-bilan [data-psec="bilan"],
+  body.psoff-bilanEn [data-psec="bilanEn"],
+  body.psoff-tranches [data-psec="tranches"],
+  body.print-C.psoff-recapfin #last-page{display:none!important}
+  /* Dédoublonnage : le tableau fiscal de la page financière ne sort plus (vit en dernière page) */
+  [id$="_efy_fiscal"]{display:none!important}
+  /* Page financière entièrement décochée → pas de page blanche */
+  body.psoff-gfact.psoff-groi .ps-financial{display:none!important}
+  /* Le modal ne s'imprime jamais */
+  #print-modal{display:none!important}
+
   /* ── PAGE DE GARDE ── */
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
   #last-page{display:block!important;break-before:page;margin:0;padding:0}
@@ -502,27 +519,27 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div class="kpi-grid" id="k1_fin" style="margin:12px 0 6px"></div>
       <div id="recap1_efy_bilan"></div>
     </div>
-    <div class="ps ps-donut">
+    <div class="ps ps-donut" data-psec="pile">
       <div id="g1_donut" style="height:340px"></div>
     </div>
     </div>
     <div class="ps ps-financial">
-      <div id="recap1_efy_eco"></div>
-      <div id="g1_mois" style="height:310px;margin-top:12px"></div>
-      <div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
+      <div data-psec="gfact"><div id="recap1_efy_eco"></div>
+      <div id="g1_mois" style="height:310px;margin-top:12px"></div></div>
+      <div data-psec="groi"><div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
       <div id="g1_roi" style="height:270px"></div>
-      <div id="k1_pb"></div>
+      <div id="k1_pb"></div></div>
       <div id="recap1_efy_fiscal" style="margin-top:12px"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="amort">
       <div class="tw" id="tb1"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="factures">
       <span class="ps-label">Estimation de vos factures</span>
       <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
       <div class="tw" id="t1_facture"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="bilan">
       <span class="ps-label">Bilan énergétique mensuel</span>
       <div class="st">Bilan énergétique mensuel</div>
       <div class="tw" id="t1_bilan"></div>
@@ -553,29 +570,29 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="ps ps-recap">
       <div id="recap2"></div>
       <div class="kpi-grid" id="k2_fin" style="margin:12px 0 6px"></div>
-      <div id="recap2_efy_bilan"></div>
+      <div id="recap2_efy_bilan" data-psec="bilanEn"></div>
     </div>
-    <div class="ps ps-donut">
+    <div class="ps ps-donut" data-psec="pile">
       <div id="g2_donut" style="height:340px"></div>
     </div>
     </div>
     <div class="ps ps-financial">
-      <div id="recap2_efy_eco"></div>
-      <div id="g2_mois" style="height:310px;margin-top:12px"></div>
-      <div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
+      <div data-psec="gfact"><div id="recap2_efy_eco"></div>
+      <div id="g2_mois" style="height:310px;margin-top:12px"></div></div>
+      <div data-psec="groi"><div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
       <div id="g2_roi" style="height:270px"></div>
-      <div id="k2_pb"></div>
+      <div id="k2_pb"></div></div>
       <div id="recap2_efy_fiscal" style="margin-top:12px"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="amort">
       <div class="tw" id="tb2"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="factures">
       <span class="ps-label">Estimation de vos factures</span>
       <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
       <div class="tw" id="t2_facture"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="bilan">
       <div id="t2_dedie_card"></div>
       <span class="ps-label">Bilan énergétique mensuel</span>
       <div class="st">Bilan énergétique mensuel</div>
@@ -603,31 +620,31 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div class="ps ps-recap">
       <div id="recap3"></div>
       <div class="kpi-grid" id="k3_fin" style="margin:12px 0 6px"></div>
-      <div id="recap3_efy_bilan"></div>
+      <div id="recap3_efy_bilan" data-psec="bilanEn"></div>
     </div>
-    <div class="ps ps-donut">
+    <div class="ps ps-donut" data-psec="pile">
       <div id="g3_donut" style="height:340px"></div>
     </div>
     </div>
     <div class="ps ps-financial">
-      <div id="recap3_efy_eco"></div>
-      <div id="g3_mois" style="height:310px;margin-top:12px"></div>
-      <div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
+      <div data-psec="gfact"><div id="recap3_efy_eco"></div>
+      <div id="g3_mois" style="height:310px;margin-top:12px"></div></div>
+      <div data-psec="groi"><div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
       <div id="g3_roi" style="height:270px"></div>
-      <div id="k3_pb"></div>
+      <div id="k3_pb"></div></div>
       <div id="recap3_efy_fiscal" style="margin-top:12px"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="amort">
       <div class="st">Comparatif modèles</div>
       <div class="tw" id="tb3"></div>
       <div class="tw" id="tb3_amort" style="margin-top:14px"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="factures">
       <span class="ps-label">Estimation de vos factures</span>
       <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
       <div class="tw" id="t3_facture"></div>
     </div>
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="bilan">
       <span class="ps-label">Bilan énergétique mensuel</span>
       <div class="st">Bilan énergétique mensuel</div>
       <div class="tw" id="t3_bilan"></div>
@@ -715,7 +732,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     </div>
     <!-- P3 : Tableau d'amortissement pro + Graphiques -->
     <div class="ps-page2">
-    <div class="ps ps-table">
+    <div class="ps ps-table" data-psec="amort">
       <div class="st">Tableau d'amortissement professionnel</div>
       <div id="amort4_combined"></div>
     </div>
@@ -941,12 +958,22 @@ function calcDeduction(invest,tauxM,plafond){
   return{total:invest,eco:det.reduce((a,d)=>a+d.e,0),nbAns:det.length,detail:det};
 }
 
+// Onglet actif (1=T1..4=T4) — fallback sur le dernier calcul si Paramètres est ouvert
+function tabActif(){
+  const a=document.querySelector('.tab-content.active');
+  const i=a?parseInt(a.id.replace('tab',''),10):-1;
+  return (i>=0&&i<=3)?i+1:(lastStudyData.tab||1);
+}
+// Sortie d'impression : A = T1 (install PV), B = T2/T3 (stockage), C = T4 (pro)
+function sortieActive(){const t=tabActif();return t===4?'C':(t>=2?'B':'A');}
+
 // ===== IMPRESSION =====
 function preparePrint(noPrint=false){
   const d=new Date();
   const dateStr=d.toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'});
 
-  const {tab=1,kwc=6.3,devis=0,ecoAn=0,fSansAn=0,fAvecAn=0,batModel=0,batQty=1,client='',commercial='',adresse='',pb=0,pbMin=0,pbMax=0,eco10=0,eco15=0,coutNetImpot=0,avantageTotal=0,tIS=0,dAmort=0}=lastStudyData;
+  const tab=tabActif();
+  const {kwc=6.3,devis=0,ecoAn=0,fSansAn=0,fAvecAn=0,batModel=0,batQty=1,client='',commercial='',adresse='',pb=0,pbMin=0,pbMax=0,eco10=0,eco15=0,coutNetImpot=0,avantageTotal=0,tIS=0,dAmort=0}=lastStudyData;
   const isPro=tab===4;
   const parts=(commercial||'').split('|');
   const commName=parts[0]||'';
@@ -1768,7 +1795,7 @@ function calcT1(){
   // Stocke les données pour la page de garde
   const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10,eco15};
+  lastStudyData={tab:1,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10,eco15};
 
   // Bilan énergie — différentiel Option B (autoconso vs batterie)
   const consoAn_t1=consoM.reduce((a,b)=>a+b,0);
@@ -1903,7 +1930,7 @@ function calcT2(){
 
   const eco10_t2=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2};
+  lastStudyData={tab:2,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2};
 
   renderEnergyFiscalRecap({bilan:'recap2_efy_bilan',eco:'recap2_efy_eco',fiscal:'recap2_efy_fiscal'},{
     prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
@@ -2039,7 +2066,7 @@ function calcT3(){
   const eco15_t3=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const fSansMean=fSansM.reduce((a,b)=>a+b,0)/12;
   const fAvecMean=fAvecM.reduce((a,b)=>a+b,0)/12;
-  lastStudyData={kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3};
+  lastStudyData={tab:3,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3};
 
   renderEnergyFiscalRecap({bilan:'recap3_efy_bilan',eco:'recap3_efy_eco',fiscal:'recap3_efy_fiscal'},{
     isT3:true,
