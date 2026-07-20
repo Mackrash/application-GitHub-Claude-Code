@@ -1052,7 +1052,37 @@ const PRINT_CFG={
      {id:'recapfin',label:'Récapitulatif final',def:0}]
 };
 let pmSortie='A';
-function exportStudyJSON(){alert('Export JSON — à venir')} // stub, remplacé en Task 6
+// ===== EXPORT JSON — format stable consommé par FOLIO (agent NEXIA) =====
+// {meta,client,commercial,installation,finances,tranchesFiscales,parametres}
+function buildStudyJSON(){
+  const s=getS(),d=lastStudyData,sortie=sortieActive();
+  const tranches=(sortie==='C')?[]:TRANCHES_NC.filter(t=>t.taux>0).map(t=>{
+    const ded=calcDeduction(d.devis,t.taux,s.ded);
+    const am=buildAmort(d.devis,d.ecoAn1||d.ecoAn,s.hau,s.deg,s.dpv,t.taux,s.ded,0,0);
+    return {tranche:t.label,taux:t.taux,deductionXPF:Math.round(ded.eco),
+      coutNetXPF:Math.round(d.devis-ded.eco),paybackAn:am.pb||null};
+  });
+  return {
+    meta:{version:1,date:new Date().toISOString(),sortie,onglet:d.tab||1,source:'calculateur-pv-nc'},
+    client:{nom:d.client||'',adresse:d.adresse||''},
+    commercial:d.commercial||'',
+    installation:{kwc:d.kwc,batterieModeleWh:d.batModel||0,batterieQte:d.batQty||0},
+    finances:{devisTTC:d.devis,factureAvantAnXPF:Math.round(d.fSansAn),
+      factureApresAnXPF:Math.round(d.fAvecAn),economieAn1XPF:Math.round(d.ecoAn1||d.ecoAn),
+      gains10ansXPF:Math.round(d.eco10||0),gains15ansXPF:Math.round(d.eco15||0),paybackAn:d.pb||null},
+    tranchesFiscales:tranches,
+    parametres:s
+  };
+}
+function exportStudyJSON(){
+  if(!lastStudyData.devis){alert('Calcule d’abord une étude (bouton CALCULER).');return}
+  const blob=new Blob([JSON.stringify(buildStudyJSON(),null,2)],{type:'application/json'});
+  const dd=new Date(),ds=String(dd.getDate()).padStart(2,'0')+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+dd.getFullYear();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=('ETUDE '+(lastStudyData.client||'Client')+' '+ds+'.json').replace(/[\\/:*?"<>|]/g,'');
+  a.click();URL.revokeObjectURL(a.href);
+}
 function openPrintModal(){
   pmSortie=sortieActive();
   let saved=null;try{saved=JSON.parse(localStorage.getItem('printPrefs_'+pmSortie)||'null')}catch(e){saved=null}
