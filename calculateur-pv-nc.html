@@ -44,6 +44,29 @@ html,body{background:var(--d1);color:var(--tx);font-family:'Nunito',sans-serif;f
 .tel{font-family:'RAIDenmarkNeo',sans-serif;font-size:1.05rem;font-weight:700;color:var(--or);letter-spacing:2px}
 .btn-print{background:var(--ors);border:1px solid rgba(240,112,32,0.5);color:var(--or);padding:6px 14px;border-radius:7px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.76rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;transition:all .2s}
 .btn-print:hover{background:var(--or);color:#fff;box-shadow:0 0 16px var(--org)}
+#print-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center}
+.pm-box{background:var(--d3,#fff);color:var(--tx,#333);border-radius:12px;width:400px;max-width:92vw;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.pm-head{background:#F07020;color:#fff;padding:13px 18px;font-weight:800;letter-spacing:.5px;display:flex;justify-content:space-between;border-radius:12px 12px 0 0}
+.pm-x{cursor:pointer;opacity:.85}
+.pm-body{padding:16px 18px}
+.pm-sec{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--tx2,#999);margin:12px 0 7px}
+.pm-sec:first-child{margin-top:0}
+.pm-presets{display:flex;gap:8px}
+.pm-pre{flex:1;border:2px solid rgba(128,128,128,.35);border-radius:9px;padding:9px 11px;cursor:pointer;transition:.15s}
+.pm-pre.on{border-color:#F07020;background:rgba(240,112,32,.08)}
+.pm-pre b{display:block;font-size:.8rem}
+.pm-pre.on b{color:#F07020}
+.pm-pre small{font-size:.62rem;color:var(--tx2,#888)}
+.pm-chk{display:flex;align-items:center;gap:9px;padding:6px 4px;font-size:.8rem;border-bottom:1px solid rgba(128,128,128,.15);cursor:pointer}
+.pm-chk input{width:15px;height:15px;accent-color:#F07020}
+.pm-locked{opacity:.5;cursor:default}
+.pm-chk small{margin-left:auto;font-size:.6rem;color:var(--tx2,#aaa);font-style:italic}
+.pm-foot{padding:12px 18px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid rgba(128,128,128,.2);align-items:center}
+.pm-pages{font-size:.68rem;color:var(--tx2,#888);margin-right:auto}
+.pm-btn{font-family:'Nunito',sans-serif;font-weight:700;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.78rem}
+.pm-cancel{background:rgba(128,128,128,.18);color:var(--tx,#555)}
+.pm-print{background:#F07020;color:#fff}
+.pm-json{background:transparent;border:1px solid rgba(128,128,128,.4);color:var(--tx2,#888)}
 
 /* TABS */
 .tabs{display:flex;background:var(--d2);border-bottom:1px solid rgba(240,112,32,0.15);overflow-x:auto}
@@ -456,7 +479,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     <div><div class="slogan">Votre meilleure source d'énergie</div></div>
   </div>
   <div class="header-right">
-    <button class="btn-print" onclick="preparePrint()">📄 Enregistrer en PDF</button>
+    <button class="btn-print" onclick="openPrintModal()">📄 Enregistrer en PDF</button>
     <button class="btn-print" onclick="saveStudy()" id="btn-save" style="margin-left:6px">💾 Enregistrer (HTML)</button>
     <button class="btn-print" onclick="saveCalcs()" id="btn-calcs" style="margin-left:6px;opacity:.85">🧮 Exporter calculs PDF</button>
     <div class="tel">☎ 47 03 02</div>
@@ -784,6 +807,29 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   <p style="color:var(--tx2);font-size:.72rem;margin-top:10px">Tarifs EEC 2024 — Nouméa, NC. Résultats estimatifs non contractuels.</p>
 </div>
 
+<!-- MODAL IMPRESSION -->
+<div id="print-modal" class="no-print" style="display:none">
+  <div class="pm-box">
+    <div class="pm-head">Impression de l'étude <span class="pm-x" onclick="pmClose()">✕</span></div>
+    <div class="pm-body">
+      <div class="pm-sec">Preset</div>
+      <div class="pm-presets">
+        <div class="pm-pre" id="pm-pre-synth" onclick="pmPreset('synth')"><b>Synthèse client</b><small>3 pages — l'essentiel</small></div>
+        <div class="pm-pre" id="pm-pre-full" onclick="pmPreset('full')"><b>Dossier complet</b><small>Toutes les sections</small></div>
+      </div>
+      <div class="pm-sec">Contenu</div>
+      <label class="pm-chk pm-locked"><input type="checkbox" checked disabled> Page de garde <small>toujours incluse</small></label>
+      <label class="pm-chk pm-locked"><input type="checkbox" checked disabled> Page synthèse <small>toujours incluse</small></label>
+      <div id="pm-list"></div>
+    </div>
+    <div class="pm-foot">
+      <div class="pm-pages" id="pm-pages">📄 3 pages</div>
+      <button class="pm-btn pm-json" onclick="exportStudyJSON()" title="Export FOLIO">⚙ JSON</button>
+      <button class="pm-btn pm-cancel" onclick="pmClose()">Annuler</button>
+      <button class="pm-btn pm-print" onclick="pmPrint()">🖨 Imprimer</button>
+    </div>
+  </div>
+</div>
 <div id="last-page" style="display:none"></div>
 
 <script>
@@ -966,6 +1012,78 @@ function tabActif(){
 }
 // Sortie d'impression : A = T1 (install PV), B = T2/T3 (stockage), C = T4 (pro)
 function sortieActive(){const t=tabActif();return t===4?'C':(t>=2?'B':'A');}
+
+// ===== MODAL IMPRESSION — presets + cases par sortie =====
+const PRINT_CFG={
+  A:[{id:'pile',label:'Pile répartition énergétique',def:1},
+     {id:'tranches',label:'ROI par tranche fiscale',def:1},
+     {id:'gfact',label:'Graphique factures avant/après',def:0},
+     {id:'groi',label:'Graphique ROI 20 ans',def:0},
+     {id:'amort',label:"Tableau d'amortissement",def:0},
+     {id:'factures',label:'Estimation de vos factures',def:0},
+     {id:'bilan',label:'Bilan énergétique mensuel',def:0}],
+  B:[{id:'tranches',label:'ROI par tranche fiscale',def:0},
+     {id:'pile',label:'Pile répartition énergétique',def:0},
+     {id:'gfact',label:'Graphique factures avant/après',def:0},
+     {id:'groi',label:'Graphique ROI 20 ans',def:0},
+     {id:'bilanEn',label:'Bilan énergétique annuel',def:0},
+     {id:'amort',label:"Tableau d'amortissement",def:0},
+     {id:'factures',label:'Estimation de vos factures',def:0},
+     {id:'bilan',label:'Bilan énergétique mensuel',def:0}],
+  C:[{id:'amort',label:"Tableau d'amortissement 15 ans",def:0},
+     {id:'recapfin',label:'Récapitulatif final',def:0}]
+};
+let pmSortie='A';
+function exportStudyJSON(){alert('Export JSON — à venir')} // stub, remplacé en Task 6
+function openPrintModal(){
+  pmSortie=sortieActive();
+  const saved=JSON.parse(localStorage.getItem('printPrefs_'+pmSortie)||'null');
+  const list=document.getElementById('pm-list');
+  list.innerHTML=PRINT_CFG[pmSortie].map(s=>{
+    const on=saved?!saved.off.includes(s.id):!!s.def;
+    return `<label class="pm-chk"><input type="checkbox" data-psec-id="${s.id}" ${on?'checked':''} onchange="pmSync()"> ${s.label}</label>`;
+  }).join('');
+  pmMarkPreset(saved?saved.preset:'synth');
+  pmCount();
+  document.getElementById('print-modal').style.display='flex';
+}
+function pmMarkPreset(p){
+  document.getElementById('pm-pre-synth').classList.toggle('on',p==='synth');
+  document.getElementById('pm-pre-full').classList.toggle('on',p==='full');
+}
+function pmPreset(p){
+  document.querySelectorAll('#pm-list input').forEach(i=>{
+    const cfg=PRINT_CFG[pmSortie].find(s=>s.id===i.dataset.psecId);
+    i.checked=p==='full'?true:!!cfg.def;
+  });
+  pmMarkPreset(p);pmCount();
+}
+function pmOff(){
+  return [...document.querySelectorAll('#pm-list input')].filter(i=>!i.checked).map(i=>i.dataset.psecId);
+}
+function pmSync(){pmMarkPreset('');pmCount();}
+function pmCount(){
+  const off=pmOff();
+  const on=id=>PRINT_CFG[pmSortie].some(x=>x.id===id)&&!off.includes(id);
+  let p=pmSortie==='A'?2:3;
+  if(pmSortie==='A'&&on('tranches'))p+=1;
+  if(on('gfact')||on('groi'))p+=1;
+  ['amort','factures','bilan','recapfin'].forEach(id=>{if(on(id))p+=1});
+  document.getElementById('pm-pages').textContent='📄 ~'+p+' page'+(p>1?'s':'');
+}
+function pmClose(){document.getElementById('print-modal').style.display='none'}
+function pmPrint(){
+  const off=pmOff();
+  const preset=document.getElementById('pm-pre-full').classList.contains('on')?'full':'synth';
+  localStorage.setItem('printPrefs_'+pmSortie,JSON.stringify({preset,off}));
+  const b=document.body;
+  b.classList.add('print-'+pmSortie);
+  off.forEach(id=>b.classList.add('psoff-'+id));
+  const clean=()=>{b.className=b.className.split(' ').filter(c=>!c.startsWith('print-')&&!c.startsWith('psoff-')).join(' ');window.removeEventListener('afterprint',clean)};
+  window.addEventListener('afterprint',clean);
+  pmClose();
+  preparePrint();
+}
 
 // ===== IMPRESSION =====
 function preparePrint(noPrint=false){
