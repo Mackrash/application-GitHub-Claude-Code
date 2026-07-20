@@ -211,6 +211,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 .results{display:none}
 /* Bandeau de section : visible seulement à l'impression (doublon du .st à l'écran) */
 .ps-label{display:none}
+/* Synthèse batterie (sortie B) : print-only */
+.print-synth{display:none}
 
 /* PRINT */
 #cover-page{display:none}
@@ -446,6 +448,15 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   /* Le modal ne s'imprime jamais */
   #print-modal{display:none!important}
 
+  /* ── SORTIE B : synthèse batterie ── */
+  body.print-B .print-synth{display:block!important}
+  body.print-B #recap2,body.print-B #recap3,
+  body.print-B #k2_fin,body.print-B #k3_fin{display:none!important}
+  .bs-hero{background:#F0FBF6!important;border:2px solid #008040;border-radius:8px;padding:12pt;text-align:center;margin-bottom:10pt;break-inside:avoid}
+  .bs-hero-v{font-family:'RAIDenmarkNeo',sans-serif;font-size:24pt;font-weight:700;color:#008040!important}
+  .bs-hero-l{font-size:8pt;color:#555;text-transform:uppercase;letter-spacing:1pt;margin-top:4pt;font-weight:700}
+  .bs-tbl td:first-child{text-align:left!important;color:#333!important}
+
   /* ── PAGE DE GARDE ── */
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
   #last-page{display:block!important;break-before:page;margin:0;padding:0}
@@ -594,6 +605,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   <div class="results" id="r2">
     <div class="ps-page2">
     <div class="ps ps-recap">
+      <div id="synth2" class="print-synth"></div>
       <div id="recap2"></div>
       <div class="kpi-grid" id="k2_fin" style="margin:12px 0 6px"></div>
       <div id="recap2_efy_bilan" data-psec="bilanEn"></div>
@@ -644,6 +656,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   <div class="results" id="r3">
     <div class="ps-page2">
     <div class="ps ps-recap">
+      <div id="synth3" class="print-synth"></div>
       <div id="recap3"></div>
       <div class="kpi-grid" id="k3_fin" style="margin:12px 0 6px"></div>
       <div id="recap3_efy_bilan" data-psec="bilanEn"></div>
@@ -1253,13 +1266,24 @@ function preparePrint(noPrint=false){
     const lastIdx=trRows.length-1;
     const body=trRows.map((r,i)=>`<tr${i===lastIdx?' class="best"':''}><td class="tr">${r.label}</td><td>${r.eco>0?fmt(Math.round(r.eco))+' F':'—'}</td><td>${fmt(Math.round(r.coutNet))} F</td><td class="roi">${r.roi}</td></tr>`).join('');
     roiSection=`
+      <div data-psec="tranches">
       <h2 class="lp-h2">Retour sur investissement selon votre tranche fiscale</h2>
       <table class="lp-roi">
         <thead><tr><th>Tranche d'imposition</th><th>Déduction fiscale</th><th>Coût net après déduction</th><th>Retour sur investissement</th></tr></thead>
         <tbody>${body}</tbody>
       </table>
-      <div class="lp-note">Le retour sur investissement dépend de votre tranche marginale d'imposition : plus elle est élevée, plus la déduction fiscale réduit le coût net et accélère l'amortissement.</div>`;
+      <div class="lp-note">Le retour sur investissement dépend de votre tranche marginale d'imposition : plus elle est élevée, plus la déduction fiscale réduit le coût net et accélère l'amortissement.</div>
+      </div>`;
   }
+
+  const isB=tab===2||tab===3;
+  const stepsSection=isB?`
+      <h2 class="lp-h2" style="margin-top:0.8cm">Les prochaines étapes</h2>
+      <table class="lp-roi"><tbody>
+        <tr><td class="tr">1. Validation de l'étude</td><td>ensemble, aujourd'hui</td></tr>
+        <tr><td class="tr">2. Visite technique</td><td>sous 10 jours</td></tr>
+        <tr><td class="tr">3. Pose et mise en service</td><td>½ journée</td></tr>
+      </tbody></table>`:'';
 
   document.getElementById('last-page').innerHTML=`
   <style>
@@ -1298,7 +1322,7 @@ function preparePrint(noPrint=false){
     <div class="lp-body">
       <h2 class="lp-h2">Récapitulatif du dossier</h2>
       <div class="lp-kpis">${recapCards}</div>
-      ${roiSection}
+      ${roiSection}${stepsSection}
     </div>
     <div class="lp-foot">
       <div class="lp-foot-brand">Solar Concept</div>
@@ -1458,6 +1482,26 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
 function renderRecap(id,data){
   const rows=data.map(r=>`<div class="recap-row"><span class="recap-key">${r.k}</span><span class="recap-val ${r.hi?'hi':r.r?'r':r.g?'g':''}">${r.v}</span></div>`).join('');
   document.getElementById(id).innerHTML=`<div class="recap-box"><div class="recap-title">📋 Récapitulatif installation</div><div class="recap-grid">${rows}</div></div>`;
+}
+
+// ===== SORTIE B (print) — synthèse batterie : héros économie + avant/après =====
+function renderBatSynth(id,d){
+  const el=document.getElementById(id);if(!el)return;
+  const r=(k,a,b,g)=>`<tr><td>${k}</td><td>${a}</td><td>${b}</td><td style="color:#008040;font-weight:800">${g}</td></tr>`;
+  el.innerHTML=`
+  <div class="bs-hero"><div class="bs-hero-v">${fmt(Math.round(d.ecoAn))} XPF / an</div>
+  <div class="bs-hero-l">Économie annuelle générée par votre batterie</div></div>
+  <table class="efy-fiscal bs-tbl"><thead><tr><th></th><th>Sans batterie</th><th>Avec batterie</th><th>Gain</th></tr></thead><tbody>
+   ${r('Achat réseau',fmt(Math.round(d.achatAvant))+' kWh',fmt(Math.round(d.achatApres))+' kWh','− '+fmt(Math.round(d.achatAvant-d.achatApres))+' kWh')}
+   ${r('Injection réseau',fmt(Math.round(d.injAvant))+' kWh',fmt(Math.round(d.injApres))+' kWh',fmt(Math.round(d.injAvant-d.injApres))+' kWh valorisés')}
+   ${r('Facture électricité',fmt(Math.round(d.fAvant))+' XPF/an',fmt(Math.round(d.fApres))+' XPF/an','− '+fmt(Math.round(d.fAvant-d.fApres))+' XPF')}
+  </tbody></table>
+  <div class="recap-box" style="margin-top:10pt"><div class="recap-grid">
+   <div class="recap-row"><span class="recap-key">Batterie</span><span class="recap-val hi">${d.batLbl}</span></div>
+   <div class="recap-row"><span class="recap-key">Couverture via batterie</span><span class="recap-val g">${fmt(Math.round(d.couvKwh))} kWh/an</span></div>
+   <div class="recap-row"><span class="recap-key">Investissement TTC</span><span class="recap-val hi">${fmt(Math.round(d.devis))} XPF</span></div>
+   <div class="recap-row"><span class="recap-key">Durée de vie batterie</span><span class="recap-val">${d.dureeVie} ans</span></div>
+  </div></div>`;
 }
 
 // ===== BILAN ÉNERGIE + ÉCONOMIES + DÉDUCTION FISCALE =====
@@ -2020,6 +2064,9 @@ function calcT2(){
   const fAvecBat=fAvecM.reduce((a,b)=>a+b,0);
   const ecoAn=fSansBat-fAvecBat;
   const ecoMois=fSansM.map((f,i)=>f-fAvecM[i]);
+  renderBatSynth('synth2',{ecoAn,achatAvant:achatM.reduce((a,b)=>a+b,0),achatApres:newAchatAn,
+    injAvant:reinjM.reduce((a,b)=>a+b,0),injApres:newReinjAn,fAvant:fSansBat,fApres:fAvecBat,
+    batLbl:`${BLBL[batModel]}${batQty>1?' × '+batQty:''}`,couvKwh:bDischAn,devis,dureeVie:s.db});
 
   const besNuit=Math.max(...achatM.map((a,i)=>a/DM[i]));
 
@@ -2135,6 +2182,9 @@ function calcT3(){
   const fAvecBat=fAvecM.reduce((a,b)=>a+b,0);
   const ecoAn=fSansBat-fAvecBat;
   const ecoMois=fSansM.map((f,i)=>f-fAvecM[i]);
+  renderBatSynth('synth3',{ecoAn,achatAvant:achatM.reduce((a,b)=>a+b,0),achatApres:newAchatAn,
+    injAvant:injM.reduce((a,b)=>a+b,0),injApres:newInjAn,fAvant:fSansBat,fApres:fAvecBat,
+    batLbl:`${BLBL[batModel]}${batQty>1?' × '+batQty:''}`,couvKwh:bDischAn,devis,dureeVie:s.db});
 
   renderRecap('recap3',[
     {k:'Puissance installée',v:`${fmtD(kwc)} kWc`,hi:true},
