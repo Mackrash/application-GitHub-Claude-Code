@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 ## Repo GitHub
 
 Le repo distant est : `https://github.com/Mackrash/application-GitHub-Claude-Code.git`
-Branche locale : `master` → push sur `main` (remote).
-**Toujours pusher après chaque modification** : `git push origin master:main`
+Branche de travail : `main` (directe, la branche `master` a été supprimée le 20/07/2026).
+**Toujours pusher après chaque modification** : `git push origin main`
 
 GitHub Pages déploie depuis `main` sur :
 `https://mackrash.github.io/application-GitHub-Claude-Code/calculateur-pv-nc.html`
