@@ -952,7 +952,7 @@ function preparePrint(noPrint=false){
   const commName=parts[0]||'';
   const commTel=parts[1]||'';
   const commEmail=parts[2]||'';
-  const typeEtude=batModel>0?'Système hybride PV + Batterie':'Installation Photovoltaïque';
+  const typeEtude=(tab===2||tab===3)?"Ajout d'un système de stockage d'énergie":(batModel>0?'Système hybride PV + Batterie':'Installation Photovoltaïque');
   const kwcStr=kwc?kwc+' kWc':'';
 
   const cover=document.getElementById('cover-page');
@@ -984,7 +984,7 @@ function preparePrint(noPrint=false){
     .cv-party{padding:0.9cm 1.5cm}
     .cv-party-left{border-right:1px solid #eee}
     .cv-party-label{font-size:1.02rem;font-weight:700;color:#F07020;text-transform:uppercase;letter-spacing:2px;margin-bottom:0.35cm;font-family:'Nunito',sans-serif}
-    .cv-party-name{font-family:'Nunito',sans-serif;font-size:2.16rem;font-weight:700;color:#333;line-height:1.2}
+    .cv-party-name{font-family:'Nunito',sans-serif;font-size:1.7rem;font-weight:700;color:#333;line-height:1.2}
     .cv-party-addr{font-size:0.92rem;color:#555;margin-top:0.2cm;line-height:1.5}
     .cv-party-contact{font-size:0.92rem;color:#555;margin-top:0.2cm;line-height:1.7}
     .cv-party-contact a{color:#F07020;text-decoration:none}
@@ -1056,7 +1056,7 @@ function preparePrint(noPrint=false){
     <!-- GRAND TITRE (déplacé sous Client/Commercial) -->
     <div class="cv-bigtitle">
       <div class="cv-bigtitle-t1">ÉTUDE PHOTOVOLTAÏQUE</div>
-      <div class="cv-bigtitle-t2">${typeEtude}${kwcStr?' — '+kwcStr:''}</div>
+      <div class="cv-bigtitle-t2">${typeEtude}${(kwcStr&&tab!==2&&tab!==3)?' — '+kwcStr:''}</div>
       <div class="cv-bigtitle-t3">Nouvelle-Calédonie</div>
     </div>
     <!-- COUCHE LOGO + SLOGAN -->
