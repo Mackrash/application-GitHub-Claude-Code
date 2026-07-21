@@ -282,7 +282,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   .ps:last-child{border-bottom:none}
 
   /* PAGE 2 : Recap + Charts groupés — saut de page APRES le groupe */
-  .ps-page2{break-after:page;break-inside:auto}
+  .ps-page2{break-inside:auto}
   .ps-page2 .ps-recap{break-before:avoid;break-after:avoid;break-inside:auto}
   /* Séparateur recap → donut (page 2 suite) */
   .ps-donut{break-before:avoid;break-after:avoid;margin-top:32pt}
@@ -295,11 +295,15 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   }
   .ps-donut [id$="_donut"]{height:260px!important;overflow:hidden!important}
 
+  /* Densification : blocs graphes/tableaux non coupés entre 2 pages */
+  div[id^="g1_"],div[id^="g2_"],div[id^="g3_"],div[id^="g4_"]{break-inside:avoid!important}
+  .tw{break-inside:avoid}
+
   /* Sortie A synthèse : si la page financière est masquée, la dernière page suit directement */
   body.psoff-gfact.psoff-groi .ps-page2{break-after:auto}
 
   /* PAGE 3 : Financier — économies + factures + ROI + fiscal */
-  .ps-financial{break-before:page;break-after:page;break-inside:auto}
+  .ps-financial{break-inside:auto}
   .ps-financial [id$="_mois"],.ps-financial [id$="_mois_eco"]{height:210px!important;margin-top:32pt!important}
   .ps-financial .st{margin-top:32pt!important}
   .ps-financial [id$="_roi"]{height:195px!important}
@@ -325,7 +329,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   .ps-roi{break-before:avoid;break-after:avoid;break-inside:avoid;margin-top:14pt}
   .ps-roi [id$="_roi"]{height:210px!important}
   /* PAGE 4 : Tableau seul */
-  .ps-table{break-before:page;break-inside:auto;margin-top:0}
+  .ps-table{break-inside:auto;margin-top:0}
 
   /* ── TITRE DE SECTION (bandeau orange) ── */
   .ps-label{
