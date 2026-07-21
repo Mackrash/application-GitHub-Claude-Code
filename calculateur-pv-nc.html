@@ -304,9 +304,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
   /* PAGE 3 : Financier — économies + factures + ROI + fiscal */
   .ps-financial{break-inside:auto}
-  .ps-financial [id$="_mois"],.ps-financial [id$="_mois_eco"]{height:210px!important;margin-top:32pt!important}
+  .ps-financial [id$="_mois"],.ps-financial [id$="_mois_eco"]{margin-top:32pt!important}
   .ps-financial .st{margin-top:32pt!important}
-  .ps-financial [id$="_roi"]{height:195px!important}
   .ps-financial [id$="_pb"]{margin-top:8pt!important}
   .ps-financial [id$="_fiscal"]{margin-top:32pt!important}
   .efy-box{border:0.5pt solid rgba(240,112,32,0.5)!important;border-radius:3px;margin:5pt 0;break-inside:avoid;background:#fff!important}
@@ -327,7 +326,6 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
   /* ROI — Tab 4 uniquement (tabs 1-2-3 utilisent ps-financial) */
   .ps-roi{break-before:avoid;break-after:avoid;break-inside:avoid;margin-top:14pt}
-  .ps-roi [id$="_roi"]{height:210px!important}
   /* PAGE 4 : Tableau seul */
   .ps-table{break-inside:auto;margin-top:0}
 
@@ -2973,6 +2971,14 @@ window.onbeforeprint=function(){
       try{Plotly.relayout(el,{margin:{t:22,b:52,l:52,r:28}});}catch(e){}
     }
   });
+  // ── Densification : hauteur des graphes lignes/barres selon leur nombre visible ──
+  var bigCharts=[].slice.call(document.querySelectorAll('[id$="_mois"],[id$="_mois_eco"],[id$="_roi"]'))
+    .filter(function(el){return el.offsetParent!==null && el._fullLayout;});
+  var hFill=bigCharts.length<=1?380:(bigCharts.length===2?300:240);
+  bigCharts.forEach(function(el){
+    if(!el.hasAttribute('data-h0'))el.setAttribute('data-h0',Math.round(el._fullLayout.height));
+    try{Plotly.relayout(el,{height:hFill});}catch(e){}
+  });
   // Injecte les titres de sections
   setPrintLabels();
   // Ajoute la date sur le body pour le pied de page
@@ -2995,6 +3001,12 @@ window.onafterprint=function(){
     if(el._fullLayout){
       try{Plotly.relayout(el,{margin:{t:40,b:50,l:38,r:14}});}catch(e){}
     }
+  });
+  // Restaure les hauteurs d'origine des graphes densifiés
+  document.querySelectorAll('[data-h0]').forEach(function(el){
+    var h0=parseInt(el.getAttribute('data-h0'),10);
+    if(h0&&el._fullLayout){try{Plotly.relayout(el,{height:h0});}catch(e){}}
+    el.removeAttribute('data-h0');
   });
 };
 </script>
