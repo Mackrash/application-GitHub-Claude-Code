@@ -1087,14 +1087,12 @@ function exportStudyJSON(){
 }
 function openPrintModal(){
   pmSortie=sortieActive();
-  let saved=null;try{saved=JSON.parse(localStorage.getItem('printPrefs_'+pmSortie)||'null')}catch(e){saved=null}
-  if(saved&&!Array.isArray(saved.off))saved=null; // schéma inattendu → repartir des défauts
+  // Ouverture toujours vierge : aucune case cochée, aucun preset actif (pas de mémorisation).
   const list=document.getElementById('pm-list');
   list.innerHTML=PRINT_CFG[pmSortie].map(s=>{
-    const on=saved?!saved.off.includes(s.id):!!s.def;
-    return `<label class="pm-chk"><input type="checkbox" data-psec-id="${s.id}" ${on?'checked':''} onchange="pmSync()"> ${s.label}</label>`;
+    return `<label class="pm-chk"><input type="checkbox" data-psec-id="${s.id}" onchange="pmSync()"> ${s.label}</label>`;
   }).join('');
-  pmMarkPreset(saved?saved.preset:'synth');
+  pmMarkPreset('');
   pmCount();
   document.getElementById('print-modal').style.display='flex';
 }
@@ -1125,8 +1123,6 @@ function pmCount(){
 function pmClose(){document.getElementById('print-modal').style.display='none'}
 function pmPrint(){
   const off=pmOff();
-  const preset=document.getElementById('pm-pre-full').classList.contains('on')?'full':'synth';
-  localStorage.setItem('printPrefs_'+pmSortie,JSON.stringify({preset,off}));
   const b=document.body;
   b.className=b.className.split(' ').filter(c=>!c.startsWith('print-')&&!c.startsWith('psoff-')).join(' '); // purge défensive (si afterprint n'a pas nettoyé)
   b.classList.add('print-'+pmSortie);
