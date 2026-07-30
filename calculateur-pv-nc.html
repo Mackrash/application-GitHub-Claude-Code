@@ -217,6 +217,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 /* PRINT */
 #cover-page{display:none}
 #last-page{display:none}
+#essentiel-page{display:none}
 /* Marges : 1.5cm côtés, 1.8cm haut, 2.2cm bas (pied de page) */
 @page{size:A4 portrait;margin:12mm 9mm 14mm 9mm}
 @media print{
@@ -464,6 +465,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   /* ── PAGE DE GARDE ── */
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
   #last-page{display:block!important;break-before:page;margin:0;padding:0}
+  #essentiel-page{display:block!important;break-before:page;break-after:page;margin:0;padding:0}
+  body.print-B #essentiel-page,body.print-C #essentiel-page{display:none!important}
   .cv-foot{background:#333333!important;color:#fff!important}
   .cv-kpi-card{break-inside:avoid}
   .cv-kpi-card.green{background:#F0FBF6!important;border-left-color:#008040!important}
@@ -505,6 +508,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 </div>
 
 <div id="cover-page" style="display:none;page-break-after:always"></div>
+<div id="essentiel-page" style="display:none"></div>
 
 <div class="study-id no-print" style="display:flex;gap:10px 18px;flex-wrap:wrap;align-items:flex-end;background:transparent;padding:10px 24px;margin-bottom:4px">
   <div class="fg" style="flex:1;min-width:140px"><label>Nom client</label><input type="text" id="hdr_nom" value="" placeholder="Ex: DUPONT"></div>
@@ -1115,7 +1119,7 @@ function pmCount(){
   const off=pmOff();
   const on=id=>PRINT_CFG[pmSortie].some(x=>x.id===id)&&!off.includes(id);
   let p=pmSortie==='A'?2:3;
-  if(pmSortie==='A')p+=1; // #last-page s'imprime toujours en sortie A (avec ou sans tableau tranches)
+  if(pmSortie==='A')p+=2; // #essentiel-page + #last-page s'impriment toujours en sortie A (avec ou sans tableau tranches)
   if(on('gfact')||on('groi'))p+=1;
   ['amort','factures','bilan','recapfin'].forEach(id=>{if(on(id))p+=1});
   document.getElementById('pm-pages').textContent='📄 ~'+p+' page'+(p>1?'s':'');
@@ -1511,6 +1515,104 @@ function preparePrint(noPrint=false){
     </div>
 
   </div>`;
+
+  // ===== PAGE « L'ESSENTIEL » (sortie A) =====
+  const ess=document.getElementById('essentiel-page');
+  if(tab<=1&&lastStudyData.prodAn){
+    const L=lastStudyData;
+    const eco=L.fSansAn-L.fAvecAn;
+    const baisse=L.fSansAn>0?Math.round((1-L.fAvecAn/L.fSansAn)*100):0;
+    const largeurApres=L.fSansAn>0?Math.max(14,Math.round(L.fAvecAn/L.fSansAn*100)):0;
+    const ratio=L.devis>0?(L.ecoDuree/L.devis).toFixed(1).replace('.',','):'—';
+    const couvert=L.consoAn>0?Math.round((L.consoAn-L.achatAn)/L.consoAn*100):0;
+    // Pas de case à cocher pour choisir la forme du graphique de facture :
+    // on bascule automatiquement sur l'écart mensuel quand le profil de
+    // consommation est saisonnier (piscine, clim, résidence secondaire),
+    // cas pour lequel douze pastilles identiques n'auraient rien à montrer.
+    const moyFS=(L.fSansM||[]).reduce((a,b)=>a+b,0)/12;
+    const ecartType=moyFS>0?Math.sqrt((L.fSansM||[]).reduce((a,b)=>a+(b-moyFS)**2,0)/12):0;
+    const formeEcart=moyFS>0&&(ecartType/moyFS)>0.15;
+    const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM):svgDouzeMois(L.fSansAn,L.fAvecAn);
+    ess.innerHTML=`
+    <style>
+      /* Hauteur de page A4 utile (271mm) moins le bloc facture (~6.5cm, taille fixe
+         quelle que soit la forme du SVG) : fixe (pas min-height) pour que les deux
+         colonnes se partagent exactement ce qui reste, sans déborder sur une 3e page. */
+      #essentiel-page .es{font-family:'Nunito',sans-serif;color:#333;display:flex;height:20.3cm;
+        -webkit-print-color-adjust:exact;print-color-adjust:exact}
+      #essentiel-page .es-l{flex:1;padding:1.2cm 0.9cm 0.8cm 1.5cm;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box}
+      #essentiel-page .es-r{width:8cm;background:#F6F7F8;padding:1.2cm 1.1cm 0.8cm;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box}
+      #essentiel-page .es-k{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#55585C}
+      #essentiel-page .es-v{font-size:33px;font-weight:700;line-height:1.15;margin-top:1mm}
+      #essentiel-page .es-v small{font-size:11px;font-weight:400;color:#55585C;letter-spacing:0}
+      #essentiel-page .es-bar{height:11mm;border-radius:1.5mm;display:flex;align-items:center;
+        padding:0 3.5mm;color:#fff;font-size:16px;font-weight:700;white-space:nowrap}
+      #essentiel-page .es-flux{border-left:3px solid #F07020;padding-left:4.5mm;margin-bottom:8mm}
+      #essentiel-page .es-flux:last-child{margin-bottom:0}
+      #essentiel-page .es-etape{display:flex;align-items:baseline;gap:4mm}
+      #essentiel-page .es-etape b{font-size:20px;color:#F07020;width:7mm}
+      #essentiel-page .es-sep{height:1px;background:#D8DADC;margin:3mm 0}
+      #essentiel-page .es-fact{height:6cm;padding:0 1.5cm 0.5cm;box-sizing:content-box;display:flex;align-items:center;justify-content:center}
+      #essentiel-page .es-fact svg{width:auto;height:100%;display:block;margin:0 auto}
+    </style>
+    <div class="es">
+      <div class="es-l">
+        <div>
+          <div style="font-size:15px;font-weight:700;letter-spacing:.22em">SOLAR <span style="color:#F07020">CONCEPT</span></div>
+          <div style="font-size:9px;color:#55585C;margin-top:1.5mm">${client||'—'}${adresse?' · '+adresse:''} · ${dateStr}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#55585C">Vous économisez</div>
+          <div style="font-size:70px;font-weight:700;line-height:1;color:#F07020;letter-spacing:-.025em;margin-top:2mm">${fmt(Math.round(eco))}</div>
+          <div style="font-size:19px;font-weight:700;color:#F07020;letter-spacing:.14em;margin-top:1mm">XPF PAR AN</div>
+        </div>
+        <div>
+          <div class="es-k" style="margin-bottom:3mm">Votre facture d'électricité</div>
+          <div style="display:flex;align-items:center;gap:3mm;margin-bottom:2.5mm">
+            <span class="es-k" style="width:19mm;text-align:right;letter-spacing:.08em">Aujourd'hui</span>
+            <div class="es-bar" style="flex:1;background:#A8ACB1">${fmt(Math.round(L.fSansAn))} XPF</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:3mm">
+            <span class="es-k" style="width:19mm;text-align:right;letter-spacing:.08em">Avec le PV</span>
+            <div class="es-bar" style="width:${largeurApres}%;background:#F07020">${fmt(Math.round(L.fAvecAn))}</div>
+            <span style="font-size:10.5px;color:#55585C">XPF/an — soit <b style="color:#333">−${baisse} %</b></span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8mm">
+          <div><div class="es-k">Installation remboursée</div>
+            <div class="es-v">${L.pb?'An '+L.pb:'> '+getS().dpv+' ans'} <small>${L.pb?'puis '+(getS().dpv-L.pb)+' ans de gain net':''}</small></div></div>
+          <div><div class="es-k">Gains cumulés · ${getS().dpv} ans</div>
+            <div class="es-v">${fmt(Math.round(L.ecoDuree||0))} <small>XPF · ${ratio} × l'investissement</small></div></div>
+          <div><div class="es-k">Autonomie énergétique</div>
+            <div class="es-v">${couvert} % <small>${fmt(Math.round(L.achatAn))} kWh acheté au réseau</small></div></div>
+        </div>
+        <div>
+          <div class="es-k" style="margin-bottom:3.5mm">Les prochaines étapes</div>
+          <div class="es-etape"><b>1</b><span style="font-size:12px;font-weight:700">Validation de l'étude</span><span style="font-size:10px;color:#55585C;margin-left:auto">ensemble, aujourd'hui</span></div>
+          <div class="es-sep"></div>
+          <div class="es-etape"><b>2</b><span style="font-size:12px;font-weight:700">Visite technique</span><span style="font-size:10px;color:#55585C;margin-left:auto">sous 10 jours</span></div>
+          <div class="es-sep"></div>
+          <div class="es-etape"><b>3</b><span style="font-size:12px;font-weight:700">Pose et mise en service</span><span style="font-size:10px;color:#55585C;margin-left:auto">½ journée</span></div>
+        </div>
+        <div style="font-size:8px;color:#55585C">Solar Concept · ${commTel||'47 03 02'} · document estimatif non contractuel</div>
+      </div>
+      <div class="es-r">
+        <div>
+          <div class="es-k" style="letter-spacing:.2em">Où va votre énergie</div>
+          <div style="font-size:12px;color:#55585C;margin-top:1.5mm"><b style="color:#F07020;font-size:15px">${fmt(Math.round(L.prodAn))} kWh</b> produits par an</div>
+        </div>
+        <div>${svgMaestro({prodAn:L.prodAn,directAutoAn:L.directAutoAn,batAutoAn:L.batAutoAn,
+          surplusAn:L.reinjAn,consoAn:L.consoAn,achatAn:L.achatAn,
+          batLabel:L.batLabel||'batterie',tarifRevente:L.rev||0})}</div>
+        <div style="border-top:1px solid #C9CBCD;padding-top:4mm">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>Votre besoin annuel</span><b style="color:#333;font-size:13px">${fmt(Math.round(L.consoAn))} kWh</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>Couvert par le solaire</span><b style="color:#F07020;font-size:13px">${couvert} %</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C"><span>Acheté au réseau</span><b style="color:#F07020;font-size:13px">${fmt(Math.round(L.achatAn))} kWh</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="es-fact">${svgFacture}</div>`;
+  }else{ess.innerHTML='';}
 
   // ===== DERNIÈRE PAGE : RÉCAPITULATIF + ROI =====
   const s=getS();
@@ -2232,7 +2334,16 @@ function calcT1(){
   // Stocke les données pour la page de garde
   const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={tab:1,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10,eco15};
+  // Gain cumulé sur l'horizon paramétré (s.dpv, réglable dans l'onglet Paramètres) —
+  // ne pas figer à 20 ans, sinon incohérent avec le tableau d'amortissement ci-dessus.
+  const ecoDuree=(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,0,0);return am.rows[am.rows.length-1].cumul;})();
+  lastStudyData={tab:1,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10,eco15,
+    prodAn,consoAn:consoM.reduce((a,b)=>a+b,0),
+    directAutoAn,batAutoAn,reinjAn,achatAn,
+    fSansM,fAvecM,rev,
+    batLabel:batModel>0?('OMEGA '+(BLBL[batModel]||'batterie')+' '+fmtD(batWh/1000)+' kWh'):'batterie',
+    nbP,panWc,
+    ecoDuree};
 
   // Bilan énergie — différentiel Option B (autoconso vs batterie)
   const consoAn_t1=consoM.reduce((a,b)=>a+b,0);
