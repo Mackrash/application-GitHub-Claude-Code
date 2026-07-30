@@ -218,6 +218,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 #cover-page{display:none}
 #last-page{display:none}
 #essentiel-page{display:none}
+#essentiel-fact{display:none}
 /* Marges : 1.5cm côtés, 1.8cm haut, 2.2cm bas (pied de page) */
 @page{size:A4 portrait;margin:12mm 9mm 14mm 9mm}
 @media print{
@@ -493,6 +494,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
   #last-page{display:block!important;break-before:page;margin:0;padding:0}
   #essentiel-page{display:block!important;break-before:page;margin:0;padding:0}
+  #essentiel-fact{display:block!important;break-before:page;margin:0}
+  body.print-B #essentiel-fact,body.print-C #essentiel-fact{display:none!important}
   /* Pas de break-after ici : #last-page force déjà son propre saut. Avec les deux,
      un #r1 vidé de ses options laissait une feuille entièrement blanche entre eux. */
   body.print-B #essentiel-page,body.print-C #essentiel-page{display:none!important}
@@ -538,6 +541,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 <div id="cover-page" style="display:none;page-break-after:always"></div>
 <div id="essentiel-page" style="display:none"></div>
+<div id="essentiel-fact" style="display:none"></div>
 
 <div class="study-id no-print" style="display:flex;gap:10px 18px;flex-wrap:wrap;align-items:flex-end;background:transparent;padding:10px 24px;margin-bottom:4px">
   <div class="fg" style="flex:1;min-width:140px"><label>Nom client</label><input type="text" id="hdr_nom" value="" placeholder="Ex: DUPONT"></div>
@@ -1321,7 +1325,7 @@ function svgDouzeMois(fSansAn,fAvecAn){
     <defs><linearGradient id="dmPart_${uid}" x1="0" y1="0" x2="1" y2="0">
       <stop offset="${partPct}%" stop-color="${OR}"/><stop offset="${partPct}%" stop-color="#fff"/>
     </linearGradient></defs>
-    <text x="${W/2}" y="26" text-anchor="middle" font-size="10" letter-spacing=".2em" fill="${TX}">SUR VOS DOUZE MOIS D'ÉLECTRICITÉ</text>`;
+    `;
   for(let i=0;i<12;i++){
     const cx=ox+i*gx;
     if(i<m.entiers){
@@ -1444,8 +1448,7 @@ function svgReliefROI(cumuls,paybackAn){
        `<text x="${px}" y="${ty+17}" text-anchor="${anc}" font-size="17" font-weight="700" fill="${col}">${val}</text>`+
        (sous?`<text x="${px}" y="${dessous?ty+34:ty-13}" text-anchor="${anc}" font-size="9.5" fill="${TX}">${sous}</text>`:'');
   });
-  s+=`<text x="${PL}" y="${H-10}" font-size="9" fill="${TX}">An 1</text>`+
-     `<text x="${W-PR}" y="${H-10}" text-anchor="end" font-size="9" fill="${TX}">An ${n}</text></svg>`;
+  s+=`<text x="${W-PR}" y="${H-10}" text-anchor="end" font-size="9" fill="${TX}">An 1 → An ${n}</text></svg>`;
   return s;
 }
 
@@ -1626,7 +1629,7 @@ function preparePrint(noPrint=false){
       /* Hauteur de page A4 utile (271mm) moins le bloc facture (~6.5cm, taille fixe
          quelle que soit la forme du SVG) : fixe (pas min-height) pour que les deux
          colonnes se partagent exactement ce qui reste, sans déborder sur une 3e page. */
-      #essentiel-page .es{font-family:'Nunito',sans-serif;color:#333;display:flex;height:20.3cm;
+      #essentiel-page .es{font-family:'Nunito',sans-serif;color:#333;display:flex;height:26.6cm;
         -webkit-print-color-adjust:exact;print-color-adjust:exact}
       #essentiel-page .es-l{flex:1;padding:1.2cm 0.9cm 0.8cm 1.5cm;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box}
       #essentiel-page .es-r{width:8cm;background:#F6F7F8;padding:1.2cm 1.1cm 0.8cm;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box}
@@ -1640,8 +1643,12 @@ function preparePrint(noPrint=false){
       #essentiel-page .es-etape{display:flex;align-items:baseline;gap:4mm}
       #essentiel-page .es-etape b{font-size:20px;color:#F07020;width:7mm}
       #essentiel-page .es-sep{height:1px;background:#D8DADC;margin:3mm 0}
-      #essentiel-page .es-fact{height:6cm;padding:0 1.5cm 0.5cm;box-sizing:content-box;display:flex;align-items:center;justify-content:center}
-      #essentiel-page .es-fact svg{width:auto;height:100%;display:block;margin:0 auto}
+      #essentiel-fact{padding:1.4cm 1.5cm 1cm}
+      #essentiel-fact .ef-h{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;
+        color:#333;margin:0 0 2mm;display:flex;align-items:center;gap:3mm}
+      #essentiel-fact .ef-h::after{content:"";flex:1;height:1px;background:#D8DADC}
+      #essentiel-fact .ef-l{font-size:10.5px;color:#55585C;line-height:1.6;margin:0 0 8mm;max-width:15cm}
+      #essentiel-fact svg{width:100%;height:auto;display:block}
     </style>
     <div class="es">
       <div class="es-l">
@@ -1700,8 +1707,15 @@ function preparePrint(noPrint=false){
         </div>
       </div>
     </div>
-    <div class="es-fact">${svgFacture}</div>`;
-  }else{ess.innerHTML='';}
+    `;
+    const ef=document.getElementById('essentiel-fact');
+    if(ef)ef.innerHTML=`
+      <div class="ef-h">Votre facture d'électricité</div>
+      <p class="ef-l">${formeEcart
+        ?"Comparaison mois par mois de votre facture actuelle et de celle que vous paierez avec votre installation. L'écart entre les deux courbes est votre économie."
+        :"Chaque pastille est un mois d'électricité. Les pastilles pleines sont ce qu'il vous reste à payer sur l'année ; les autres, le soleil les prend à sa charge."}</p>
+      ${svgFacture}`;
+  }else{ess.innerHTML='';const ef=document.getElementById('essentiel-fact');if(ef)ef.innerHTML='';}
 
   // ===== DERNIÈRE PAGE : RÉCAPITULATIF + ROI =====
   const s=getS();
@@ -1717,6 +1731,31 @@ function preparePrint(noPrint=false){
         <div class="lp-kpi"><div class="lp-kpi-v">${fmt(devis)} F</div><div class="lp-kpi-l">Investissement TTC</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoDuree||eco15))} F</div><div class="lp-kpi-l">Gains cumulés sur ${getS().dpv} ans</div></div>`;
+
+  // Récapitulatif reproduit d'après la maquette validée : fiche technique,
+  // puis l'investissement, puis les retours. Ni cartes vertes ni horizon figé.
+  const L2=lastStudyData;
+  const recapParticulier=`
+      <div class="lp-fiche">
+        <div class="lp-fiche-r">
+          <div><span>Puissance installée</span><b>${kwcStr||'—'}</b></div>
+          <div><span>Panneaux</span><b>${L2.nbP?L2.nbP+' × '+L2.panWc+' Wc':'—'}</b></div>
+        </div>
+        <div class="lp-fiche-r">
+          <div><span>Stockage</span><b>${batModel>0?fmtD(batModel*batQty/1000)+' kWh':'—'}</b>
+               ${batModel>0?'<i>OMEGA '+(BLBL[batModel]||'batterie')+'</i>':'<i>sans stockage</i>'}</div>
+          <div><span>Production estimée</span><b>${L2.prodAn?fmt(Math.round(L2.prodAn))+' kWh/an':'—'}</b></div>
+        </div>
+      </div>
+      <div class="lp-invest">
+        <span>Investissement</span>
+        <b>${fmt(devis)} <em>XPF TTC</em></b>
+      </div>
+      <div class="lp-retours">
+        <div><span>Économie annuelle</span><b class="or">${fmt(Math.round(ecoAn))} XPF</b></div>
+        <div><span>Installation remboursée</span><b>${pb?'An '+pb:'> '+s.dpv+' ans'}</b></div>
+        <div><span>Gains cumulés sur ${s.dpv} ans</span><b>${fmt(Math.round(ecoDuree||eco15))} XPF</b></div>
+      </div>`;
 
   // Section ROI : tranche par tranche (particuliers) — sinon rien (pro garde son ROI dans les cartes)
   let roiSection='';
@@ -1774,6 +1813,24 @@ function preparePrint(noPrint=false){
     .lp-roi td.tr{font-weight:800;color:#333}
     .lp-roi td.roi{font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;color:#008040;font-size:1.15rem}
     .lp-roi tr.best td{background:#F0FBF6}
+    .lp-fiche{margin-bottom:0.6cm}
+    .lp-fiche-r{display:grid;grid-template-columns:1fr 1fr;gap:0 1cm}
+    .lp-fiche-r>div{border-bottom:1px solid #D8DADC;padding:0.25cm 0 0.2cm}
+    .lp-fiche-r span{display:block;font-size:0.62rem;letter-spacing:1.5px;text-transform:uppercase;color:#55585C}
+    .lp-fiche-r b{font-size:1.5rem;font-weight:800;color:#333;line-height:1.2}
+    .lp-fiche-r i{font-size:0.72rem;font-style:normal;color:#55585C;margin-left:0.2cm}
+    .lp-invest{display:flex;justify-content:space-between;align-items:baseline;
+      border-top:2px solid #F07020;border-bottom:1px solid #D8DADC;padding:0.32cm 0;margin-bottom:0.5cm}
+    .lp-invest span{font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;font-weight:800;color:#333}
+    .lp-invest b{font-size:1.9rem;font-weight:800;color:#333}
+    .lp-invest em{font-size:0.85rem;font-style:normal}
+    .lp-retours{background:#F6F7F8;border-left:4px solid #F07020;padding:0.4cm 0.7cm;margin-bottom:0.7cm;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .lp-retours>div{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.25cm}
+    .lp-retours>div:last-child{margin-bottom:0}
+    .lp-retours span{font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;color:#55585C}
+    .lp-retours b{font-size:1.55rem;font-weight:800;color:#333}
+    .lp-retours b.or{color:#F07020}
     .lp-note{font-size:0.8rem;color:#888;font-style:italic;margin-top:0.5cm}
     .lp-foot{background:#333;color:#fff;padding:0.35cm 1.5cm;display:flex;justify-content:space-between;align-items:center;font-size:0.7rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;margin-top:auto}
     .lp-foot-brand{font-family:'RAIDenmarkNeo',sans-serif;font-size:1rem;font-weight:700;color:#F07020;letter-spacing:2px;text-transform:uppercase}
@@ -1786,7 +1843,7 @@ function preparePrint(noPrint=false){
     </div>
     <div class="lp-body">
       <h2 class="lp-h2">Récapitulatif du dossier</h2>
-      <div class="lp-kpis">${recapCards}</div>
+      ${isPro?`<div class="lp-kpis">${recapCards}</div>`:recapParticulier}
       ${roiSection}${stepsSection}
     </div>
     <div class="lp-foot">
