@@ -3113,13 +3113,7 @@ function calcT4(){
   // Eco cumulée 10/15 ans depuis le tableau pro (éco énergie + éco IS - remp.)
   const eco10_t4=_proRows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t4=_proRows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={tab:4,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:document.getElementById('t4_commercial').value||'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4,coutNetImpot,avantageTotal,tIS,dAmort,
-    prodAn,consoAn:consoM.reduce((a,b)=>a+b,0),
-    directAutoAn:autoAn,batAutoAn:batAutoAn,reinjAn:surpAn,achatAn:achatAn,
-    fSansM,fAvecM,rev,
-    batLabel:batModel>0?('OMEGA '+(BLBL[batModel]||'batterie')+' '+fmtD(batWh/1000)+' kWh'):'batterie',
-    nbP,panWc,
-    ecoDuree:(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);return am.rows[am.rows.length-1].cumul;})()};
+  lastStudyData={tab:4,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:document.getElementById('t4_commercial').value||'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4,coutNetImpot,avantageTotal,tIS,dAmort};
   lastCalcDetails={tab:4,tabName:'Entreprise',isT3:false,
     kwc,devis,tarif,rev,nbP,panWc,surf,
     prodAn,consoAn:conso,directAutoAn:autoAn,batAutoAn,reinjAn:surpAn,achatAn,
