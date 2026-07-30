@@ -1179,7 +1179,13 @@ function svgUid(){return 'u'+(_svgUidSeq++);}
 // à l'extérieur, reliés au centre géométrique de leur segment.
 // Le SVG porte armoire ET textes : séparer les deux casse l'alignement
 // dès qu'on change l'échelle.
-function svgMaestro(c){
+// Mode compact (2e argument) : colonne étroite (page « L'essentiel »,
+// 8 cm). Le viewBox large (790) suppose une pleine largeur ; réduit à 8 cm
+// il écrase l'armoire à ~3 cm et rend les libellés illisibles. En mode
+// compact on ne dessine QUE l'armoire (viewBox recadré sur elle, sans les
+// blocs texte ni les filets de liaison) ; les trois flux sont composés en
+// HTML par blocsFluxHTML() et empilés SOUS l'armoire par l'appelant.
+function svgMaestro(c,compact){
   const tot=c.directAutoAn+c.batAutoAn+c.surplusAn;
   if(!(tot>0))return'';
   // arrondis répartis pour que la somme fasse exactement 100
@@ -1206,7 +1212,7 @@ function svgMaestro(c){
   const mots=sur.sousTitre.split(' ');const mi=Math.ceil(mots.length/2);
   const s1=mots.slice(0,mi).join(' '),s2=mots.slice(mi).join(' ');
   const uid=svgUid();
-  return `<svg width="100%" viewBox="0 0 790 570" role="img" aria-label="Répartition de votre énergie solaire">
+  const armoire=`
     <defs>
       <linearGradient id="mgAlu_${uid}" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stop-color="#EDEEEF"/><stop offset=".14" stop-color="#FFFFFF"/>
@@ -1225,11 +1231,33 @@ function svgMaestro(c){
     <rect x="44" y="${Y0}" width="202" height="${H}" rx="7" fill="#F8F9FA" stroke="#B4B6B9"/>
     ${seg(ySur,hS,VE,pS)}${seg(yNui,hN,AM,pN)}${seg(yJou,hJ,OR,pJ)}
     <rect x="56" y="520" width="34" height="21" rx="5" fill="#2A2A2C"/>
-    <rect x="200" y="520" width="34" height="21" rx="5" fill="#2A2A2C"/>
+    <rect x="200" y="520" width="34" height="21" rx="5" fill="#2A2A2C"/>`;
+  if(compact){
+    // viewBox recadré sur la seule armoire (x 0..296, elle occupe 30..284) :
+    // aucun texte, les libellés vivent en HTML sous elle (blocsFluxHTML).
+    return `<svg width="100%" viewBox="0 0 296 570" role="img" aria-label="Répartition de votre énergie solaire">${armoire}</svg>`;
+  }
+  return `<svg width="100%" viewBox="0 0 790 570" role="img" aria-label="Répartition de votre énergie solaire">${armoire}
     ${bloc(cSur,VE,VE,sur.titre,fmt(Math.round(c.surplusAn))+' kWh',s1,s2)}
     ${bloc(cNui,AM,AMF,'Stockée pour la nuit',fmt(Math.round(c.batAutoAn))+' kWh','restituée le soir par votre '+c.batLabel,'')}
     ${bloc(cJou,OR,OR,'Consommée le jour',fmt(Math.round(c.directAutoAn))+' kWh','directement par votre maison, en journée','')}
   </svg>`;
+}
+
+// Pendant de svgMaestro en mode compact : les trois flux composés en HTML
+// (empilés sous l'armoire), avec le même vocabulaire et les mêmes couleurs
+// que les blocs texte du SVG pleine largeur — seule la mise en page change.
+function blocsFluxHTML(c){
+  const sur=libelleSurplus(c.tarifRevente);
+  const OR='#F07020',AM='#F5A623',AMF='#D98B0A',VE=sur.couleur,VEF='#2E8F5C',AN='#333333';
+  const bloc=(col,colVal,titre,valeur,expl)=>`<div class="es-flux" style="border-left-color:${col}">
+      <div class="es-k" style="color:${col===VE?VEF:AN}">${titre.toUpperCase()}</div>
+      <div style="font-size:22px;font-weight:700;color:${colVal};margin-top:.5mm">${valeur}</div>
+      ${expl?`<div style="font-size:9.5px;color:#55585C;margin-top:1mm;line-height:1.35">${expl}</div>`:''}
+    </div>`;
+  return bloc(VE,VE,sur.titre,fmt(Math.round(c.surplusAn))+' kWh',sur.sousTitre)
+       + bloc(AM,AMF,'Stockée pour la nuit',fmt(Math.round(c.batAutoAn))+' kWh','restituée le soir par votre '+c.batLabel)
+       + bloc(OR,OR,'Consommée le jour',fmt(Math.round(c.directAutoAn))+' kWh','directement par votre maison, en journée');
 }
 
 // ===== SORTIE A — COURBES =====
@@ -1548,6 +1576,9 @@ function preparePrint(noPrint=false){
     // « décoché » et « impression sans passer par le panneau ».
     const formeEcart=document.body.classList.contains('pson-fmois');
     const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM):svgDouzeMois(L.fSansAn,L.fAvecAn);
+    const fluxMaestro={prodAn:L.prodAn,directAutoAn:L.directAutoAn,batAutoAn:L.batAutoAn,
+      surplusAn:L.reinjAn,consoAn:L.consoAn,achatAn:L.achatAn,
+      batLabel:L.batLabel||'batterie',tarifRevente:L.rev||0};
     ess.innerHTML=`
     <style>
       /* Hauteur de page A4 utile (271mm) moins le bloc facture (~6.5cm, taille fixe
@@ -1562,7 +1593,7 @@ function preparePrint(noPrint=false){
       #essentiel-page .es-v small{font-size:11px;font-weight:400;color:#55585C;letter-spacing:0}
       #essentiel-page .es-bar{height:11mm;border-radius:1.5mm;display:flex;align-items:center;
         padding:0 3.5mm;color:#fff;font-size:16px;font-weight:700;white-space:nowrap}
-      #essentiel-page .es-flux{border-left:3px solid #F07020;padding-left:4.5mm;margin-bottom:8mm}
+      #essentiel-page .es-flux{border-left:3px solid #F07020;padding-left:4.5mm;margin-bottom:5mm}
       #essentiel-page .es-flux:last-child{margin-bottom:0}
       #essentiel-page .es-etape{display:flex;align-items:baseline;gap:4mm}
       #essentiel-page .es-etape b{font-size:20px;color:#F07020;width:7mm}
@@ -1616,9 +1647,10 @@ function preparePrint(noPrint=false){
           <div class="es-k" style="letter-spacing:.2em">Où va votre énergie</div>
           <div style="font-size:12px;color:#55585C;margin-top:1.5mm"><b style="color:#F07020;font-size:15px">${fmt(Math.round(L.prodAn))} kWh</b> produits par an</div>
         </div>
-        <div>${svgMaestro({prodAn:L.prodAn,directAutoAn:L.directAutoAn,batAutoAn:L.batAutoAn,
-          surplusAn:L.reinjAn,consoAn:L.consoAn,achatAn:L.achatAn,
-          batLabel:L.batLabel||'batterie',tarifRevente:L.rev||0})}</div>
+        <div>
+          <div style="width:62%;margin:0 auto 5mm">${svgMaestro(fluxMaestro,true)}</div>
+          ${blocsFluxHTML(fluxMaestro)}
+        </div>
         <div style="border-top:1px solid #D8DADC;padding-top:4mm">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>Votre besoin annuel</span><b style="color:#333;font-size:13px">${fmt(Math.round(L.consoAn))} kWh</b></div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>Couvert par le solaire</span><b style="color:#F07020;font-size:13px">${couvert} %</b></div>
