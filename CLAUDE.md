@@ -48,6 +48,11 @@ Dépendances : Plotly 2.27.0 (CDN)
 - Sortie B ramenée de 4 à 3 pages
 - **Onglet 4 (sortie C) volontairement hors périmètre** : rendu d'origine conservé
 
+### Comptes rendus de session
+Chaque session de travail produit un compte rendu dans `docs/sessions/`, nommé
+`AAAA-MM-JJ-sujet.md`. Il consigne les arbitrages et ce qui a été écarté, pas
+seulement ce qui a été fait. Convention détaillée dans `docs/sessions/README.md`.
+
 ### Règles de travail sur ce fichier
 - **Ne jamais modifier les calculs** (`calcT1` à `calcT4`, `buildAmort`, `factureMois`, `prodM`) sans accord explicite. `lastStudyData` ne doit qu'exposer des valeurs déjà produites.
 - **Tester par la vraie route** : cliquer le bouton, ouvrir le panneau, appeler `pmPrint()`. Ne jamais réécrire la logique dans le test.
