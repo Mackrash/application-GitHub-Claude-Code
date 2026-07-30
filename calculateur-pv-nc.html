@@ -270,7 +270,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     overflow:hidden!important;
     box-sizing:border-box!important;
   }
-  #k1_pb,#k2_pb,#k3_pb,#k4_pb{display:block!important}
+  #k2_pb,#k3_pb,#k4_pb{display:block!important}
 
   /* ── SECTIONS PRINT (wrappers .ps) ── */
   /* 3 pages total : 1=garde / 2=récap+charts / 3=ROI+tableau */
@@ -450,6 +450,12 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   [id$="_efy_fiscal"]{display:none!important}
   /* Page financière entièrement décochée → pas de page blanche */
   body.psoff-gfact.psoff-groi .ps-financial{display:none!important}
+  /* Sortie A : « gfact » n'est plus une case du panneau d'impression (la facture
+     vit sur la page « L'essentiel ») — le graphique factures avant/après de
+     l'onglet 1 ne doit donc plus jamais sortir, sinon il devient un doublon
+     impossible à décocher. La table de répartition des économies du même bloc
+     reste (pas de doublon ailleurs). */
+  body.print-A #g1_mois{display:none!important}
   /* Le modal ne s'imprime jamais */
   #print-modal{display:none!important}
 
@@ -558,22 +564,11 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   </div>
   <button class="btn-calc" onclick="calcT1()">⚡ CALCULER</button>
   <div class="results" id="r1">
-    <div class="ps-page2">
-    <div class="ps ps-recap">
-      <div id="recap1"></div>
-      <div class="kpi-grid" id="k1_fin" style="margin:12px 0 6px"></div>
-      <div id="recap1_efy_bilan"></div>
-    </div>
-    <div class="ps ps-donut" data-psec="pile">
-      <div id="g1_donut" style="height:340px"></div>
-    </div>
-    </div>
     <div class="ps ps-financial">
       <div data-psec="gfact"><div id="recap1_efy_eco"></div>
       <div id="g1_mois" style="height:310px;margin-top:12px"></div></div>
       <div data-psec="groi"><div class="st" style="margin-top:14px">Retour sur investissement — 20 ans</div>
-      <div id="g1_roi" style="height:270px"></div>
-      <div id="k1_pb"></div></div>
+      <div id="g1_roi"></div></div>
       <div id="recap1_efy_fiscal" style="margin-top:12px"></div>
     </div>
     <div class="ps ps-table" data-psec="amort">
@@ -1039,9 +1034,8 @@ function sortieActive(){const t=tabActif();return t===4?'C':(t>=2?'B':'A');}
 
 // ===== MODAL IMPRESSION — presets + cases par sortie =====
 const PRINT_CFG={
-  A:[{id:'pile',label:'Pile répartition énergétique',def:1},
+  A:[{id:'fmois',label:'Facture — l’écart mois par mois',def:0},
      {id:'tranches',label:'ROI par tranche fiscale',def:1},
-     {id:'gfact',label:'Graphique factures avant/après',def:0},
      {id:'groi',label:'Graphique ROI 20 ans',def:0},
      {id:'amort',label:"Tableau d'amortissement",def:0},
      {id:'factures',label:'Estimation de vos factures',def:0},
@@ -1094,7 +1088,7 @@ function openPrintModal(){
   // Ouverture toujours vierge : aucune case cochée, aucun preset actif (pas de mémorisation).
   const list=document.getElementById('pm-list');
   list.innerHTML=PRINT_CFG[pmSortie].map(s=>{
-    return `<label class="pm-chk"><input type="checkbox" data-psec-id="${s.id}" onchange="pmSync()"> ${s.label}</label>`;
+    return `<label class="pm-chk"><input type="checkbox" data-psec-id="${s.id}" onchange="pmSync(this)"> ${s.label}</label>`;
   }).join('');
   pmMarkPreset('');
   pmCount();
@@ -1114,7 +1108,18 @@ function pmPreset(p){
 function pmOff(){
   return [...document.querySelectorAll('#pm-list input')].filter(i=>!i.checked).map(i=>i.dataset.psecId);
 }
-function pmSync(){pmMarkPreset('');pmCount();}
+function pmSync(el){
+  // « ROI par tranche fiscale » et « Tableau d'amortissement » affichent tous
+  // deux la déduction et le payback par tranche : cocher l'un décoche l'autre.
+  if(el&&el.checked){
+    const paire={amort:'tranches',tranches:'amort'}[el.dataset.psecId];
+    if(paire){
+      const autre=document.querySelector(`#pm-list input[data-psec-id="${paire}"]`);
+      if(autre)autre.checked=false;
+    }
+  }
+  pmMarkPreset('');pmCount();
+}
 function pmCount(){
   const off=pmOff();
   const on=id=>PRINT_CFG[pmSortie].some(x=>x.id===id)&&!off.includes(id);
@@ -1386,7 +1391,7 @@ function preparePrint(noPrint=false){
   const dateStr=d.toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'});
 
   const tab=tabActif();
-  const {kwc=6.3,devis=0,ecoAn=0,fSansAn=0,fAvecAn=0,batModel=0,batQty=1,client='',commercial='',adresse='',pb=0,pbMin=0,pbMax=0,eco10=0,eco15=0,coutNetImpot=0,avantageTotal=0,tIS=0,dAmort=0}=lastStudyData;
+  const {kwc=6.3,devis=0,ecoAn=0,fSansAn=0,fAvecAn=0,batModel=0,batQty=1,client='',commercial='',adresse='',pb=0,pbMin=0,pbMax=0,eco10=0,eco15=0,ecoDuree=0,coutNetImpot=0,avantageTotal=0,tIS=0,dAmort=0}=lastStudyData;
   const isPro=tab===4;
   const parts=(commercial||'').split('|');
   const commName=parts[0]||'';
@@ -1525,11 +1530,16 @@ function preparePrint(noPrint=false){
     const largeurApres=L.fSansAn>0?Math.max(14,Math.round(L.fAvecAn/L.fSansAn*100)):0;
     const ratio=L.devis>0?(L.ecoDuree/L.devis).toFixed(1).replace('.',','):'—';
     const couvert=L.consoAn>0?Math.round((L.consoAn-L.achatAn)/L.consoAn*100):0;
-    // Forme par défaut : douze pastilles (svgDouzeMois). La case du panneau
-    // d'impression (psoff-fmois) bascule vers l'écart mensuel, pertinent
-    // pour un profil de consommation saisonnier (piscine, clim, résidence
-    // secondaire) où douze valeurs quasi identiques ne montreraient rien.
-    const formeEcart=document.body.classList.contains('psoff-fmois');
+    // Forme par défaut : douze pastilles (svgDouzeMois). Cocher « Facture —
+    // l'écart mois par mois » dans le panneau d'impression bascule vers
+    // l'écart mensuel, pertinent pour un profil de consommation saisonnier
+    // (piscine, clim, résidence secondaire) où douze valeurs quasi
+    // identiques ne montreraient rien.
+    // La case cochée NE POSE PAS la classe psoff-fmois (psoff- = case
+    // décochée, logique inversée) : coché ⇒ classe absente ⇒ écart mensuel.
+    // Décoché (par défaut, aucune case cochée à l'ouverture) ⇒ classe
+    // présente ⇒ douze mois.
+    const formeEcart=!document.body.classList.contains('psoff-fmois');
     const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM):svgDouzeMois(L.fSansAn,L.fAvecAn);
     ess.innerHTML=`
     <style>
@@ -1625,7 +1635,7 @@ function preparePrint(noPrint=false){
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>`:`
         <div class="lp-kpi"><div class="lp-kpi-v">${fmt(devis)} F</div><div class="lp-kpi-l">Montant du devis TTC</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>
-        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(eco15))} F</div><div class="lp-kpi-l">Économies cumulées sur 15 ans</div></div>`;
+        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoDuree||eco15))} F</div><div class="lp-kpi-l">Gains cumulés sur ${getS().dpv} ans</div></div>`;
 
   // Section ROI : tranche par tranche (particuliers) — sinon rien (pro garde son ROI dans les cartes)
   let roiSection='';
@@ -1883,7 +1893,7 @@ function renderEnergyFiscalRecap(divId,cfg){ // divId = {bilan, eco, fiscal}
   const {prodAn,consoAn,directAutoAn,batAutoAn,reinjAn,achatAn,
          injAvantAn,newAchatAn,newInjAn,
          ecoAutoAn,ecoBatAn,ecoTotal,
-         devis,s,batRepl,batReplAn,hasBat,isT3}=cfg;
+         devis,s,batRepl,batReplAn,hasBat,isT3,sansTotal}=cfg;
 
   // ─── BILAN ÉNERGÉTIQUE ───
   let r1='';
@@ -1906,7 +1916,7 @@ function renderEnergyFiscalRecap(divId,cfg){ // divId = {bilan, eco, fiscal}
   let r2='';
   if(ecoAutoAn>0) r2+=`<tr><td>Par autoconsommation solaire</td><td class="efy-v efy-g">${fmt(Math.round(ecoAutoAn))} XPF</td></tr>`;
   if(ecoBatAn>0)  r2+=`<tr><td>Par stockage batterie</td><td class="efy-v efy-g">${fmt(Math.round(ecoBatAn))} XPF</td></tr>`;
-  r2+=`<tr class="efy-total"><td>Total économie annuelle (An 1)</td><td class="efy-v">${fmt(Math.round(ecoTotal))} XPF</td></tr>`;
+  if(!sansTotal)r2+=`<tr class="efy-total"><td>Total économie annuelle (An 1)</td><td class="efy-v">${fmt(Math.round(ecoTotal))} XPF</td></tr>`;
 
   // ─── DÉDUCTION FISCALE NC ───
   const plafond=s.ded;
@@ -1925,7 +1935,7 @@ function renderEnergyFiscalRecap(divId,cfg){ // divId = {bilan, eco, fiscal}
   });
 
   // Rendu dans 3 divs séparés (bilan p2 / économies+fiscal p3)
-  document.getElementById(divId.bilan).innerHTML=`<div class="efy-box"><div class="efy-section">
+  if(divId.bilan)document.getElementById(divId.bilan).innerHTML=`<div class="efy-box"><div class="efy-section">
     <div class="efy-title">⚡ Bilan énergétique annuel</div>
     <table class="efy-tbl"><tbody>${r1}</tbody></table>
   </div></div>`;
@@ -2303,31 +2313,15 @@ function calcT1(){
   const ecoAn=fSansAn-fAvecAn;
   const ecoMois=fSansM.map((f,i)=>f-fAvecM[i]);
 
-  // Récap
-  renderRecap('recap1',[
-    {k:'Puissance installée',v:`${fmtD(kwc)} kWc`,hi:true},
-    {k:'Nombre de panneaux',v:`${nbP} × ${panWc} Wc`},
-    {k:'Surface approximative',v:`${fmtD(surf,0)} m²`},
-    {k:'Production annuelle estimée',v:`${fmt(prodAn)} kWh`},
-    {k:'Taux autoconsommation',v:`${fmtD(txAuto)}%`},
-    batWh>0?{k:'Batterie',v:`${BLBL[batModel]} (${(batWh/1000).toFixed(1)} kWh)`}:null,
-    {k:'Investissement TTC',v:`${fmt(devis)} XPF`},
-  ].filter(Boolean));
-
   const {rows,pb,pbMin,pbMax}=renderCombinedAmort('tb1',devis,ecoAn,s.hau,s.deg,20,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0,taux);
 
-  const eco20=rows.reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  kpiGrid('k1_fin',[
-    {v:`${fmt(fSansAn)} XPF`,l:'Dépense annuelle AVANT PV',s:'r'},
-    {v:`${fmt(fAvecAn)} XPF`,l:'Dépense annuelle APRÈS PV (An 1)',s:'g'},
-    {v:`${fmt(ecoAn)} XPF`,l:'Économie annuelle (An 1)',s:'g'},
-    {v:`${fmt(eco20)} XPF`,l:'Gains cumulés sur 20 ans',s:'g'},
-  ]);
-  plotPile('g1_donut',directAutoAn,batAutoAn,reinjAn,achatAn);
   plotAvantApres('g1_mois',fSansM,fAvecM,'Sans PV','Avec PV');
-  plotROI('g1_roi',rows);
-
-  if(pb)document.getElementById('k1_pb').innerHTML=`<div class="kpi-grid" style="max-width:220px"><div class="kpi"><div class="kv g">An ${pb}</div><div class="kl">Retour sur investissement</div></div></div>`;
+  // ROI en relief — SVG print-only, remplace le tracé Plotly sombre
+  (function(){
+    const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,0,0);
+    const cumuls=am.rows.map(r=>r.cumul);
+    document.getElementById('g1_roi').innerHTML=svgReliefROI(cumuls,am.pb||0);
+  })();
 
   // Stocke les données pour la page de garde
   const eco10=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
@@ -2354,11 +2348,11 @@ function calcT1(){
   } else {
     ecoAutoAn=ecoAn; ecoBatAn=0;
   }
-  renderEnergyFiscalRecap({bilan:'recap1_efy_bilan',eco:'recap1_efy_eco',fiscal:'recap1_efy_fiscal'},{
+  renderEnergyFiscalRecap({bilan:null,eco:'recap1_efy_eco',fiscal:'recap1_efy_fiscal'},{
     prodAn,consoAn:consoAn_t1,directAutoAn,batAutoAn,reinjAn,achatAn,
     ecoAutoAn,ecoBatAn,ecoTotal:ecoAn,
     devis,s,batRepl:batModel>0?BAT_REPL[batModel]*batQty:0,
-    batReplAn:batModel>0?s.bat_repl:0,hasBat:batWh>0
+    batReplAn:batModel>0?s.bat_repl:0,hasBat:batWh>0,sansTotal:true
   });
   lastCalcDetails={tab:1,tabName:'Installation complète',
     client:clientName(),adresse:clientAdresse(),
