@@ -1342,20 +1342,34 @@ function svgReliefROI(cumuls,paybackAn){
    <path d="${aire}" fill="url(#roDw_${uid})" clip-path="url(#roCd_${uid})"/>`:''}
    <line x1="${PL}" y1="${Z}" x2="${W-PR}" y2="${Z}" stroke="${AN}" stroke-width="1.2"/>
    ${n>1?`<path d="${splinePath(pts)}" fill="none" stroke="${OR}" stroke-width="2.8"/>`:''}`;
-  const jalons=[[0,'Investissement',fmt(Math.round(cumuls[0])),TX]];
-  if(paybackAn>0&&paybackAn<=n)jalons.push([paybackAn-1,'Remboursée','An '+paybackAn,OR]);
-  // si n=1, le dernier point est le même que l'investissement : pas de
-  // second jalon redondant au même endroit.
-  if(n>1)jalons.push([n-1,'Gain final',(cumuls[n-1]>=0?'+':'')+fmt(Math.round(cumuls[n-1])),OR]);
-  jalons.forEach(([i,lab,val,col])=>{
+  // Trois positions candidates : investissement (index 0), bascule
+  // (index paybackAn-1, mobile), gain final (index n-1). La bascule peut
+  // coïncider exactement avec l'une des deux extrémités (remboursement dès
+  // l'an 1, ou jamais avant la toute dernière année de l'horizon) : dans ce
+  // cas on fusionne l'information dans le jalon fixe au lieu de dessiner un
+  // second cercle au même endroit — l'année de remboursement reste lisible
+  // en sous-ligne plutôt que d'être perdue. Les deux collisions (avec le
+  // premier jalon et avec le dernier) partagent donc le même traitement.
+  const idxInv=0,idxFin=n>1?n-1:-1;
+  const idxPay=(paybackAn>0&&paybackAn<=n)?paybackAn-1:-1;
+  const sousBascule=idxPay>=0?`Remboursée en l'an ${paybackAn}`:null;
+  const jalons=[{i:idxInv,lab:'Investissement',val:fmt(Math.round(cumuls[idxInv])),col:TX,
+    sous:idxPay===idxInv?sousBascule:null}];
+  if(idxPay>=0&&idxPay!==idxInv&&idxPay!==idxFin)
+    jalons.push({i:idxPay,lab:'Remboursée',val:'An '+paybackAn,col:OR,sous:null});
+  if(idxFin>=0)
+    jalons.push({i:idxFin,lab:'Gain final',val:(cumuls[idxFin]>=0?'+':'')+fmt(Math.round(cumuls[idxFin])),col:OR,
+      sous:idxPay===idxFin?sousBascule:null});
+  jalons.forEach(({i,lab,val,col,sous})=>{
     const px=X(i),py=Y(cumuls[i]);
     // le premier jalon est en bas de courbe : son libellé passe dessous,
     // sinon il chevauche le tracé
-    const dessous=(i===0),ty=dessous?py+20:py-24;
-    const anc=i===n-1?'end':(i===0?'start':'middle');
+    const dessous=(i===idxInv),ty=dessous?py+20:py-24;
+    const anc=i===idxFin?'end':(i===idxInv?'start':'middle');
     s+=`<circle cx="${px}" cy="${py}" r="5" fill="#fff" stroke="${OR}" stroke-width="2.6"/>`+
        `<text x="${px}" y="${ty}" text-anchor="${anc}" font-size="8.5" letter-spacing=".13em" fill="${TX}">${lab.toUpperCase()}</text>`+
-       `<text x="${px}" y="${ty+17}" text-anchor="${anc}" font-size="17" font-weight="700" fill="${col}">${val}</text>`;
+       `<text x="${px}" y="${ty+17}" text-anchor="${anc}" font-size="17" font-weight="700" fill="${col}">${val}</text>`+
+       (sous?`<text x="${px}" y="${dessous?ty+34:ty-13}" text-anchor="${anc}" font-size="9.5" fill="${TX}">${sous}</text>`:'');
   });
   s+=`<text x="${PL}" y="${H-10}" font-size="9" fill="${TX}">An 1</text>`+
      `<text x="${W-PR}" y="${H-10}" text-anchor="end" font-size="9" fill="${TX}">An ${n}</text></svg>`;

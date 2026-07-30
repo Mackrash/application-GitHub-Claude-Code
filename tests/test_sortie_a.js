@@ -178,5 +178,35 @@ eq('libellé investissement sous son point', labelInvest && premierY ? +labelInv
 const dernierY = roi.match(/<circle cx="666" cy="([\d.]+)" r="5"/);
 eq('point final au-dessus de la ligne de zéro (gain positif)', dernierY ? +dernierY[1] < Z : false, true);
 
+// bascule qui coïncide avec une extrémité : les deux jalons fixes
+// (investissement, gain final) ne doivent jamais partager leurs coordonnées
+// avec le jalon mobile de bascule — l'info de remboursement doit être
+// fusionnée dans le jalon existant, pas perdue.
+const coordsUniques = (svg) => {
+  const cercles = [...svg.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="5"/g)]
+    .map(m => `${m[1]},${m[2]}`);
+  return new Set(cercles).size === cercles.length;
+};
+
+console.log('svgReliefROI — bascule dès la première année (paybackAn = 1)');
+const roiAn1 = R.svgReliefROI(cum, 1);
+eq('aucune paire de jalons superposés', coordsUniques(roiAn1), true);
+eq('deux cercles seulement (fusion avec investissement)',
+  (roiAn1.match(/<circle[^>]*stroke-width="2\.6"/g) || []).length, 2);
+eq('année de remboursement toujours lisible', /Remboursée en l'an 1/.test(roiAn1), true);
+eq('pas de jalon « Remboursée » séparé', /<text[^>]*>REMBOURSÉE</.test(roiAn1), false);
+
+console.log('svgReliefROI — bascule à la toute dernière année (paybackAn = n)');
+const roiAnN = R.svgReliefROI(cum, cum.length);
+eq('aucune paire de jalons superposés', coordsUniques(roiAnN), true);
+eq('deux cercles seulement (fusion avec gain final)',
+  (roiAnN.match(/<circle[^>]*stroke-width="2\.6"/g) || []).length, 2);
+eq('année de remboursement toujours lisible', new RegExp(`Remboursée en l'an ${cum.length}`).test(roiAnN), true);
+eq('pas de jalon « Remboursée » séparé', /<text[^>]*>REMBOURSÉE</.test(roiAnN), false);
+
+// cas nominal (bascule au milieu, paybackAn=8 déjà testé plus haut) : pas de
+// fusion, trois cercles distincts, aucune coordonnée partagée
+eq('cas nominal : aucune paire de jalons superposés (non-régression)', coordsUniques(roi), true);
+
 console.log(ok ? '\nTEST PASS ✅' : '\nTEST FAIL ❌');
 process.exit(ok ? 0 : 1);
