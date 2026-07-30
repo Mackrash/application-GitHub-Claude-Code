@@ -417,9 +417,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   table.bc tr.rec td{color:#008040!important;background:#F0FBF6!important}
   /* Pagination tableau : autoriser les sauts de ligne */
   table.at tbody tr,table.bc tbody tr{break-inside:avoid}
-  /* Tableau d'amortissement T1/T2/T3 limité à 20 ans (3 lignes d'en-tête + 20 années = 23) */
-  table.at tbody tr:nth-child(n+24){display:none!important}
-  table.at tbody tr:nth-child(23) td:last-child::after{content:" ⚠ Limité à 20 ans";font-size:7pt;color:#888;font-style:italic}
+  /* Le tableau suit l'horizon paramétré (dpv) : plus de troncature à 20 ans,
+     qui contredisait les « gains cumulés sur 25 ans » annoncés ailleurs. */
   /* Tableau d'amortissement T4 (renderProAmort) — pas d'en-tête tbody, limite à 15 ans */
   #amort4_combined table.at tbody tr:nth-child(n+16){display:none!important}
   #amort4_combined table.at tbody tr:nth-child(15) td:last-child::after{content:" ⚠ Limité à 15 ans";font-size:7pt;color:#888;font-style:italic}
@@ -984,7 +983,7 @@ function renderFactureTable(containerId,cols){
   row(`Prime fixe (${fmtD(s.kva,1)} kVA × ${fmt(s.pf)})`,d=>`${fmt(d.prime)}`);
   row(`Redevance comptage`,()=>`${fmt(s.rc)}`);
   row(`Taxe communale (${fmtD(s.tc,0)} %)`,d=>`${fmt(d.taxeComm)}`);
-  row(`Énergie injectée${cols.some(c=>c.rev>0)?'':' (non rémunérée)'}`,d=>`${fmt(d.reinjKwh)} kWh${d.rev>0?` — −${fmt(d.injCredit)}`:''}`);
+  row(libelleSurplus(cols.some(c=>c.rev>0)?1:0).titre,d=>`${fmt(d.reinjKwh)} kWh${d.rev>0?` — −${fmt(d.injCredit)}`:''}`);
   row(`Total HT`,d=>`${fmt(d.totalHT)}`,'rec');
   row(`TGC (${fmtD(s.tgc,0)} %)`,d=>`${fmt(d.tgc)}`);
   row(`<strong>Total TTC à régler</strong>`,d=>`<strong>${fmt(d.totalTTC)} XPF</strong>`,'rec');
@@ -2456,7 +2455,7 @@ function calcT1(){
   const ecoAn=fSansAn-fAvecAn;
   const ecoMois=fSansM.map((f,i)=>f-fAvecM[i]);
 
-  const {rows,pb,pbMin,pbMax}=renderCombinedAmort('tb1',devis,ecoAn,s.hau,s.deg,20,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0,taux);
+  const {rows,pb,pbMin,pbMax}=renderCombinedAmort('tb1',devis,ecoAn,s.hau,s.deg,s.dpv,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0,taux);
 
   plotAvantApres('g1_mois',fSansM,fAvecM,'Sans PV','Avec PV');
   // ROI en relief — SVG print-only, remplace le tracé Plotly sombre
@@ -2471,7 +2470,9 @@ function calcT1(){
   const eco15=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   // Gain cumulé sur l'horizon paramétré (s.dpv, réglable dans l'onglet Paramètres) —
   // ne pas figer à 20 ans, sinon incohérent avec le tableau d'amortissement ci-dessus.
-  const ecoDuree=(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,0,0);return am.rows[am.rows.length-1].cumul;})();
+  // Le remplacement de la batterie doit être déduit, sinon le récapitulatif
+  // annonce un gain supérieur à celui du tableau d'amortissement.
+  const ecoDuree=(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);return am.rows[am.rows.length-1].cumul;})();
   lastStudyData={tab:1,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10,eco15,
     prodAn,consoAn:consoM.reduce((a,b)=>a+b,0),
     directAutoAn,batAutoAn,reinjAn,achatAn,
