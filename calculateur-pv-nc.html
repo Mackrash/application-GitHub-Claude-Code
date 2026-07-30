@@ -1529,9 +1529,7 @@ function preparePrint(noPrint=false){
     // on bascule automatiquement sur l'écart mensuel quand le profil de
     // consommation est saisonnier (piscine, clim, résidence secondaire),
     // cas pour lequel douze pastilles identiques n'auraient rien à montrer.
-    const moyFS=(L.fSansM||[]).reduce((a,b)=>a+b,0)/12;
-    const ecartType=moyFS>0?Math.sqrt((L.fSansM||[]).reduce((a,b)=>a+(b-moyFS)**2,0)/12):0;
-    const formeEcart=moyFS>0&&(ecartType/moyFS)>0.15;
+    const formeEcart=document.body.classList.contains('psoff-fmois');
     const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM):svgDouzeMois(L.fSansAn,L.fAvecAn);
     ess.innerHTML=`
     <style>
@@ -1604,7 +1602,7 @@ function preparePrint(noPrint=false){
         <div>${svgMaestro({prodAn:L.prodAn,directAutoAn:L.directAutoAn,batAutoAn:L.batAutoAn,
           surplusAn:L.reinjAn,consoAn:L.consoAn,achatAn:L.achatAn,
           batLabel:L.batLabel||'batterie',tarifRevente:L.rev||0})}</div>
-        <div style="border-top:1px solid #C9CBCD;padding-top:4mm">
+        <div style="border-top:1px solid #D8DADC;padding-top:4mm">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>Votre besoin annuel</span><b style="color:#333;font-size:13px">${fmt(Math.round(L.consoAn))} kWh</b></div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>Couvert par le solaire</span><b style="color:#F07020;font-size:13px">${couvert} %</b></div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C"><span>Acheté au réseau</span><b style="color:#F07020;font-size:13px">${fmt(Math.round(L.achatAn))} kWh</b></div>
