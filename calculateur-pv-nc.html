@@ -1125,7 +1125,7 @@ function pmCount(){
   const on=id=>PRINT_CFG[pmSortie].some(x=>x.id===id)&&!off.includes(id);
   let p=pmSortie==='A'?2:3;
   if(pmSortie==='A')p+=2; // #essentiel-page + #last-page s'impriment toujours en sortie A (avec ou sans tableau tranches)
-  if(on('gfact')||on('groi'))p+=1;
+  if(pmSortie==='A'||on('gfact')||on('groi'))p+=1; // la page financière (impact + ROI) s'imprime toujours en sortie A, gfact ayant disparu de PRINT_CFG.A
   ['amort','factures','bilan','recapfin'].forEach(id=>{if(on(id))p+=1});
   document.getElementById('pm-pages').textContent='📄 ~'+p+' page'+(p>1?'s':'');
 }
@@ -1133,10 +1133,16 @@ function pmClose(){document.getElementById('print-modal').style.display='none'}
 function pmPrint(){
   const off=pmOff();
   const b=document.body;
-  b.className=b.className.split(' ').filter(c=>!c.startsWith('print-')&&!c.startsWith('psoff-')).join(' '); // purge défensive (si afterprint n'a pas nettoyé)
+  b.className=b.className.split(' ').filter(c=>!c.startsWith('print-')&&!c.startsWith('psoff-')&&!c.startsWith('pson-')).join(' '); // purge défensive (si afterprint n'a pas nettoyé)
   b.classList.add('print-'+pmSortie);
   off.forEach(id=>b.classList.add('psoff-'+id));
-  const clean=()=>{b.className=b.className.split(' ').filter(c=>!c.startsWith('print-')&&!c.startsWith('psoff-')).join(' ');window.removeEventListener('afterprint',clean)};
+  // Marqueur positif : posé uniquement si la case est explicitement cochée.
+  // Contrairement aux psoff- (soustractif, absence sans risque), fmois est
+  // une bascule binaire entre deux rendus exclusifs — l'absence de classe ne
+  // doit jamais pouvoir signifier « écart mensuel ».
+  const fmoisEl=document.querySelector('#pm-list input[data-psec-id="fmois"]');
+  if(fmoisEl&&fmoisEl.checked)b.classList.add('pson-fmois');
+  const clean=()=>{b.className=b.className.split(' ').filter(c=>!c.startsWith('print-')&&!c.startsWith('psoff-')&&!c.startsWith('pson-')).join(' ');window.removeEventListener('afterprint',clean)};
   window.addEventListener('afterprint',clean);
   pmClose();
   preparePrint();
@@ -1535,11 +1541,12 @@ function preparePrint(noPrint=false){
     // l'écart mensuel, pertinent pour un profil de consommation saisonnier
     // (piscine, clim, résidence secondaire) où douze valeurs quasi
     // identiques ne montreraient rien.
-    // La case cochée NE POSE PAS la classe psoff-fmois (psoff- = case
-    // décochée, logique inversée) : coché ⇒ classe absente ⇒ écart mensuel.
-    // Décoché (par défaut, aucune case cochée à l'ouverture) ⇒ classe
-    // présente ⇒ douze mois.
-    const formeEcart=!document.body.classList.contains('psoff-fmois');
+    // Marqueur positif : pmPrint() pose pson-fmois uniquement quand la case
+    // est explicitement cochée. La convention psoff- (soustractive) ne
+    // convient pas ici — une bascule binaire entre deux rendus exclusifs a
+    // besoin d'un « oui » explicite, pas d'une absence ambiguë entre
+    // « décoché » et « impression sans passer par le panneau ».
+    const formeEcart=document.body.classList.contains('pson-fmois');
     const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM):svgDouzeMois(L.fSansAn,L.fAvecAn);
     ess.innerHTML=`
     <style>

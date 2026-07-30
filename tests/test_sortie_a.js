@@ -121,6 +121,30 @@ eq('pas de turquoise hors charte', /#00D4A0/i.test(ecart), false);
 eq('accents présents', /photovoltaïque/.test(ecart), true);
 eq('douze étiquettes d\'écart', (ecart.match(/−\d/g) || []).length >= 12, true);
 
+console.log('sélection de forme du graphique de facture (pson-fmois)');
+// Défaut relevé en revue : psoff-fmois n'existe pas (fmois n'est jamais
+// « décoché par convention subtractive ») — pmPrint() pose un marqueur
+// positif pson-fmois uniquement quand la case est explicitement cochée.
+// Ce test exerce la ligne réelle de sélection (extraite verbatim du HTML),
+// pas seulement svgDouzeMois/svgEcartMensuel prises isolément : c'est
+// justement l'absence de ce test qui a laissé passer la bascule inversée.
+const selStart = "const formeEcart=document.body.classList.contains('pson-fmois');";
+const selEnd = 'svgDouzeMois(L.fSansAn,L.fAvecAn);';
+const selIdxStart = html.indexOf(selStart);
+if (selIdxStart < 0) throw new Error('segment introuvable : ' + selStart);
+const selIdxEnd = html.indexOf(selEnd, selIdxStart) + selEnd.length;
+const selSrc = html.slice(selIdxStart, selIdxEnd);
+const selectionne = (marqueurPose) => {
+  const document = { body: { classList: { contains: (c) => c === 'pson-fmois' && marqueurPose } } };
+  const svgEcartMensuel = () => 'ECART_MENSUEL';
+  const svgDouzeMois = () => 'DOUZE_PASTILLES';
+  const L = { fSansM: 1, fAvecM: 1, fSansAn: 1, fAvecAn: 1 };
+  return new Function('document', 'svgEcartMensuel', 'svgDouzeMois', 'L',
+    selSrc + '\nreturn svgFacture;')(document, svgEcartMensuel, svgDouzeMois, L);
+};
+eq('aucun marqueur (panneau jamais ouvert, ou case décochée) → douze pastilles', selectionne(false), 'DOUZE_PASTILLES');
+eq('pson-fmois posé (case cochée) → écart mensuel', selectionne(true), 'ECART_MENSUEL');
+
 console.log('svgReliefROI');
 // Le brief fournissait `new Function('fmt', ...)` sans injecter uidSrc :
 // svgReliefROI appelle svgUid(), qui aurait été indéfini dans ce scope
