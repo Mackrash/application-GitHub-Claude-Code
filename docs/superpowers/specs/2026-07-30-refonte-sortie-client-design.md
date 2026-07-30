@@ -131,6 +131,50 @@ Le récap n'est donc pas ancré à la page 2 : c'est le dernier bloc du flux d'i
 
 ---
 
+## 3 bis. Les graphiques
+
+Onze pistes ont été maquettées (`_maquettes/graphes.html`, `_maquettes/factures.html`). Deux retenues.
+
+### Facture — « vous n'en payez plus que trois »
+
+Douze pastilles, une par mois. Le nombre de pastilles pleines vaut `12 × factureAprès / factureAvant`,
+arrondi pour les accolades, avec la dernière partiellement remplie au prorata.
+
+> Sur vos douze mois d'électricité : **3 mois** que vous payez encore, **9 mois** offerts par le soleil.
+
+Pourquoi cette forme plutôt qu'une courbe : sur un profil de consommation régulier, les douze valeurs
+mensuelles sont quasi identiques. Un graphe temporel n'a alors **rien à raconter** — six variantes de
+courbes ont été essayées et rejetées pour cette raison. Cette représentation traduit un ratio en durée,
+une grandeur que le client manipule tous les jours.
+
+**Formulation obligatoire** : « l'équivalent de trois mois ». Le client paiera bien un peu chaque mois ;
+écrire « vous ne payez que 3 mois » serait faux et attaquable.
+
+Cas limites à couvrir : facture après = 0 → 0 pastille pleine ; économie faible → le message reste
+honnête même s'il devient peu vendeur ; ne jamais forcer l'arrondi à la hausse.
+
+### ROI — « le relief »
+
+La courbe cumulée devient un versant : creusé sous le zéro (gris), rempli au-dessus (orange).
+**Trois jalons seulement** — l'investissement de départ, l'année de bascule, le gain final.
+Aucune grille, aucun axe chiffré. Le libellé du premier jalon se place **sous** le point, sinon il
+chevauche la courbe.
+
+### Bilan mensuel — optionnel
+
+La piste « flux mensuel » (trois nappes empilées, `E1`) reste disponible pour remplacer le tableau
+à treize colonnes, notamment pour les profils saisonniers marqués (piscine, climatisation).
+Non retenue pour l'instant.
+
+### Règles générales
+
+- **Aucun histogramme, aucun donut**, quelle que soit la donnée.
+- SVG en `width="100%"` avec `viewBox` : une largeur fixe déborde de la colonne à l'impression.
+- Palette validée uniquement — pas de rouge ni de turquoise, contrairement aux graphes Plotly actuels
+  (`#FF4B6E`, `#00D4A0`), tous deux hors charte.
+
+---
+
 ## 4. Contraintes de rendu
 
 - **Aucun gris clair pour le texte.** Les textes secondaires sont en anthracite atténué `#55585C`. Les filets passent de `#EDEEEF` à `#D8DADC`. Le gris clair disparaît à l'impression.
