@@ -52,3 +52,8 @@ _maquette*.html
 
 # maquettes de travail (design)
 _maquettes/
+
+# Outillage local (la vérité est sur git)
+node_modules/
+_rendu*/
+.superpowers/

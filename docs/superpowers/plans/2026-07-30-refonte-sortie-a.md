@@ -692,7 +692,7 @@ Dans `preparePrint()`, insérer **après** la fermeture du template de `cover.in
     const eco=L.fSansAn-L.fAvecAn;
     const baisse=L.fSansAn>0?Math.round((1-L.fAvecAn/L.fSansAn)*100):0;
     const largeurApres=L.fSansAn>0?Math.max(14,Math.round(L.fAvecAn/L.fSansAn*100)):0;
-    const ratio=L.devis>0?(L.eco20/L.devis).toFixed(1).replace('.',','):'—';
+    const ratio=L.devis>0?(L.ecoDuree/L.devis).toFixed(1).replace('.',','):'—';
     const couvert=L.consoAn>0?Math.round((L.consoAn-L.achatAn)/L.consoAn*100):0;
     const formeEcart=document.body.classList.contains('psoff-fmois');
     const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM):svgDouzeMois(L.fSansAn,L.fAvecAn);
@@ -740,7 +740,7 @@ Dans `preparePrint()`, insérer **après** la fermeture du template de `cover.in
           <div><div class="es-k">Installation remboursée</div>
             <div class="es-v">${L.pb?'An '+L.pb:'> '+getS().dpv+' ans'} <small>${L.pb?'puis '+(getS().dpv-L.pb)+' ans de gain net':''}</small></div></div>
           <div><div class="es-k">Gains cumulés · ${getS().dpv} ans</div>
-            <div class="es-v">${fmt(Math.round(L.eco20||0))} <small>XPF · ${ratio} × l'investissement</small></div></div>
+            <div class="es-v">${fmt(Math.round(L.ecoDuree||0))} <small>XPF · ${ratio} × l'investissement</small></div></div>
           <div><div class="es-k">Autonomie énergétique</div>
             <div class="es-v">${couvert} % <small>${fmt(Math.round(L.achatAn))} kWh acheté au réseau</small></div></div>
         </div>
@@ -785,10 +785,10 @@ Dans `calcT1()`, repérer l'affectation de `lastStudyData` (chercher `lastStudyD
     nbP,panWc,
 ```
 
-Si `eco20` n'existe pas dans `lastStudyData`, l'ajouter à partir du tableau d'amortissement déjà calculé dans `calcT1` (chercher `eco15`) :
+Ajouter également le gain cumulé sur l'horizon paramétré. **Ne pas coder 20 en dur** : `s.dpv` est réglable dans l'onglet Paramètres, et un horizon figé contredirait le tableau d'amortissement qui, lui, suit `dpv`.
 
 ```javascript
-    eco20:(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,20,0,s.ded,0,0);return am.rows[am.rows.length-1].cumul;})(),
+    ecoDuree:(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,0,0);return am.rows[am.rows.length-1].cumul;})(),
 ```
 
 - [ ] **Step 5 : Vérifier syntaxe, rendre et regarder le résultat**
@@ -851,18 +851,25 @@ Note sur `fmois` : la case **cochée** sélectionne la forme « écart mois par 
 Dans `pmSync()`, remplacer le corps par :
 
 ```javascript
-function pmSync(){
+function pmSync(el){
   // « ROI par tranche fiscale » et « Tableau d'amortissement » affichent tous
   // deux la déduction et le payback par tranche : cocher l'un décoche l'autre.
-  const dernier=event&&event.target?event.target.dataset.psecId:null;
-  if(dernier==='amort'&&event.target.checked){
-    const t=document.querySelector('#pm-list input[data-psec-id="tranches"]');if(t)t.checked=false;
-  }
-  if(dernier==='tranches'&&event.target.checked){
-    const a=document.querySelector('#pm-list input[data-psec-id="amort"]');if(a)a.checked=false;
+  if(el&&el.checked){
+    const paire={amort:'tranches',tranches:'amort'}[el.dataset.psecId];
+    if(paire){
+      const autre=document.querySelector(`#pm-list input[data-psec-id="${paire}"]`);
+      if(autre)autre.checked=false;
+    }
   }
   pmMarkPreset('');pmCount();
 }
+```
+
+Et dans `openPrintModal()`, passer la case en argument — `pmSync()` reposait
+sinon sur `window.event`, déprécié et absent en mode strict :
+
+```javascript
+    return `<label class="pm-chk"><input type="checkbox" data-psec-id="${s.id}" onchange="pmSync(this)"> ${s.label}</label>`;
 ```
 
 - [ ] **Step 3 : Supprimer les blocs devenus redondants**
@@ -912,15 +919,15 @@ Retirer le `style="height:270px"` du conteneur `#g1_roi` dans le HTML (ligne ~57
 
 **Attention** : `g1_roi` n'est utilisé que par l'onglet 1. Les conteneurs `g2_roi`, `g3_roi`, `g4_roi` des autres onglets ne doivent pas être touchés.
 
-- [ ] **Step 6 : Aligner l'horizon sur 20 ans**
+- [ ] **Step 6 : Aligner l'horizon des gains cumulés**
 
-Dans la dernière page (`#last-page`), remplacer la carte « Économies cumulées sur 15 ans » par 20 ans, pour ne pas contredire la page « L'essentiel » :
+Dans la dernière page (`#last-page`), la carte annonce « Économies cumulées sur 15 ans » alors que la page « L'essentiel » affiche l'horizon paramétré. Deux horizons différents dans le même document est une contradiction visible par le client.
 
 ```javascript
-        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(eco20||eco15))} F</div><div class="lp-kpi-l">Gains cumulés sur 20 ans</div></div>`;
+        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoDuree||eco15))} F</div><div class="lp-kpi-l">Gains cumulés sur ${getS().dpv} ans</div></div>`;
 ```
 
-et déstructurer `eco20` depuis `lastStudyData` en tête de `preparePrint()`.
+et déstructurer `ecoDuree` depuis `lastStudyData` en tête de `preparePrint()`.
 
 - [ ] **Step 7 : Vérifier**
 
@@ -948,7 +955,7 @@ Quatre blocs imprimés d'office supprimés (bilan énergétique annuel, cartes
 KPI, récapitulatif installation, carte payback) : tous redits sur la page
 « L'essentiel ». La pile quitte les cases à cocher, remplacée par la
 Maestro. « ROI par tranche » et « Tableau d'amortissement » deviennent
-exclusifs. Horizon aligné sur 20 ans partout."
+exclusifs. Horizon des gains cumulés aligné sur le paramètre dpv partout."
 ```
 
 ---
@@ -985,7 +992,7 @@ Dans `#last-page`, `recapCards` variante particulier (ligne ~1283), l'ordre doit
 ```javascript
         <div class="lp-kpi"><div class="lp-kpi-v">${fmt(devis)} F</div><div class="lp-kpi-l">Investissement TTC</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>
-        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(eco20||eco15))} F</div><div class="lp-kpi-l">Gains cumulés sur 20 ans</div></div>`;
+        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoDuree||eco15))} F</div><div class="lp-kpi-l">Gains cumulés sur ${getS().dpv} ans</div></div>`;
 ```
 
 - [ ] **Step 3 : Vérifier**
@@ -1097,7 +1104,7 @@ Dans `CLAUDE.md`, section « État du projet », ajouter sous les corrections ap
 - « Réinjection réseau » → « Réserve de production » (revente à 0) ou « Énergie revendue » (tarif > 0)
 - Facture : douze pastilles par défaut, écart mensuel en alternative cochable
 - ROI en relief, trois jalons
-- Quatre blocs redondants supprimés, horizon aligné sur 20 ans
+- Quatre blocs redondants supprimés, horizon des gains aligné sur le paramètre `dpv`
 - Spec : `docs/superpowers/specs/2026-07-30-refonte-sortie-client-design.md`
 ```
 
