@@ -218,7 +218,6 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 #cover-page{display:none}
 #last-page{display:none}
 #essentiel-page{display:none}
-#essentiel-fact{display:none}
 /* Marges : 1.5cm côtés, 1.8cm haut, 2.2cm bas (pied de page) */
 @page{size:A4 portrait;margin:12mm 9mm 14mm 9mm}
 @media print{
@@ -495,8 +494,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
   #last-page{display:block!important;break-before:page;margin:0;padding:0}
   #essentiel-page{display:block!important;break-before:page;margin:0;padding:0}
-  #essentiel-fact{display:block!important;break-before:page;margin:0}
   body.print-B #essentiel-fact,body.print-C #essentiel-fact{display:none!important}
+  /* Le bloc « Impact financier » ouvre sa propre page : son bandeau coiffe
+     la facture puis le retour sur investissement. */
+  body.print-A .ps-financial{break-before:page!important}
   /* Pas de break-after ici : #last-page force déjà son propre saut. Avec les deux,
      un #r1 vidé de ses options laissait une feuille entièrement blanche entre eux. */
   body.print-B #essentiel-page,body.print-C #essentiel-page{display:none!important}
@@ -542,7 +543,6 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 <div id="cover-page" style="display:none;page-break-after:always"></div>
 <div id="essentiel-page" style="display:none"></div>
-<div id="essentiel-fact" style="display:none"></div>
 
 <div class="study-id no-print" style="display:flex;gap:10px 18px;flex-wrap:wrap;align-items:flex-end;background:transparent;padding:10px 24px;margin-bottom:4px">
   <div class="fg" style="flex:1;min-width:140px"><label>Nom client</label><input type="text" id="hdr_nom" value="" placeholder="Ex: DUPONT"></div>
@@ -593,6 +593,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   <button class="btn-calc" onclick="calcT1()">⚡ CALCULER</button>
   <div class="results" id="r1">
     <div class="ps ps-financial">
+      <div id="essentiel-fact"></div>
       <div data-psec="gfact"><div id="recap1_efy_eco"></div>
       <div id="g1_mois" style="height:310px;margin-top:12px"></div></div>
       <div data-psec="groi"><div class="st" style="margin-top:14px">Retour sur investissement — <span class="roi-dur">20</span> ans</div>
@@ -1647,14 +1648,8 @@ function preparePrint(noPrint=false){
       #essentiel-page .es-etape{display:flex;align-items:baseline;gap:4mm}
       #essentiel-page .es-etape b{font-size:20px;color:#F07020;width:7mm}
       #essentiel-page .es-sep{height:1px;background:#D8DADC;margin:3mm 0}
-      #essentiel-fact{padding:1.4cm 1.5cm 1cm}
-      #essentiel-fact .ef-h{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;
-        color:#333;margin:0 0 2mm;display:flex;align-items:center;gap:3mm}
-      #essentiel-fact .ef-h::after{content:"";flex:1;height:1px;background:#D8DADC}
+      #essentiel-fact{margin-bottom:8mm}
       #essentiel-fact .ef-l{font-size:10.5px;color:#55585C;line-height:1.6;margin:0 0 6mm;max-width:15cm}
-      #essentiel-fact .ef-t{color:#F07020;font-family:'SingaporeSling',sans-serif;font-size:10pt;
-        font-weight:700;text-transform:uppercase;letter-spacing:1pt;border-left:4px solid #F07020;
-        padding-left:10pt;margin:0 0 4mm}
       #essentiel-fact svg{width:100%;height:auto;display:block}
     </style>
     <div class="es">
@@ -1717,11 +1712,9 @@ function preparePrint(noPrint=false){
     `;
     const ef=document.getElementById('essentiel-fact');
     if(ef)ef.innerHTML=`
-      <div class="ef-h">Votre facture d'électricité</div>
       <p class="ef-l">${formeEcart
         ?"Comparaison mois par mois de votre facture actuelle et de celle que vous paierez avec votre installation. L'écart entre les deux courbes est votre économie."
         :"Chaque pastille est un mois d'électricité. Les pastilles pleines sont ce qu'il vous reste à payer sur l'année ; les autres, le soleil les prend à sa charge."}</p>
-      <div class="ef-t">${formeEcart?"L'écart mois par mois":"Votre facture sur l'année"}</div>
       ${svgFacture}`;
   }else{ess.innerHTML='';const ef=document.getElementById('essentiel-fact');if(ef)ef.innerHTML='';}
 
