@@ -1749,7 +1749,7 @@ function preparePrint(noPrint=false){
         <div class="lp-fiche-r">
           <div><span>Stockage</span><b>${batModel>0?fmtD(batModel*batQty/1000)+' kWh':'—'}</b>
                ${batModel>0?'<i>OMEGA '+(BLBL[batModel]||'batterie')+'</i>':'<i>sans stockage</i>'}</div>
-          <div><span>Production estimée</span><b>${L2.prodAn?fmt(Math.round(L2.prodAn))+' kWh/an':'—'}</b></div>
+          <div><span>${L2.tab===3?'Injection constatée':'Production estimée'}</span><b>${L2.prodAn?fmt(Math.round(L2.prodAn))+' kWh/an':'—'}</b></div>
         </div>
       </div>
       <div class="lp-invest">
@@ -1759,7 +1759,7 @@ function preparePrint(noPrint=false){
       <div class="lp-retours">
         <div><span>Économie annuelle</span><b class="or">${fmt(Math.round(ecoAn))} XPF</b></div>
         <div><span>Installation remboursée</span><b>${pb?'An '+pb:'> '+s.dpv+' ans'}</b></div>
-        <div><span>Gains cumulés sur ${s.dpv} ans</span><b>${fmt(Math.round(ecoDuree||eco15))} XPF</b></div>
+        <div><span>${(ecoDuree||eco15)>=0?'Gains cumulés':'Bilan cumulé'} sur ${s.dpv} ans</span><b>${fmt(Math.round(ecoDuree||eco15))} XPF</b></div>
       </div>`;
 
   // Section ROI : tranche par tranche (particuliers) — sinon rien (pro garde son ROI dans les cartes)
@@ -2767,7 +2767,7 @@ function calcT3(){
     directAutoAn:0,batAutoAn:bDischAn,reinjAn:newInjAn,achatAn:newAchatAn,
     fSansM,fAvecM,rev,
     batLabel:batModel>0?('OMEGA '+(BLBL[batModel]||'batterie')+' '+fmtD(batModel*batQty/1000)+' kWh'):'batterie',
-    nbP,panWc:0,
+    nbP:0,panWc:0,
     ecoDuree:(rows&&rows.length?rows[rows.length-1].cumul:0)};
 
   renderEnergyFiscalRecap({bilan:'recap3_efy_bilan',eco:'recap3_efy_eco',fiscal:'recap3_efy_fiscal'},{
