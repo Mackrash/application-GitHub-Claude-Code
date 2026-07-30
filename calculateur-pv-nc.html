@@ -1538,6 +1538,16 @@ function preparePrint(noPrint=false){
       <div class="cv-bigtitle-t2">${typeEtude}${(kwcStr&&tab!==2&&tab!==3)?' — '+kwcStr:''}</div>
       <div class="cv-bigtitle-t3">Nouvelle-Calédonie</div>
     </div>
+    <!-- RÉCAPITULATIF INSTALLATION — sans montant, décision Tony 30/07/2026 -->
+    <div class="cv-recap">
+      <div class="cv-recap-label">Votre installation</div>
+      <div class="cv-kpi-grid">
+        <div class="cv-kpi-card"><div class="cv-kpi-card-val">${kwcStr||'—'}</div><div class="cv-kpi-card-lbl">Puissance installée</div></div>
+        <div class="cv-kpi-card"><div class="cv-kpi-card-val">${lastStudyData.nbP?lastStudyData.nbP+' × '+lastStudyData.panWc+' Wc':'—'}</div><div class="cv-kpi-card-lbl">Panneaux</div></div>
+        <div class="cv-kpi-card"><div class="cv-kpi-card-val">${batModel>0?fmtD(batModel*batQty/1000)+' kWh':'—'}</div><div class="cv-kpi-card-lbl">${batModel>0?lastStudyData.batLabel||'Stockage':'Sans stockage'}</div></div>
+        <div class="cv-kpi-card"><div class="cv-kpi-card-val">${lastStudyData.prodAn?fmt(Math.round(lastStudyData.prodAn))+' kWh':'—'}</div><div class="cv-kpi-card-lbl">Production estimée / an</div></div>
+      </div>
+    </div>
     <!-- COUCHE LOGO + SLOGAN -->
     <div class="cv-logolayer"><img src="data:image/png;base64,${LOGO_GROS_B64}" alt="Solar Concept" onerror="this.outerHTML='<div class=cv-logolayer-txt>SOLAR CONCEPT</div>'"></div>
 
@@ -1672,7 +1682,7 @@ function preparePrint(noPrint=false){
         <div class="lp-kpi"><div class="lp-kpi-v">${fmt(Math.round(coutNetImpot))} F</div><div class="lp-kpi-l">Prix HT après déduction fiscale (IS ${tIS}% × ${dAmort} ans)</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${pb?'An '+pb:'> '+s.dpv+' ans'}</div><div class="lp-kpi-l">Retour sur investissement</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>`:`
-        <div class="lp-kpi"><div class="lp-kpi-v">${fmt(devis)} F</div><div class="lp-kpi-l">Montant du devis TTC</div></div>
+        <div class="lp-kpi"><div class="lp-kpi-v">${fmt(devis)} F</div><div class="lp-kpi-l">Investissement TTC</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoDuree||eco15))} F</div><div class="lp-kpi-l">Gains cumulés sur ${getS().dpv} ans</div></div>`;
 
