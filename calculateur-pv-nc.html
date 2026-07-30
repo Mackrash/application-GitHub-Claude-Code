@@ -1525,10 +1525,10 @@ function preparePrint(noPrint=false){
     const largeurApres=L.fSansAn>0?Math.max(14,Math.round(L.fAvecAn/L.fSansAn*100)):0;
     const ratio=L.devis>0?(L.ecoDuree/L.devis).toFixed(1).replace('.',','):'—';
     const couvert=L.consoAn>0?Math.round((L.consoAn-L.achatAn)/L.consoAn*100):0;
-    // Pas de case à cocher pour choisir la forme du graphique de facture :
-    // on bascule automatiquement sur l'écart mensuel quand le profil de
-    // consommation est saisonnier (piscine, clim, résidence secondaire),
-    // cas pour lequel douze pastilles identiques n'auraient rien à montrer.
+    // Forme par défaut : douze pastilles (svgDouzeMois). La case du panneau
+    // d'impression (psoff-fmois) bascule vers l'écart mensuel, pertinent
+    // pour un profil de consommation saisonnier (piscine, clim, résidence
+    // secondaire) où douze valeurs quasi identiques ne montreraient rien.
     const formeEcart=document.body.classList.contains('psoff-fmois');
     const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM):svgDouzeMois(L.fSansAn,L.fAvecAn);
     ess.innerHTML=`
