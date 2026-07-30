@@ -37,5 +37,30 @@ eq('revente à 15', libelleSurplus(15).titre, 'Énergie revendue');
 eq('revente à 21', libelleSurplus(21).titre, 'Énergie revendue');
 eq('couleur verte', libelleSurplus(0).couleur, '#35A46B');
 
+console.log('svgMaestro');
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const srcM = grab('function svgMaestro(', '\n}');
+const { svgMaestro } = new Function('fmt',
+  grab('function libelleSurplus(', '\n}') + '\n' + srcM + '\nreturn {svgMaestro};')(fmt);
+const svg = svgMaestro({
+  prodAn: 8692, directAutoAn: 2699, batAutoAn: 1800, surplusAn: 4193,
+  consoAn: 4499, achatAn: 0, batLabel: 'OMEGA Maestro 14,3 kWh', tarifRevente: 0
+});
+eq('svg responsive', /width="100%"/.test(svg), true);
+eq('aucune largeur fixe', /<svg[^>]*width="\d+"/.test(svg), false);
+eq('les trois pourcentages', [/31%/, /21%/, /48%/].every(re => re.test(svg)), true);
+eq('libellé réserve', /Réserve de production/i.test(svg), true);
+eq('aucune réinjection', /éinjection/.test(svg), false);
+eq('aucun gris clair', /#8A8C8F|#9A9CA0|#999|#aaa/i.test(svg), false);
+// bascule du vocabulaire quand la revente est rémunérée
+const svgVendu = svgMaestro({
+  prodAn: 8692, directAutoAn: 2699, batAutoAn: 1800, surplusAn: 4193,
+  consoAn: 4499, achatAn: 0, batLabel: 'OMEGA Maestro 14,3 kWh', tarifRevente: 21
+});
+eq('bascule en revendue', /Énergie revendue/i.test(svgVendu), true);
+// somme des pourcentages = 100 quel que soit l'arrondi
+const pct = [...svg.matchAll(/>(\d+)%</g)].map(m => +m[1]);
+eq('somme des pourcentages = 100', pct.reduce((a, b) => a + b, 0), 100);
+
 console.log(ok ? '\nTEST PASS ✅' : '\nTEST FAIL ❌');
 process.exit(ok ? 0 : 1);

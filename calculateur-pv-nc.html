@@ -1150,6 +1150,63 @@ function libelleSurplus(tarifRevente){
     :{titre:'Réserve de production',sousTitre:'vos panneaux savent produire ces kWh en plus — il faut du stockage ou de la consommation pour les capter',couleur:'#35A46B'};
 }
 
+// ===== SORTIE A — BATTERIE OMEGA MAESTRO-G =====
+// Armoire verticale blanche aux proportions réelles (230 × 490).
+// Les pourcentages seuls vivent dans l'armoire ; libellés et valeurs sont
+// à l'extérieur, reliés au centre géométrique de leur segment.
+// Le SVG porte armoire ET textes : séparer les deux casse l'alignement
+// dès qu'on change l'échelle.
+function svgMaestro(c){
+  const tot=c.directAutoAn+c.batAutoAn+c.surplusAn;
+  if(!(tot>0))return'';
+  // arrondis répartis pour que la somme fasse exactement 100
+  let pJ=Math.round(c.directAutoAn/tot*100),pN=Math.round(c.batAutoAn/tot*100);
+  let pS=100-pJ-pN;
+  const H=394,Y0=110;                       // zone utile de la jauge
+  const hJ=H*c.directAutoAn/tot,hN=H*c.batAutoAn/tot,hS=H*c.surplusAn/tot;
+  const ySur=Y0+2, yNui=ySur+hS+2, yJou=yNui+hN+2;
+  const cSur=ySur+hS/2, cNui=yNui+hN/2, cJou=yJou+hJ/2;
+  const sur=libelleSurplus(c.tarifRevente);
+  const OR='#F07020',AM='#F5A623',AMF='#D98B0A',VE=sur.couleur,VEF='#2E8F5C',TX='#55585C',AN='#333333';
+  const t=(x,y,s,w,f,txt,ls)=>`<text x="${x}" y="${y}" font-size="${s}" font-weight="${w}" fill="${f}"${ls?` letter-spacing="${ls}"`:''}>${txt}</text>`;
+  const seg=(y,h,fill,pct)=>`<rect x="48" y="${y}" width="194" height="${h}" rx="4" fill="${fill}"/>`+
+    (h>34?`<text x="145" y="${y+h/2+13}" text-anchor="middle" font-size="${Math.min(48,h*0.42)}" font-weight="700" fill="#fff">${pct}%</text>`:'');
+  const ligne=(cy,col)=>`<line x1="284" y1="${cy}" x2="336" y2="${cy}" stroke="${col}" stroke-width="2"/>`;
+  const bloc=(cy,col,colVal,titre,valeur,l1,l2)=>
+    ligne(cy,col)+
+    t(352,cy-24,15,700,col===VE?VEF:AN,titre.toUpperCase(),'.09em')+
+    t(352,cy+16,36,700,colVal,valeur)+
+    (l1?t(352,cy+44,13,400,TX,l1):'')+
+    (l2?t(352,cy+64,13,400,TX,l2):'');
+  // le sous-titre de la réserve est long : on le coupe en deux lignes
+  const mots=sur.sousTitre.split(' ');const mi=Math.ceil(mots.length/2);
+  const s1=mots.slice(0,mi).join(' '),s2=mots.slice(mi).join(' ');
+  return `<svg width="100%" viewBox="0 0 790 570" role="img" aria-label="Répartition de votre énergie solaire">
+    <defs>
+      <linearGradient id="mgAlu" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#EDEEEF"/><stop offset=".14" stop-color="#FFFFFF"/>
+        <stop offset=".66" stop-color="#FBFBFC"/><stop offset="1" stop-color="#E4E5E7"/></linearGradient>
+      <linearGradient id="mgFlanc" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#DDDEE0"/><stop offset="1" stop-color="#C2C4C7"/></linearGradient>
+      <linearGradient id="mgEcran" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#26262A"/><stop offset="1" stop-color="#141416"/></linearGradient>
+    </defs>
+    <path d="M260 34 L284 47 L284 507 L260 520 Z" fill="url(#mgFlanc)"/>
+    <rect x="30" y="30" width="230" height="490" rx="13" fill="url(#mgAlu)" stroke="#A8AAAD" stroke-width="1.4"/>
+    <rect x="112" y="52" width="80" height="42" rx="5" fill="url(#mgEcran)"/>
+    <rect x="119" y="63" width="47" height="22" rx="2" fill="#2E6FC4" opacity=".85"/>
+    <circle cx="178" cy="65" r="2.2" fill="#4C4C50"/><circle cx="178" cy="72" r="2.2" fill="#4C4C50"/>
+    <circle cx="178" cy="79" r="2.2" fill="#4C4C50"/><circle cx="178" cy="86" r="2.2" fill="#4C4C50"/>
+    <rect x="44" y="${Y0}" width="202" height="${H}" rx="7" fill="#F8F9FA" stroke="#B4B6B9"/>
+    ${seg(ySur,hS,VE,pS)}${seg(yNui,hN,AM,pN)}${seg(yJou,hJ,OR,pJ)}
+    <rect x="56" y="520" width="34" height="21" rx="5" fill="#2A2A2C"/>
+    <rect x="200" y="520" width="34" height="21" rx="5" fill="#2A2A2C"/>
+    ${bloc(cSur,VE,VE,sur.titre,fmt(Math.round(c.surplusAn))+' kWh',s1,s2)}
+    ${bloc(cNui,AM,AMF,'Stockée pour la nuit',fmt(Math.round(c.batAutoAn))+' kWh','restituée le soir par votre '+c.batLabel,'')}
+    ${bloc(cJou,OR,OR,'Consommée le jour',fmt(Math.round(c.directAutoAn))+' kWh','directement par votre maison, en journée','')}
+  </svg>`;
+}
+
 // ===== IMPRESSION =====
 function preparePrint(noPrint=false){
   const d=new Date();
