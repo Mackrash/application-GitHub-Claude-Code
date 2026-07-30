@@ -1432,7 +1432,7 @@ function preparePrint(noPrint=false){
   const commTel=parts[1]||'';
   const commEmail=parts[2]||'';
   const typeEtude=(tab===2||tab===3)?"Ajout d'un système de stockage d'énergie":(batModel>0?'Système hybride PV + Batterie':'Installation Photovoltaïque');
-  const kwcStr=kwc?kwc+' kWc':'';
+  const kwcStr=kwc?fmtD(kwc)+' kWc':'';
 
   const cover=document.getElementById('cover-page');
   cover.innerHTML=`
@@ -1538,16 +1538,17 @@ function preparePrint(noPrint=false){
       <div class="cv-bigtitle-t2">${typeEtude}${(kwcStr&&tab!==2&&tab!==3)?' — '+kwcStr:''}</div>
       <div class="cv-bigtitle-t3">Nouvelle-Calédonie</div>
     </div>
+    ${(tab!==2&&tab!==3)?`
     <!-- RÉCAPITULATIF INSTALLATION — sans montant, décision Tony 30/07/2026 -->
     <div class="cv-recap">
       <div class="cv-recap-label">Votre installation</div>
       <div class="cv-kpi-grid">
         <div class="cv-kpi-card"><div class="cv-kpi-card-val">${kwcStr||'—'}</div><div class="cv-kpi-card-lbl">Puissance installée</div></div>
         <div class="cv-kpi-card"><div class="cv-kpi-card-val">${lastStudyData.nbP?lastStudyData.nbP+' × '+lastStudyData.panWc+' Wc':'—'}</div><div class="cv-kpi-card-lbl">Panneaux</div></div>
-        <div class="cv-kpi-card"><div class="cv-kpi-card-val">${batModel>0?fmtD(batModel*batQty/1000)+' kWh':'—'}</div><div class="cv-kpi-card-lbl">${batModel>0?lastStudyData.batLabel||'Stockage':'Sans stockage'}</div></div>
+        <div class="cv-kpi-card"><div class="cv-kpi-card-val">${batModel>0?fmtD(batModel*batQty/1000)+' kWh':'—'}</div><div class="cv-kpi-card-lbl">${batModel>0?'OMEGA '+(BLBL[batModel]||'batterie')+(batQty>1?' × '+batQty:''):'Sans stockage'}</div></div>
         <div class="cv-kpi-card"><div class="cv-kpi-card-val">${lastStudyData.prodAn?fmt(Math.round(lastStudyData.prodAn))+' kWh':'—'}</div><div class="cv-kpi-card-lbl">Production estimée / an</div></div>
       </div>
-    </div>
+    </div>`:''}
     <!-- COUCHE LOGO + SLOGAN -->
     <div class="cv-logolayer"><img src="data:image/png;base64,${LOGO_GROS_B64}" alt="Solar Concept" onerror="this.outerHTML='<div class=cv-logolayer-txt>SOLAR CONCEPT</div>'"></div>
 
