@@ -279,7 +279,14 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     padding:5pt 0 4pt;
     border-bottom:1px solid #e8e8e8;
     margin-bottom:6pt;
+    /* Les blocs se tassent les uns sous les autres : décocher une option ne
+       laisse ni trou ni décalage, le bloc suivant remonte simplement. */
+    break-before:auto;
+    break-after:auto;
   }
+  .ps > .st,.ps > div > .st{break-after:avoid!important;page-break-after:avoid!important}
+  .ps table{break-inside:auto}
+  .ps table thead{break-after:avoid!important}
   .ps:last-child{border-bottom:none}
 
   /* PAGE 2 : Recap + Charts groupés — saut de page APRES le groupe */
@@ -345,6 +352,11 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     display:block;
     -webkit-print-color-adjust:exact!important;
     print-color-adjust:exact!important;
+    /* Le bandeau reste solidaire de son contenu : sans cela il se détachait
+       et restait orphelin en bas de page, son tableau renvoyé à la suivante. */
+    break-after:avoid!important;
+    page-break-after:avoid!important;
+    break-inside:avoid!important;
   }
 
   /* ── KPI CARDS ── */
