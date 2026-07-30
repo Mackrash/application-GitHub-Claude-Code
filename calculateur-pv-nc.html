@@ -286,6 +286,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     break-after:auto;
   }
   .ps > .st,.ps > div > .st{break-after:avoid!important;page-break-after:avoid!important}
+  .ps-label + .st{display:none!important}
   /* Choix assumé : on préfère un bas de page blanc à un tableau coupé en deux.
      Un tableau plus haut qu'une feuille se coupera quand même — le navigateur
      n'a pas d'autre issue — mais jamais au milieu d'une ligne. */
@@ -602,7 +603,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div class="tw" id="tb1"></div>
     </div>
     <div class="ps ps-table" data-psec="factures">
-      <span class="ps-label">Estimation de vos factures</span>
+      <span class="ps-label">Estimation de vos factures (moyenne mensuelle)</span>
       <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
       <div class="tw" id="t1_facture"></div>
     </div>
@@ -656,7 +657,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div class="tw" id="tb2"></div>
     </div>
     <div class="ps ps-table" data-psec="factures">
-      <span class="ps-label">Estimation de vos factures</span>
+      <span class="ps-label">Estimation de vos factures (moyenne mensuelle)</span>
       <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
       <div class="tw" id="t2_facture"></div>
     </div>
@@ -709,7 +710,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div class="tw" id="tb3_amort" style="margin-top:14px"></div>
     </div>
     <div class="ps ps-table" data-psec="factures">
-      <span class="ps-label">Estimation de vos factures</span>
+      <span class="ps-label">Estimation de vos factures (moyenne mensuelle)</span>
       <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
       <div class="tw" id="t3_facture"></div>
     </div>
@@ -985,14 +986,17 @@ function renderFactureTable(containerId,cols){
   el.innerHTML=h+`</tbody></table>`;
 }
 // rows : {prod, besoins, autoconso, batInj, surplus, reseau} — chaque = array[12] ou null
-function renderBilanMensuel(containerId,rows){
+function renderBilanMensuel(containerId,rows,tarifRevente){
   const el=document.getElementById(containerId);if(!el)return;
+  // À 0 XPF/kWh les onduleurs brident : ces kWh ne sont pas revendus, ils ne
+  // sont jamais produits. Le libellé suit le tarif, comme partout ailleurs.
+  const lblSurplus=(tarifRevente>0)?'Énergie revendue':'Réserve de production';
   const defs=[
     ['Énergie produite (kWh)','prod'],
     ['Besoins énergétiques (kWh)','besoins'],
     ['Autoconsommation (kWh)','autoconso'],
     ['Production injectée batterie (kWh)','batInj'],
-    ['Surplus revendu (kWh)','surplus'],
+    [lblSurplus+' (kWh)','surplus'],
     ['Consommation sur réseau (kWh)','reseau'],
   ];
   if(rows.dedieCharge)defs.splice(4,0,['↳ rechargé par panneaux dédiés (kWh)','dedieCharge','dedie']);
@@ -1013,7 +1017,7 @@ function renderBilanMensuel(containerId,rows){
   const totals=[
     ['Production estimée','prod'],['Consommation totale','besoins'],
     ['Autoconsommation solaire','autoconso'],['Consommation batteries','batInj'],
-    ['Surplus réinjecté','surplus'],['Consommation réseau','reseau'],
+    [lblSurplus,'surplus'],['Consommation réseau','reseau'],
   ];
   if(rows.dedieCharge)totals.splice(4,0,['↳ rechargé par panneaux dédiés','dedieCharge','dedie']);
   let tot=`<table class="bc" style="margin-top:12px;max-width:460px"><tbody>`;
@@ -2506,7 +2510,7 @@ function calcT1(){
     {label:'Avec PV',achatAn:Math.max(0,consoAn_t1-directAutoAn),reinjAn:Math.max(0,prodAn-directAutoAn),rev},
     ...(batWh>0?[{label:'Avec PV + batterie',achatAn,reinjAn,rev}]:[])
   ]);
-  renderBilanMensuel('t1_bilan',{prod,besoins:consoM,autoconso:directAutoM,batInj:batAutoM,surplus:reinjM,reseau:achatM});
+  renderBilanMensuel('t1_bilan',{prod,besoins:consoM,autoconso:directAutoM,batInj:batAutoM,surplus:reinjM,reseau:achatM},rev);
 
   document.getElementById('r1').style.display='block';
   document.getElementById('r1').scrollIntoView({behavior:'smooth',block:'start'});
@@ -2636,7 +2640,7 @@ function calcT2(){
     {label:'Avec PV',achatAn,reinjAn,rev},
     {label:'Avec PV + batterie',achatAn:newAchatAn,reinjAn:newReinjAn,rev}
   ]);
-  renderBilanMensuel('t2_bilan',{prod:prodM2,besoins:consoM,autoconso:autoconsoDirecteM,batInj:bDischM,surplus:newReinjM,reseau:newAchatM,dedieCharge:kwcDedie>0?bCDedieM:undefined});
+  renderBilanMensuel('t2_bilan',{prod:prodM2,besoins:consoM,autoconso:autoconsoDirecteM,batInj:bDischM,surplus:newReinjM,reseau:newAchatM,dedieCharge:kwcDedie>0?bCDedieM:undefined},rev);
   renderDedieCard('t2_dedie_card',kwcDedie>0?{nb:panBatNb,wc:panBatWc,kwc:kwcDedie,bCDedieAn,part:partDedie}:null);
 
   document.getElementById('r2').style.display='block';
@@ -2773,7 +2777,7 @@ function calcT3(){
     {label:'Avec PV (sans batterie)',achatAn,reinjAn:injAn,rev},
     {label:'Avec PV + batterie',achatAn:newAchatAn,reinjAn:newInjAn,rev}
   ]);
-  renderBilanMensuel('t3_bilan',{prod:null,besoins:null,autoconso:null,batInj:bDischM,surplus:newInjM,reseau:newAchatM});
+  renderBilanMensuel('t3_bilan',{prod:null,besoins:null,autoconso:null,batInj:bDischM,surplus:newInjM,reseau:newAchatM},rev);
 
   document.getElementById('r3').style.display='block';
   document.getElementById('r3').scrollIntoView({behavior:'smooth',block:'start'});
