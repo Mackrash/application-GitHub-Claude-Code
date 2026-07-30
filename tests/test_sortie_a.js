@@ -69,5 +69,45 @@ const dernier = segments[segments.length - 1];
 const basDernierSegment = +dernier[1] + +dernier[2];
 eq('dernier segment ne déborde pas du cadre', basDernierSegment <= basCadre + 0.01, true);
 
+console.log('svgDouzeMois');
+const srcF = grab('function splinePath(', '\n}') + '\n' +
+             grab('function svgDouzeMois(', '\n}') + '\n' +
+             grab('function svgEcartMensuel(', '\n}');
+const fmtT = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const F = new Function('fmt', 'moisPayes',
+  srcF + '\nreturn {splinePath, svgDouzeMois, svgEcartMensuel};')(fmtT, moisPayes);
+const d12 = F.svgDouzeMois(276144, 62788);
+eq('responsive', /width="100%"/.test(d12), true);
+eq('trois mois payés', /3 mois/.test(d12), true);
+eq('neuf mois offerts', /9 mois/.test(d12), true);
+eq('formulation prudente', /équivalent/.test(d12), true);
+eq('jamais « ne payez que »', /ne payez que/.test(d12), false);
+eq('douze pastilles', (d12.match(/<circle[^>]*r="25"/g) || []).length, 12);
+
+// Cohérence pastilles / accolade sur un cas pile à la frontière de
+// l'arrondi (2,5 mois) : entiers = 2 (Math.floor), mais le nombre annoncé
+// doit être dérivé de entiers/part et non recalculé séparément, sinon
+// l'accolade et les pastilles peuvent raconter des histoires différentes.
+console.log('svgDouzeMois — cohérence pastilles/accolade (2,5 mois)');
+const refPayes = moisPayes(2400, 500);
+eq('cas de référence : payes = 2.5', refPayes.payes, 2.5);
+eq('cas de référence : entiers = 2', refPayes.entiers, 2);
+const d25 = F.svgDouzeMois(2400, 500);
+eq('accolade annonce 3 mois (2 entiers + 1 arrondi)', /3 mois/.test(d25), true);
+eq('accolade annonce 9 mois offerts', /9 mois/.test(d25), true);
+eq('toujours douze pastilles', (d25.match(/<circle[^>]*r="25"/g) || []).length, 12);
+eq('exactement deux pastilles pleines (entiers)', (d25.match(/<circle[^>]*fill="#F07020"/g) || []).length, 2);
+eq('exactement une pastille partielle (dégradé)', (d25.match(/fill="url\(#dmPart\)"/g) || []).length, 1);
+
+console.log('svgEcartMensuel');
+const sans = [23012,22180,23012,22600,23012,22900,23012,23012,22800,23012,22950,23100];
+const avec = [5232,5100,5232,5180,5232,5210,5232,5232,5190,5232,5205,5240];
+const ecart = F.svgEcartMensuel(sans, avec);
+eq('responsive', /width="100%"/.test(ecart), true);
+eq('pas de rouge hors charte', /#FF4B6E/i.test(ecart), false);
+eq('pas de turquoise hors charte', /#00D4A0/i.test(ecart), false);
+eq('accents présents', /photovoltaïque/.test(ecart), true);
+eq('douze étiquettes d\'écart', (ecart.match(/−\d/g) || []).length >= 12, true);
+
 console.log(ok ? '\nTEST PASS ✅' : '\nTEST FAIL ❌');
 process.exit(ok ? 0 : 1);
