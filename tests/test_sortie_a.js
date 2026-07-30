@@ -39,9 +39,10 @@ eq('couleur verte', libelleSurplus(0).couleur, '#35A46B');
 
 console.log('svgMaestro');
 const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const uidSrc = grab('let _svgUidSeq=0;', "(_svgUidSeq++);}");
 const srcM = grab('function svgMaestro(', '\n}');
 const { svgMaestro } = new Function('fmt',
-  grab('function libelleSurplus(', '\n}') + '\n' + srcM + '\nreturn {svgMaestro};')(fmt);
+  uidSrc + '\n' + grab('function libelleSurplus(', '\n}') + '\n' + srcM + '\nreturn {svgMaestro};')(fmt);
 const svg = svgMaestro({
   prodAn: 8692, directAutoAn: 2699, batAutoAn: 1800, surplusAn: 4193,
   consoAn: 4499, achatAn: 0, batLabel: 'OMEGA Maestro 14,3 kWh', tarifRevente: 0
@@ -58,6 +59,11 @@ const svgVendu = svgMaestro({
   consoAn: 4499, achatAn: 0, batLabel: 'OMEGA Maestro 14,3 kWh', tarifRevente: 21
 });
 eq('bascule en revendue', /Énergie revendue/i.test(svgVendu), true);
+// id de <linearGradient> namespacés : deux instances sur une même page ne
+// doivent jamais partager le même id (sinon la seconde écrase la première).
+const idsMaestro1 = [...svg.matchAll(/id="(mgAlu_[^"]+)"/g)].map(m => m[1]);
+const idsMaestro2 = [...svgVendu.matchAll(/id="(mgAlu_[^"]+)"/g)].map(m => m[1]);
+eq('ids mgAlu différents entre deux appels', idsMaestro1[0] !== idsMaestro2[0] && !!idsMaestro1[0], true);
 // somme des pourcentages = 100 quel que soit l'arrondi
 const pct = [...svg.matchAll(/>(\d+)%</g)].map(m => +m[1]);
 eq('somme des pourcentages = 100', pct.reduce((a, b) => a + b, 0), 100);
@@ -75,7 +81,7 @@ const srcF = grab('function splinePath(', '\n}') + '\n' +
              grab('function svgEcartMensuel(', '\n}');
 const fmtT = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const F = new Function('fmt', 'moisPayes',
-  srcF + '\nreturn {splinePath, svgDouzeMois, svgEcartMensuel};')(fmtT, moisPayes);
+  uidSrc + '\n' + srcF + '\nreturn {splinePath, svgDouzeMois, svgEcartMensuel};')(fmtT, moisPayes);
 const d12 = F.svgDouzeMois(276144, 62788);
 eq('responsive', /width="100%"/.test(d12), true);
 eq('trois mois payés', /3 mois/.test(d12), true);
@@ -97,7 +103,13 @@ eq('accolade annonce 3 mois (2 entiers + 1 arrondi)', /3 mois/.test(d25), true);
 eq('accolade annonce 9 mois offerts', /9 mois/.test(d25), true);
 eq('toujours douze pastilles', (d25.match(/<circle[^>]*r="25"/g) || []).length, 12);
 eq('exactement deux pastilles pleines (entiers)', (d25.match(/<circle[^>]*fill="#F07020"/g) || []).length, 2);
-eq('exactement une pastille partielle (dégradé)', (d25.match(/fill="url\(#dmPart\)"/g) || []).length, 1);
+eq('exactement une pastille partielle (dégradé)', (d25.match(/fill="url\(#dmPart_[^)]+\)"/g) || []).length, 1);
+// id namespacés : deux appels de svgDouzeMois sur la même page ne doivent
+// jamais produire le même id de <linearGradient> (sinon le second dégradé
+// écrase le premier et la pastille partielle affiche la mauvaise fraction).
+const idDm1 = (d12.match(/id="(dmPart_[^"]+)"/) || [])[1];
+const idDm2 = (d25.match(/id="(dmPart_[^"]+)"/) || [])[1];
+eq('ids dmPart différents entre deux appels', !!idDm1 && !!idDm2 && idDm1 !== idDm2, true);
 
 console.log('svgEcartMensuel');
 const sans = [23012,22180,23012,22600,23012,22900,23012,23012,22800,23012,22950,23100];

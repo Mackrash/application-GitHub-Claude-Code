@@ -1149,6 +1149,14 @@ function libelleSurplus(tarifRevente){
     ?{titre:'Énergie revendue',sousTitre:'injectée sur le réseau et rémunérée',couleur:'#35A46B'}
     :{titre:'Réserve de production',sousTitre:'vos panneaux savent produire ces kWh en plus — il faut du stockage ou de la consommation pour les capter',couleur:'#35A46B'};
 }
+// Les fonctions SVG de cette section retournent une chaîne (pas de div hôte
+// comme plotAvantApres) : chaque appel doit donc forger son propre suffixe
+// pour ses id de <linearGradient>/<clipPath>. Sans ce suffixe, deux appels
+// de la même fonction sur la même page partagent le même id — le second
+// <defs> écrase le premier (ex. la pastille partielle de svgDouzeMois
+// affiche alors la fraction du dernier appel, pas la sienne).
+let _svgUidSeq=0;
+function svgUid(){return 'u'+(_svgUidSeq++);}
 
 // ===== SORTIE A — BATTERIE OMEGA MAESTRO-G =====
 // Armoire verticale blanche aux proportions réelles (230 × 490).
@@ -1182,19 +1190,20 @@ function svgMaestro(c){
   // le sous-titre de la réserve est long : on le coupe en deux lignes
   const mots=sur.sousTitre.split(' ');const mi=Math.ceil(mots.length/2);
   const s1=mots.slice(0,mi).join(' '),s2=mots.slice(mi).join(' ');
+  const uid=svgUid();
   return `<svg width="100%" viewBox="0 0 790 570" role="img" aria-label="Répartition de votre énergie solaire">
     <defs>
-      <linearGradient id="mgAlu" x1="0" y1="0" x2="1" y2="0">
+      <linearGradient id="mgAlu_${uid}" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stop-color="#EDEEEF"/><stop offset=".14" stop-color="#FFFFFF"/>
         <stop offset=".66" stop-color="#FBFBFC"/><stop offset="1" stop-color="#E4E5E7"/></linearGradient>
-      <linearGradient id="mgFlanc" x1="0" y1="0" x2="1" y2="0">
+      <linearGradient id="mgFlanc_${uid}" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stop-color="#DDDEE0"/><stop offset="1" stop-color="#C2C4C7"/></linearGradient>
-      <linearGradient id="mgEcran" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="mgEcran_${uid}" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#26262A"/><stop offset="1" stop-color="#141416"/></linearGradient>
     </defs>
-    <path d="M260 34 L284 47 L284 507 L260 520 Z" fill="url(#mgFlanc)"/>
-    <rect x="30" y="30" width="230" height="490" rx="13" fill="url(#mgAlu)" stroke="#A8AAAD" stroke-width="1.4"/>
-    <rect x="112" y="52" width="80" height="42" rx="5" fill="url(#mgEcran)"/>
+    <path d="M260 34 L284 47 L284 507 L260 520 Z" fill="url(#mgFlanc_${uid})"/>
+    <rect x="30" y="30" width="230" height="490" rx="13" fill="url(#mgAlu_${uid})" stroke="#A8AAAD" stroke-width="1.4"/>
+    <rect x="112" y="52" width="80" height="42" rx="5" fill="url(#mgEcran_${uid})"/>
     <rect x="119" y="63" width="47" height="22" rx="2" fill="#2E6FC4" opacity=".85"/>
     <circle cx="178" cy="65" r="2.2" fill="#4C4C50"/><circle cx="178" cy="72" r="2.2" fill="#4C4C50"/>
     <circle cx="178" cy="79" r="2.2" fill="#4C4C50"/><circle cx="178" cy="86" r="2.2" fill="#4C4C50"/>
@@ -1234,8 +1243,9 @@ function svgDouzeMois(fSansAn,fAvecAn){
   const OR='#F07020',TX='#55585C',LI='#D8DADC',AN='#333333';
   const W=780,H=250,r=25,gx=63,ox=(W-11*gx)/2,cy=104;
   const partPct=(m.part*100).toFixed(2);
+  const uid=svgUid();
   let s=`<svg width="100%" viewBox="0 0 ${W} ${H}" role="img" aria-label="Équivalent en mois de facture">
-    <defs><linearGradient id="dmPart" x1="0" y1="0" x2="1" y2="0">
+    <defs><linearGradient id="dmPart_${uid}" x1="0" y1="0" x2="1" y2="0">
       <stop offset="${partPct}%" stop-color="${OR}"/><stop offset="${partPct}%" stop-color="#fff"/>
     </linearGradient></defs>
     <text x="${W/2}" y="26" text-anchor="middle" font-size="10" letter-spacing=".2em" fill="${TX}">SUR VOS DOUZE MOIS D'ÉLECTRICITÉ</text>`;
@@ -1244,7 +1254,7 @@ function svgDouzeMois(fSansAn,fAvecAn){
     if(i<m.entiers){
       s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${OR}"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${M[i]}</text>`;
     }else if(i===m.entiers&&m.part>0.02){
-      s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#dmPart)" stroke="${LI}" stroke-width="1.8"/>`+
+      s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#dmPart_${uid})" stroke="${LI}" stroke-width="1.8"/>`+
          `<text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" font-weight="700" fill="${TX}">${M[i]}</text>`;
     }else{
       s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="${LI}" stroke-width="1.8"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" fill="${TX}">${M[i]}</text>`;
