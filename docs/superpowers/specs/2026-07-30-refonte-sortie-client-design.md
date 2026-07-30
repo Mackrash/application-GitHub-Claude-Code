@@ -153,6 +153,23 @@ une grandeur que le client manipule tous les jours.
 Cas limites à couvrir : facture après = 0 → 0 pastille pleine ; économie faible → le message reste
 honnête même s'il devient peu vendeur ; ne jamais forcer l'arrondi à la hausse.
 
+### Facture — l'écart mois par mois (alternative au choix)
+
+La représentation historique est **conservée** et retravaillée dans la palette validée : deux courbes
+splines, la nappe d'économie entre elles, le montant repris sous chaque mois. Rouge `#FF4B6E` → gris
+`#A8ACB1` (tirets + diamants), turquoise `#00D4A0` → orange `#F07020` (plein + cercles).
+
+Les deux formes sont **exclusives** et se choisissent dans le panneau d'impression :
+
+| Entrée cochable | Rendu | Par défaut |
+|---|---|---|
+| Facture — les douze mois | pastilles, ratio exprimé en durée | ✅ |
+| Facture — l'écart mois par mois | courbes splines + nappe d'économie | — |
+
+Cocher l'une décoche l'autre. La seconde devient pertinente dès que la consommation est saisonnière
+(piscine, climatisation, résidence secondaire) : c'est précisément le cas où les douze pastilles
+n'apportent rien de plus que le chiffre annuel.
+
 ### ROI — « le relief »
 
 La courbe cumulée devient un versant : creusé sous le zéro (gris), rempli au-dessus (orange).
