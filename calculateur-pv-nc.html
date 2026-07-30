@@ -1133,6 +1133,23 @@ function pmPrint(){
   preparePrint();
 }
 
+// ===== SORTIE A — FONCTIONS PURES =====
+// Traduit le rapport des factures en durée : « l'équivalent de N mois ».
+// Ne jamais écrire « vous ne payez que N mois » — le client paie bien chaque mois.
+function moisPayes(fSansAn,fAvecAn){
+  if(!(fSansAn>0))return{payes:0,entiers:0,part:0,offerts:12};
+  const payes=Math.max(0,Math.min(12,12*fAvecAn/fSansAn));
+  const entiers=Math.floor(payes);
+  return{payes,entiers,part:payes-entiers,offerts:12-Math.round(payes)};
+}
+// Le surplus n'a pas le même sens selon qu'il est vendu ou non.
+// À 0 XPF/kWh les onduleurs brident : ces kWh ne sont jamais produits.
+function libelleSurplus(tarifRevente){
+  return (tarifRevente>0)
+    ?{titre:'Énergie revendue',sousTitre:'injectée sur le réseau et rémunérée',couleur:'#35A46B'}
+    :{titre:'Réserve de production',sousTitre:'vos panneaux savent produire ces kWh en plus — il faut du stockage ou de la consommation pour les capter',couleur:'#35A46B'};
+}
+
 // ===== IMPRESSION =====
 function preparePrint(noPrint=false){
   const d=new Date();
