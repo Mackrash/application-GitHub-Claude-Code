@@ -285,8 +285,13 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     break-after:auto;
   }
   .ps > .st,.ps > div > .st{break-after:avoid!important;page-break-after:avoid!important}
-  .ps table{break-inside:auto}
+  /* Choix assumé : on préfère un bas de page blanc à un tableau coupé en deux.
+     Un tableau plus haut qu'une feuille se coupera quand même — le navigateur
+     n'a pas d'autre issue — mais jamais au milieu d'une ligne. */
+  .ps table{break-inside:avoid}
   .ps table thead{break-after:avoid!important}
+  .ps table tr{break-inside:avoid!important}
+  .ps .tw{break-inside:avoid}
   .ps:last-child{border-bottom:none}
 
   /* PAGE 2 : Recap + Charts groupés — saut de page APRES le groupe */
