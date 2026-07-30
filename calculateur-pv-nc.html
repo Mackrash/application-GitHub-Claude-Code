@@ -1162,8 +1162,9 @@ function svgMaestro(c){
   // arrondis répartis pour que la somme fasse exactement 100
   let pJ=Math.round(c.directAutoAn/tot*100),pN=Math.round(c.batAutoAn/tot*100);
   let pS=100-pJ-pN;
-  const H=394,Y0=110;                       // zone utile de la jauge
-  const hJ=H*c.directAutoAn/tot,hN=H*c.batAutoAn/tot,hS=H*c.surplusAn/tot;
+  const H=394,Y0=110;                       // cadre de la jauge (hauteur totale)
+  const Hu=H-6;                             // hauteur utile : H moins les 3 gaps de 2px entre segments
+  const hJ=Hu*c.directAutoAn/tot,hN=Hu*c.batAutoAn/tot,hS=Hu*c.surplusAn/tot;
   const ySur=Y0+2, yNui=ySur+hS+2, yJou=yNui+hN+2;
   const cSur=ySur+hS/2, cNui=yNui+hN/2, cJou=yJou+hJ/2;
   const sur=libelleSurplus(c.tarifRevente);

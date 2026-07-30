@@ -61,6 +61,13 @@ eq('bascule en revendue', /Énergie revendue/i.test(svgVendu), true);
 // somme des pourcentages = 100 quel que soit l'arrondi
 const pct = [...svg.matchAll(/>(\d+)%</g)].map(m => +m[1]);
 eq('somme des pourcentages = 100', pct.reduce((a, b) => a + b, 0), 100);
+// géométrie : le dernier segment (« Consommée le jour ») ne doit pas déborder du cadre de la jauge
+const cadre = svg.match(/<rect x="44" y="([\d.]+)" width="202" height="([\d.]+)" rx="7"/);
+const basCadre = +cadre[1] + +cadre[2];
+const segments = [...svg.matchAll(/<rect x="48" y="([\d.]+)" width="194" height="([\d.]+)"/g)];
+const dernier = segments[segments.length - 1];
+const basDernierSegment = +dernier[1] + +dernier[2];
+eq('dernier segment ne déborde pas du cadre', basDernierSegment <= basCadre + 0.01, true);
 
 console.log(ok ? '\nTEST PASS ✅' : '\nTEST FAIL ❌');
 process.exit(ok ? 0 : 1);
