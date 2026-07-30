@@ -1313,6 +1313,55 @@ function svgEcartMensuel(fSansM,fAvecM){
   return s;
 }
 
+// ===== SORTIE A — RETOUR SUR INVESTISSEMENT =====
+// La courbe cumulée devient un versant : creusé sous le zéro, rempli
+// au-dessus. Trois jalons, aucune grille, aucun axe chiffré.
+function svgReliefROI(cumuls,paybackAn){
+  if(!cumuls||!cumuls.length)return'';
+  const OR='#F07020',GR='#A8ACB1',TX='#55585C',AN='#333333';
+  const n=cumuls.length;
+  const W=700,H=260,PL=34,PR=34,PT=34,PB=44;
+  const iw=W-PL-PR,ih=H-PT-PB;
+  const mn=Math.min(...cumuls,0)*1.12,mx=Math.max(...cumuls,0)*1.12;
+  // n===1 : un seul point, le dénominateur d'échelle horizontale (n-1)
+  // vaudrait zéro — on le fixe au centre du cadre plutôt que de diviser par 0.
+  const X=i=>PL+(n>1?(i/(n-1))*iw:iw/2),Y=v=>PT+ih-((v-mn)/((mx-mn)||1))*ih,Z=Y(0);
+  const pts=cumuls.map((v,i)=>[X(i),Y(v)]);
+  const aire=n>1?`${splinePath(pts)} L ${X(n-1)} ${Z} L ${X(0)} ${Z} Z`:'';
+  const uid=svgUid();
+  let s=`<svg width="100%" viewBox="0 0 ${W} ${H}" role="img" aria-label="Retour sur investissement">
+   <defs>
+    <linearGradient id="roUp_${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${OR}" stop-opacity=".45"/><stop offset="1" stop-color="${OR}" stop-opacity=".04"/></linearGradient>
+    <linearGradient id="roDw_${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${GR}" stop-opacity=".05"/><stop offset="1" stop-color="${GR}" stop-opacity=".34"/></linearGradient>
+    <clipPath id="roCu_${uid}"><rect x="0" y="0" width="${W}" height="${Z}"/></clipPath>
+    <clipPath id="roCd_${uid}"><rect x="0" y="${Z}" width="${W}" height="${H-Z}"/></clipPath>
+   </defs>
+   ${aire?`<path d="${aire}" fill="url(#roUp_${uid})" clip-path="url(#roCu_${uid})"/>
+   <path d="${aire}" fill="url(#roDw_${uid})" clip-path="url(#roCd_${uid})"/>`:''}
+   <line x1="${PL}" y1="${Z}" x2="${W-PR}" y2="${Z}" stroke="${AN}" stroke-width="1.2"/>
+   ${n>1?`<path d="${splinePath(pts)}" fill="none" stroke="${OR}" stroke-width="2.8"/>`:''}`;
+  const jalons=[[0,'Investissement',fmt(Math.round(cumuls[0])),TX]];
+  if(paybackAn>0&&paybackAn<=n)jalons.push([paybackAn-1,'Remboursée','An '+paybackAn,OR]);
+  // si n=1, le dernier point est le même que l'investissement : pas de
+  // second jalon redondant au même endroit.
+  if(n>1)jalons.push([n-1,'Gain final',(cumuls[n-1]>=0?'+':'')+fmt(Math.round(cumuls[n-1])),OR]);
+  jalons.forEach(([i,lab,val,col])=>{
+    const px=X(i),py=Y(cumuls[i]);
+    // le premier jalon est en bas de courbe : son libellé passe dessous,
+    // sinon il chevauche le tracé
+    const dessous=(i===0),ty=dessous?py+20:py-24;
+    const anc=i===n-1?'end':(i===0?'start':'middle');
+    s+=`<circle cx="${px}" cy="${py}" r="5" fill="#fff" stroke="${OR}" stroke-width="2.6"/>`+
+       `<text x="${px}" y="${ty}" text-anchor="${anc}" font-size="8.5" letter-spacing=".13em" fill="${TX}">${lab.toUpperCase()}</text>`+
+       `<text x="${px}" y="${ty+17}" text-anchor="${anc}" font-size="17" font-weight="700" fill="${col}">${val}</text>`;
+  });
+  s+=`<text x="${PL}" y="${H-10}" font-size="9" fill="${TX}">An 1</text>`+
+     `<text x="${W-PR}" y="${H-10}" text-anchor="end" font-size="9" fill="${TX}">An ${n}</text></svg>`;
+  return s;
+}
+
 // ===== IMPRESSION =====
 function preparePrint(noPrint=false){
   const d=new Date();

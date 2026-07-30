@@ -121,5 +121,62 @@ eq('pas de turquoise hors charte', /#00D4A0/i.test(ecart), false);
 eq('accents présents', /photovoltaïque/.test(ecart), true);
 eq('douze étiquettes d\'écart', (ecart.match(/−\d/g) || []).length >= 12, true);
 
+console.log('svgReliefROI');
+// Le brief fournissait `new Function('fmt', ...)` sans injecter uidSrc :
+// svgReliefROI appelle svgUid(), qui aurait été indéfini dans ce scope
+// et aurait fait planter le test avant la première assertion. Corrigé
+// ici en réutilisant uidSrc, comme pour F plus haut.
+const R = new Function('fmt',
+  uidSrc + '\n' + grab('function splinePath(', '\n}') + '\n' +
+  grab('function svgReliefROI(', '\n}') + '\nreturn {svgReliefROI};')(fmtT);
+const cum = (() => { const a = []; let c = -1650000, e = 213355;
+  for (let i = 0; i < 20; i++) { c += e; a.push(Math.round(c)); e *= 1.025; } return a; })();
+const roi = R.svgReliefROI(cum, 8);
+eq('responsive', /width="100%"/.test(roi), true);
+eq('jalon investissement', /INVESTISSEMENT/.test(roi), true);
+eq('jalon bascule', /An 8/.test(roi), true);
+eq('jalon gain final', /GAIN FINAL/.test(roi), true);
+eq('trois jalons seulement', (roi.match(/<circle[^>]*stroke-width="2\.6"/g) || []).length, 3);
+eq('aucun gris clair', /#8A8C8F|#9A9CA0|#999|#aaa/i.test(roi), false);
+eq('aucun NaN dans le tracé', /NaN/.test(roi), false);
+
+// jamais remboursé : pas de jalon de bascule, pas de plantage
+const jamais = R.svgReliefROI(cum.map(() => -100000), 0);
+eq('jamais remboursé', /An 0/.test(jamais), false);
+eq('jamais remboursé : deux jalons seulement (investissement + gain final)',
+  (jamais.match(/<circle[^>]*stroke-width="2\.6"/g) || []).length, 2);
+eq('jamais remboursé : pas de plantage', /width="100%"/.test(jamais), true);
+
+// tableau de cumuls vide : chaîne vide, pas de plantage
+eq('cumuls vide', R.svgReliefROI([], 0), '');
+eq('cumuls null', R.svgReliefROI(null, 0), '');
+
+// tableau à une seule valeur : le dénominateur d'échelle horizontale (n-1)
+// vaudrait zéro — vérifie l'absence de NaN et l'absence de jalon dupliqué
+const uneValeur = R.svgReliefROI([500000], 1);
+eq('une seule valeur : pas de plantage', /width="100%"/.test(uneValeur), true);
+eq('une seule valeur : aucun NaN', /NaN/.test(uneValeur), false);
+eq('une seule valeur : un seul jalon "Gain final" (pas de doublon avec investissement)',
+  (uneValeur.match(/GAIN FINAL/g) || []).length, 0);
+
+// géométrie : la ligne de base doit être la ligne du zéro, pas le bord du
+// cadre (H - PB = 216), et strictement à l'intérieur du cadre vertical
+// (PT=34 .. PT+ih=216) puisque les cumuls couvrent négatif et positif.
+const zMatch = roi.match(/<line x1="34" y1="([\d.]+)" x2="666" y2="\1" stroke="#333333"/);
+eq('ligne de zéro présente et alignée x1/x2', !!zMatch, true);
+const Z = zMatch ? +zMatch[1] : null;
+eq('ligne de zéro strictement dans le cadre (ni bord haut ni bord bas)', Z > 34 && Z < 216, true);
+// la valeur du premier point (négative, investissement) doit être sous le zéro
+const premierY = roi.match(/<circle cx="34" cy="([\d.]+)" r="5"/);
+eq('point investissement sous la ligne de zéro (valeur négative)', premierY ? +premierY[1] > Z : false, true);
+// le libellé du premier jalon (INVESTISSEMENT) doit être positionné sous son
+// point (y du texte > y du point), pour ne pas chevaucher le tracé
+const labelInvest = roi.match(/<text x="34" y="([\d.]+)"[^>]*>INVESTISSEMENT</);
+eq('libellé investissement sous son point', labelInvest && premierY ? +labelInvest[1] > +premierY[1] : false, true);
+// point final (x=666, dernier point à droite) doit être au-dessus du zéro
+// (gain final positif dans ce jeu de données)
+const dernierY = roi.match(/<circle cx="666" cy="([\d.]+)" r="5"/);
+eq('point final au-dessus de la ligne de zéro (gain positif)', dernierY ? +dernierY[1] < Z : false, true);
+
 console.log(ok ? '\nTEST PASS ✅' : '\nTEST FAIL ❌');
 process.exit(ok ? 0 : 1);
