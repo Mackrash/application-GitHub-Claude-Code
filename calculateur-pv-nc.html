@@ -485,7 +485,8 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   #print-modal{display:none!important}
 
   /* ── SORTIE B : synthèse batterie ── */
-  body.print-B .print-synth{display:block!important}
+  body.print-B .print-synth{display:none!important}
+  body.print-B .ps-recap{display:none!important}
   body.print-B #recap2,body.print-B #recap3,
   body.print-B #k2_fin,body.print-B #k3_fin{display:none!important}
   .bs-hero{background:#F0FBF6!important;border:2px solid #008040;border-radius:8px;padding:12pt;text-align:center;margin-bottom:10pt;break-inside:avoid}
@@ -1786,6 +1787,7 @@ function preparePrint(noPrint=false){
   }
 
   const isB=tab===2||tab===3;
+  const synthB=isB?(document.getElementById('synth'+tab)?.innerHTML||''):'';
   const stepsSection=isB?`
       <h2 class="lp-h2" style="margin-top:0.8cm">Les prochaines étapes</h2>
       <table class="lp-roi"><tbody>
@@ -1818,6 +1820,15 @@ function preparePrint(noPrint=false){
     .lp-roi td.tr{font-weight:800;color:#333}
     .lp-roi td.roi{font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;color:#008040;font-size:1.15rem}
     .lp-roi tr.best td{background:#F0FBF6}
+    #last-page .bs-tbl th,#last-page .bs-tbl td{padding:4pt 8pt;font-size:0.82rem}
+    #last-page .bs-tbl{margin-bottom:0.3cm}
+    #last-page .recap-box{padding:5pt 9pt;margin-top:5pt!important}
+    #last-page .recap-row{padding:2pt 0}
+    #last-page .lp-h2{margin-bottom:0.25cm;padding-bottom:0.08cm;font-size:1.15rem}
+    #last-page .lp-body{padding:0.7cm 1.5cm}
+    #last-page .lp-fiche{margin-bottom:0.4cm}
+    #last-page .lp-retours{padding:0.3cm 0.7cm;margin-bottom:0.45cm}
+    #last-page .lp-retours>div{margin-bottom:0.18cm}
     .lp-fiche{margin-bottom:0.6cm}
     .lp-fiche-r{display:grid;grid-template-columns:1fr 1fr;gap:0 1cm}
     .lp-fiche-r>div{border-bottom:1px solid #D8DADC;padding:0.25cm 0 0.2cm}
@@ -1849,6 +1860,7 @@ function preparePrint(noPrint=false){
     <div class="lp-body">
       <h2 class="lp-h2">Récapitulatif du dossier</h2>
       ${isPro?`<div class="lp-kpis">${recapCards}</div>`:recapParticulier}
+      ${synthB?`<h2 class="lp-h2">Ce que la batterie change</h2>${synthB}`:''}
       ${roiSection}${stepsSection}
     </div>
     <div class="lp-foot">
