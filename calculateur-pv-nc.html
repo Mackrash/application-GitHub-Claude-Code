@@ -497,13 +497,11 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
   #last-page{display:block!important;break-before:page;margin:0;padding:0}
   #essentiel-page{display:block!important;break-before:page;margin:0;padding:0}
-  body.print-B #essentiel-fact,body.print-C #essentiel-fact{display:none!important}
   /* Le bloc « Impact financier » ouvre sa propre page : son bandeau coiffe
      la facture puis le retour sur investissement. */
-  body.print-A .ps-financial{break-before:page!important}
+  .ps-financial{break-before:page!important}
   /* Pas de break-after ici : #last-page force déjà son propre saut. Avec les deux,
      un #r1 vidé de ses options laissait une feuille entièrement blanche entre eux. */
-  body.print-B #essentiel-page,body.print-C #essentiel-page{display:none!important}
   .cv-foot{background:#333333!important;color:#fff!important}
   .cv-kpi-card{break-inside:avoid}
   .cv-kpi-card.green{background:#F0FBF6!important;border-left-color:#008040!important}
@@ -1069,7 +1067,8 @@ function sortieActive(){const t=tabActif();return t===4?'C':(t>=2?'B':'A');}
 
 // ===== MODAL IMPRESSION — presets + cases par sortie =====
 const PRINT_CFG={
-  A:[{id:'fmois',label:'Facture — l’écart mois par mois',def:0},
+  A:[{id:'fpast',label:'Facture — les douze mois',def:1},
+     {id:'fmois',label:'Facture — l’écart mois par mois',def:0},
      {id:'tranches',label:'ROI par tranche fiscale',def:1},
      {id:'groi',label:'Graphique ROI 20 ans',def:0},
      {id:'amort',label:"Tableau d'amortissement",def:0},
@@ -1144,14 +1143,12 @@ function pmOff(){
   return [...document.querySelectorAll('#pm-list input')].filter(i=>!i.checked).map(i=>i.dataset.psecId);
 }
 function pmSync(el){
-  // « ROI par tranche fiscale » et « Tableau d'amortissement » affichent tous
-  // deux la déduction et le payback par tranche : cocher l'un décoche l'autre.
+  // Les deux formes du graphique de facture sont exclusives : cocher l'une
+  // décoche l'autre. Aucune des deux = pas de graphique. Les autres cases
+  // restent libres.
   if(el&&el.checked){
-    const paire={amort:'tranches',tranches:'amort'}[el.dataset.psecId];
-    if(paire){
-      const autre=document.querySelector(`#pm-list input[data-psec-id="${paire}"]`);
-      if(autre)autre.checked=false;
-    }
+    const paire={fpast:'fmois',fmois:'fpast'}[el.dataset.psecId];
+    if(paire){const autre=document.querySelector(`#pm-list input[data-psec-id="${paire}"]`);if(autre)autre.checked=false;}
   }
   pmMarkPreset('');pmCount();
 }
@@ -1175,8 +1172,10 @@ function pmPrint(){
   // Contrairement aux psoff- (soustractif, absence sans risque), fmois est
   // une bascule binaire entre deux rendus exclusifs — l'absence de classe ne
   // doit jamais pouvoir signifier « écart mensuel ».
-  const fmoisEl=document.querySelector('#pm-list input[data-psec-id="fmois"]');
-  if(fmoisEl&&fmoisEl.checked)b.classList.add('pson-fmois');
+  ['fpast','fmois'].forEach(id=>{
+    const el=document.querySelector('#pm-list input[data-psec-id="'+id+'"]');
+    if(el&&el.checked)b.classList.add('pson-'+id);
+  });
   const clean=()=>{b.className=b.className.split(' ').filter(c=>!c.startsWith('print-')&&!c.startsWith('psoff-')&&!c.startsWith('pson-')).join(' ');window.removeEventListener('afterprint',clean)};
   window.addEventListener('afterprint',clean);
   pmClose();
@@ -1610,7 +1609,7 @@ function preparePrint(noPrint=false){
 
   // ===== PAGE « L'ESSENTIEL » (sortie A) =====
   const ess=document.getElementById('essentiel-page');
-  if(tab<=1&&lastStudyData.prodAn){
+  if(lastStudyData.prodAn>0){
     const L=lastStudyData;
     const eco=L.fSansAn-L.fAvecAn;
     const baisse=L.fSansAn>0?Math.round((1-L.fAvecAn/L.fSansAn)*100):0;
@@ -1628,7 +1627,9 @@ function preparePrint(noPrint=false){
     // besoin d'un « oui » explicite, pas d'une absence ambiguë entre
     // « décoché » et « impression sans passer par le panneau ».
     const formeEcart=document.body.classList.contains('pson-fmois');
-    const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM):svgDouzeMois(L.fSansAn,L.fAvecAn);
+    const formePast=document.body.classList.contains('pson-fpast');
+    const svgFacture=formeEcart?svgEcartMensuel(L.fSansM,L.fAvecM)
+                    :formePast?svgDouzeMois(L.fSansAn,L.fAvecAn):'';
     const fluxMaestro={prodAn:L.prodAn,directAutoAn:L.directAutoAn,batAutoAn:L.batAutoAn,
       surplusAn:L.reinjAn,consoAn:L.consoAn,achatAn:L.achatAn,
       batLabel:L.batLabel||'batterie',tarifRevente:L.rev||0};
@@ -1714,7 +1715,7 @@ function preparePrint(noPrint=false){
     </div>
     `;
     const ef=document.getElementById('essentiel-fact');
-    if(ef)ef.innerHTML=`
+    if(ef)ef.innerHTML=!svgFacture?'':`
       <p class="ef-l">${formeEcart
         ?"Comparaison mois par mois de votre facture actuelle et de celle que vous paierez avec votre installation. L'écart entre les deux courbes est votre économie."
         :"Chaque pastille est un mois d'électricité. Les pastilles pleines sont ce qu'il vous reste à payer sur l'année ; les autres, le soleil les prend à sa charge."}</p>
@@ -2618,7 +2619,13 @@ function calcT2(){
 
   const eco10_t2=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={tab:2,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2};
+  lastStudyData={tab:2,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2,
+    prodAn,consoAn:consoAn,
+    directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,reinjAn:newReinjAn,achatAn:newAchatAn,
+    fSansM,fAvecM,rev,
+    batLabel:batModel>0?('OMEGA '+(BLBL[batModel]||'batterie')+' '+fmtD(batWh/1000)+' kWh'):'batterie',
+    nbP,panWc,
+    ecoDuree:(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);return am.rows[am.rows.length-1].cumul;})()};
 
   renderEnergyFiscalRecap({bilan:'recap2_efy_bilan',eco:'recap2_efy_eco',fiscal:'recap2_efy_fiscal'},{
     prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
@@ -3090,7 +3097,13 @@ function calcT4(){
   // Eco cumulée 10/15 ans depuis le tableau pro (éco énergie + éco IS - remp.)
   const eco10_t4=_proRows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t4=_proRows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={tab:4,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:document.getElementById('t4_commercial').value||'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4,coutNetImpot,avantageTotal,tIS,dAmort};
+  lastStudyData={tab:4,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSans,fAvecAn:fAvec,batModel,batQty,client:document.getElementById('t4_nom').value||'Entreprise',commercial:document.getElementById('t4_commercial').value||'',adresse:document.getElementById('t4_commune').value,rows:_proRows,pb:pbPro,pbMin:pbPro,pbMax:pbMax_t4,eco10:eco10_t4,eco15:eco15_t4,coutNetImpot,avantageTotal,tIS,dAmort,
+    prodAn,consoAn:consoM.reduce((a,b)=>a+b,0),
+    directAutoAn:autoAn,batAutoAn:batAutoAn,reinjAn:surpAn,achatAn:achatAn,
+    fSansM,fAvecM,rev,
+    batLabel:batModel>0?('OMEGA '+(BLBL[batModel]||'batterie')+' '+fmtD(batWh/1000)+' kWh'):'batterie',
+    nbP,panWc,
+    ecoDuree:(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);return am.rows[am.rows.length-1].cumul;})()};
   lastCalcDetails={tab:4,tabName:'Entreprise',isT3:false,
     kwc,devis,tarif,rev,nbP,panWc,surf,
     prodAn,consoAn:conso,directAutoAn:autoAn,batAutoAn,reinjAn:surpAn,achatAn,
