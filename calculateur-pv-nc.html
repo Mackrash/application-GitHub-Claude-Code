@@ -1296,9 +1296,9 @@ function blocsFluxHTML(c){
       <div style="font-size:22px;font-weight:700;color:${colVal};margin-top:.5mm">${valeur}</div>
       ${expl?`<div style="font-size:9.5px;color:#55585C;margin-top:1mm;line-height:1.35">${expl}</div>`:''}
     </div>`;
-  return bloc(VE,VE,sur.titre,fmt(Math.round(c.surplusAn))+' kWh',sur.sousTitre)
-       + bloc(AM,AMF,'Stockée pour la nuit',fmt(Math.round(c.batAutoAn))+' kWh','restituée le soir par votre '+c.batLabel)
-       + bloc(OR,OR,'Consommée le jour',fmt(Math.round(c.directAutoAn))+' kWh','directement par votre maison, en journée');
+  return (c.surplusAn>0?bloc(VE,VE,sur.titre,fmt(Math.round(c.surplusAn))+' kWh',sur.sousTitre):'')
+       + (c.batAutoAn>0?bloc(AM,AMF,'Stockée pour la nuit',fmt(Math.round(c.batAutoAn))+' kWh','restituée le soir par votre '+c.batLabel):'')
+       + (c.directAutoAn>0?bloc(OR,OR,'Consommée le jour',fmt(Math.round(c.directAutoAn))+' kWh','directement par votre maison, en journée'):'');
 }
 
 // ===== SORTIE A — COURBES =====
@@ -1676,14 +1676,14 @@ function preparePrint(noPrint=false){
           <div style="display:flex;align-items:center;gap:3mm">
             <span class="es-k" style="width:19mm;text-align:right;letter-spacing:.08em">Avec le PV</span>
             <div class="es-bar" style="width:${largeurApres}%;background:#F07020">${fmt(Math.round(L.fAvecAn))}</div>
-            <span style="font-size:10.5px;color:#55585C">XPF/an — soit <b style="color:#333">−${baisse} %</b></span>
+            <span style="font-size:10.5px;color:#55585C;white-space:nowrap">XPF/an — soit <b style="color:#333">−${baisse}&nbsp;%</b></span>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8mm">
           <div><div class="es-k">Installation remboursée</div>
-            <div class="es-v">${L.pb?'An '+L.pb:'> '+getS().dpv+' ans'} <small>${L.pb?'puis '+(getS().dpv-L.pb)+' ans de gain net':''}</small></div></div>
-          <div><div class="es-k">Gains cumulés · ${getS().dpv} ans</div>
-            <div class="es-v">${fmt(Math.round(L.ecoDuree||0))} <small>XPF · ${ratio} × l'investissement</small></div></div>
+            <div class="es-v">${L.pb?'An '+L.pb:'> '+getS().dpv+' ans'} <small>${L.pb&&getS().dpv>L.pb?'puis '+(getS().dpv-L.pb)+' ans de gain net':(L.pb?'':'sur l\'horizon étudié')}</small></div></div>
+          <div><div class="es-k">${(L.ecoDuree||0)>=0?'Gains cumulés':'Bilan cumulé'} · ${getS().dpv} ans</div>
+            <div class="es-v">${fmt(Math.round(L.ecoDuree||0))} <small>XPF${(L.ecoDuree||0)>=0?` · ${ratio} × l'investissement`:''}</small></div></div>
           <div><div class="es-k">Autonomie énergétique</div>
             <div class="es-v">${couvert} % <small>${fmt(Math.round(L.achatAn))} kWh acheté au réseau</small></div></div>
         </div>
@@ -1700,16 +1700,16 @@ function preparePrint(noPrint=false){
       <div class="es-r">
         <div>
           <div class="es-k" style="letter-spacing:.2em">Où va votre énergie</div>
-          <div style="font-size:12px;color:#55585C;margin-top:1.5mm"><b style="color:#F07020;font-size:15px">${fmt(Math.round(L.prodAn))} kWh</b> produits par an</div>
+          <div style="font-size:12px;color:#55585C;margin-top:1.5mm"><b style="color:#F07020;font-size:15px">${fmt(Math.round(L.prodAn))} kWh</b> ${L.tab===3?'injectés par votre installation':'produits par an'}</div>
         </div>
         <div>
           <div style="width:62%;margin:0 auto 5mm">${svgMaestro(fluxMaestro,true)}</div>
           ${blocsFluxHTML(fluxMaestro)}
         </div>
         <div style="border-top:1px solid #D8DADC;padding-top:4mm">
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>Votre besoin annuel</span><b style="color:#333;font-size:13px">${fmt(Math.round(L.consoAn))} kWh</b></div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>Couvert par le solaire</span><b style="color:#F07020;font-size:13px">${couvert} %</b></div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C"><span>Acheté au réseau</span><b style="color:#F07020;font-size:13px">${fmt(Math.round(L.achatAn))} kWh</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>${L.tab===3?'Acheté au réseau avant':'Votre besoin annuel'}</span><b style="color:#333;font-size:13px">${fmt(Math.round(L.consoAn))} kWh</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C;margin-bottom:2.5mm"><span>${L.tab===3?'Couvert par la batterie':'Couvert par le solaire'}</span><b style="color:#F07020;font-size:13px">${couvert} %</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#55585C"><span>${L.tab===3?'Reste au réseau':'Acheté au réseau'}</span><b style="color:#F07020;font-size:13px">${fmt(Math.round(L.achatAn))} kWh</b></div>
         </div>
       </div>
     </div>
@@ -2016,8 +2016,6 @@ function renderBatSynth(id,d){
   const el=document.getElementById(id);if(!el)return;
   const r=(k,a,b,g)=>`<tr><td>${k}</td><td>${a}</td><td>${b}</td><td style="color:#008040;font-weight:800">${g}</td></tr>`;
   el.innerHTML=`
-  <div class="bs-hero"><div class="bs-hero-v">${fmt(Math.round(d.ecoAn))} XPF / an</div>
-  <div class="bs-hero-l">Économie annuelle générée par votre batterie</div></div>
   <table class="efy-fiscal bs-tbl"><thead><tr><th></th><th>Sans batterie</th><th>Avec batterie</th><th>Gain</th></tr></thead><tbody>
    ${r('Achat réseau',fmt(Math.round(d.achatAvant))+' kWh',fmt(Math.round(d.achatApres))+' kWh','− '+fmt(Math.round(d.achatAvant-d.achatApres))+' kWh')}
    ${d.injAvant-d.injApres>0?r('Injection réseau',fmt(Math.round(d.injAvant))+' kWh',fmt(Math.round(d.injApres))+' kWh',fmt(Math.round(d.injAvant-d.injApres))+' kWh valorisés'):''}
@@ -2625,7 +2623,7 @@ function calcT2(){
     fSansM,fAvecM,rev,
     batLabel:batModel>0?('OMEGA '+(BLBL[batModel]||'batterie')+' '+fmtD(batWh/1000)+' kWh'):'batterie',
     nbP,panWc,
-    ecoDuree:(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);return am.rows[am.rows.length-1].cumul;})()};
+    ecoDuree:(rows&&rows.length?rows[rows.length-1].cumul:0)};
 
   renderEnergyFiscalRecap({bilan:'recap2_efy_bilan',eco:'recap2_efy_eco',fiscal:'recap2_efy_fiscal'},{
     prodAn,consoAn,directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,
@@ -2764,7 +2762,13 @@ function calcT3(){
   const eco15_t3=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const fSansMean=fSansM.reduce((a,b)=>a+b,0)/12;
   const fAvecMean=fAvecM.reduce((a,b)=>a+b,0)/12;
-  lastStudyData={tab:3,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3};
+  lastStudyData={tab:3,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3,
+    prodAn:injAn,consoAn:achatAn,
+    directAutoAn:0,batAutoAn:bDischAn,reinjAn:newInjAn,achatAn:newAchatAn,
+    fSansM,fAvecM,rev,
+    batLabel:batModel>0?('OMEGA '+(BLBL[batModel]||'batterie')+' '+fmtD(batModel*batQty/1000)+' kWh'):'batterie',
+    nbP,panWc:0,
+    ecoDuree:(rows&&rows.length?rows[rows.length-1].cumul:0)};
 
   renderEnergyFiscalRecap({bilan:'recap3_efy_bilan',eco:'recap3_efy_eco',fiscal:'recap3_efy_fiscal'},{
     isT3:true,
