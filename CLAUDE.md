@@ -40,6 +40,19 @@ Dépendances : Plotly 2.27.0 (CDN)
 - ⚠️ Horizon des gains cumulés (page « L'essentiel », graphe ROI, récap final) aligné sur le paramètre `s.dpv` (25 ans par défaut) — mais le libellé de section « Retour sur investissement — 20 ans » et le tableau d'amortissement (tronqué à 20 lignes en CSS print, `table.at tbody tr:nth-child(23)`) restent codés en dur sur 20 ans. Le même document affiche donc deux horizons différents (20 ans / 25 ans) — connu, non corrigé, à trancher.
 - Spec : `docs/superpowers/specs/2026-07-30-refonte-sortie-client-design.md`
 
+### Sorties B — Juillet 2026
+- Onglets 2 et 3 : deux premières pages identiques à la sortie A (garde + « L'essentiel »)
+- Onglet 3 (ajout sur PV existant) : libellés adaptés — « injection constatée » et non production, pas de panneaux, bloc d'autoconsommation directe masqué car nul
+- Le tableau avant/après batterie est remonté dans le récapitulatif final (« Ce que la batterie change ») : il occupait sinon une page à lui seul
+- « Gains cumulés » devient « Bilan cumulé » quand le cumul reste négatif sur l'horizon
+- Sortie B ramenée de 4 à 3 pages
+- **Onglet 4 (sortie C) volontairement hors périmètre** : rendu d'origine conservé
+
+### Règles de travail sur ce fichier
+- **Ne jamais modifier les calculs** (`calcT1` à `calcT4`, `buildAmort`, `factureMois`, `prodM`) sans accord explicite. `lastStudyData` ne doit qu'exposer des valeurs déjà produites.
+- **Tester par la vraie route** : cliquer le bouton, ouvrir le panneau, appeler `pmPrint()`. Ne jamais réécrire la logique dans le test.
+- Script de contrôle : `node tests/rendu-sortie-a.js <dossier>` puis regarder les images produites.
+
 ### Vérification syntaxe JS (à faire après chaque modif)
 ```bash
 node -e "const fs=require('fs');const html=fs.readFileSync('calculateur-pv-nc.html','utf8');const m=html.match(/<script>([\s\S]*?)<\/script>/g);if(m){const js=m.map(s=>s.replace(/<\/?script>/g,'')).join('\n');fs.writeFileSync('_check.js',js);}" && node --check _check.js && echo "SYNTAXE OK"
