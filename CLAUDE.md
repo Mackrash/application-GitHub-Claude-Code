@@ -29,6 +29,17 @@ Dépendances : Plotly 2.27.0 (CDN)
 - Rapport entreprise tailles augmentées en print
 - GitHub Pages reconfiguré sur branche `main`
 
+### Refonte sortie A — Juillet 2026
+- Page « L'essentiel » (print-only, `#essentiel-page`) : deux colonnes, argent à gauche, énergie à droite
+- Batterie OMEGA Maestro-G en SVG remplace la pile de répartition
+- « Réinjection réseau » → « Réserve de production » (revente à 0) ou « Énergie revendue » (tarif > 0)
+- Facture : douze pastilles par défaut, écart mensuel en alternative cochable via le marqueur `pson-fmois` posé par le panneau d'impression
+- ROI en relief, trois jalons
+- Armoire batterie SVG : mode compact pour les colonnes étroites (onglets 2/3)
+- Quatre blocs redondants supprimés
+- ⚠️ Horizon des gains cumulés (page « L'essentiel », graphe ROI, récap final) aligné sur le paramètre `s.dpv` (25 ans par défaut) — mais le libellé de section « Retour sur investissement — 20 ans » et le tableau d'amortissement (tronqué à 20 lignes en CSS print, `table.at tbody tr:nth-child(23)`) restent codés en dur sur 20 ans. Le même document affiche donc deux horizons différents (20 ans / 25 ans) — connu, non corrigé, à trancher.
+- Spec : `docs/superpowers/specs/2026-07-30-refonte-sortie-client-design.md`
+
 ### Vérification syntaxe JS (à faire après chaque modif)
 ```bash
 node -e "const fs=require('fs');const html=fs.readFileSync('calculateur-pv-nc.html','utf8');const m=html.match(/<script>([\s\S]*?)<\/script>/g);if(m){const js=m.map(s=>s.replace(/<\/?script>/g,'')).join('\n');fs.writeFileSync('_check.js',js);}" && node --check _check.js && echo "SYNTAXE OK"
