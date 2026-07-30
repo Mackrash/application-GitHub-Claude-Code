@@ -1651,7 +1651,10 @@ function preparePrint(noPrint=false){
       #essentiel-fact .ef-h{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;
         color:#333;margin:0 0 2mm;display:flex;align-items:center;gap:3mm}
       #essentiel-fact .ef-h::after{content:"";flex:1;height:1px;background:#D8DADC}
-      #essentiel-fact .ef-l{font-size:10.5px;color:#55585C;line-height:1.6;margin:0 0 8mm;max-width:15cm}
+      #essentiel-fact .ef-l{font-size:10.5px;color:#55585C;line-height:1.6;margin:0 0 6mm;max-width:15cm}
+      #essentiel-fact .ef-t{color:#F07020;font-family:'SingaporeSling',sans-serif;font-size:10pt;
+        font-weight:700;text-transform:uppercase;letter-spacing:1pt;border-left:4px solid #F07020;
+        padding-left:10pt;margin:0 0 4mm}
       #essentiel-fact svg{width:100%;height:auto;display:block}
     </style>
     <div class="es">
@@ -1718,6 +1721,7 @@ function preparePrint(noPrint=false){
       <p class="ef-l">${formeEcart
         ?"Comparaison mois par mois de votre facture actuelle et de celle que vous paierez avec votre installation. L'écart entre les deux courbes est votre économie."
         :"Chaque pastille est un mois d'électricité. Les pastilles pleines sont ce qu'il vous reste à payer sur l'année ; les autres, le soleil les prend à sa charge."}</p>
+      <div class="ef-t">${formeEcart?"L'écart mois par mois":"Votre facture sur l'année"}</div>
       ${svgFacture}`;
   }else{ess.innerHTML='';const ef=document.getElementById('essentiel-fact');if(ef)ef.innerHTML='';}
 
