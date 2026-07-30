@@ -129,21 +129,23 @@ console.log('sélection de forme du graphique de facture (pson-fmois)');
 // pas seulement svgDouzeMois/svgEcartMensuel prises isolément : c'est
 // justement l'absence de ce test qui a laissé passer la bascule inversée.
 const selStart = "const formeEcart=document.body.classList.contains('pson-fmois');";
-const selEnd = 'svgDouzeMois(L.fSansAn,L.fAvecAn);';
+const selEnd = "svgDouzeMois(L.fSansAn,L.fAvecAn):'';";
 const selIdxStart = html.indexOf(selStart);
 if (selIdxStart < 0) throw new Error('segment introuvable : ' + selStart);
 const selIdxEnd = html.indexOf(selEnd, selIdxStart) + selEnd.length;
 const selSrc = html.slice(selIdxStart, selIdxEnd);
-const selectionne = (marqueurPose) => {
-  const document = { body: { classList: { contains: (c) => c === 'pson-fmois' && marqueurPose } } };
+// Les deux formes sont exclusives et facultatives : l'une, l'autre, ou aucune.
+const selectionne = (marqueurs) => {
+  const document = { body: { classList: { contains: (c) => marqueurs.includes(c) } } };
   const svgEcartMensuel = () => 'ECART_MENSUEL';
   const svgDouzeMois = () => 'DOUZE_PASTILLES';
   const L = { fSansM: 1, fAvecM: 1, fSansAn: 1, fAvecAn: 1 };
   return new Function('document', 'svgEcartMensuel', 'svgDouzeMois', 'L',
     selSrc + '\nreturn svgFacture;')(document, svgEcartMensuel, svgDouzeMois, L);
 };
-eq('aucun marqueur (panneau jamais ouvert, ou case décochée) → douze pastilles', selectionne(false), 'DOUZE_PASTILLES');
-eq('pson-fmois posé (case cochée) → écart mensuel', selectionne(true), 'ECART_MENSUEL');
+eq('aucune case cochée → aucun graphique', selectionne([]), '');
+eq('pson-fpast → douze pastilles', selectionne(['pson-fpast']), 'DOUZE_PASTILLES');
+eq('pson-fmois → écart mensuel', selectionne(['pson-fmois']), 'ECART_MENSUEL');
 
 console.log('svgReliefROI');
 // Le brief fournissait `new Function('fmt', ...)` sans injecter uidSrc :
