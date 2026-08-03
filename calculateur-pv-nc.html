@@ -1098,8 +1098,7 @@ const PRINT_CFG={
      {id:'amort',label:"Tableau d'amortissement",def:0},
      {id:'factures',label:'Estimation de vos factures',def:0},
      {id:'bilan',label:'Bilan énergétique mensuel',def:0}],
-  C:[{id:'amort',label:"Tableau d'amortissement 15 ans",def:0},
-     {id:'recapfin',label:'Récapitulatif final',def:0}]
+  C:[{id:'recapfin',label:'Récapitulatif final',def:0}]
 };
 let pmSortie='A';
 // ===== EXPORT JSON — format stable consommé par FOLIO (agent NEXIA) =====
@@ -1172,7 +1171,7 @@ function pmSync(el){
 function pmCount(){
   const off=pmOff();
   const on=id=>PRINT_CFG[pmSortie].some(x=>x.id===id)&&!off.includes(id);
-  let p=pmSortie==='A'?2:3;
+  let p=pmSortie==='A'?2:(pmSortie==='C'?2:3); // Sortie C : garde + page de contenu unique, pas de « L'essentiel »
   if(pmSortie==='A')p+=2; // #essentiel-page + #last-page s'impriment toujours en sortie A (avec ou sans tableau tranches)
   if(pmSortie==='A'||on('gfact')||on('groi'))p+=1; // la page financière (impact + ROI) s'imprime toujours en sortie A, gfact ayant disparu de PRINT_CFG.A
   ['amort','factures','bilan','recapfin'].forEach(id=>{if(on(id))p+=1});
@@ -3080,15 +3079,21 @@ function calcT4(){
     #r4_rapport .t4m-hd-r{text-align:right;font-size:10px;color:#5E6165;line-height:1.6}
     #r4_rapport .t4m-hd-r b{display:block;font-size:12px;color:#333;text-transform:uppercase;letter-spacing:.1em}
     #r4_rapport .t4m-prj{display:flex;justify-content:space-between;align-items:flex-end;gap:5mm;border-bottom:3px solid #F07020;padding-bottom:1.8mm;margin-bottom:2mm}
-    #r4_rapport .t4m-prj-l{display:flex;align-items:flex-end;gap:4mm}
+    #r4_rapport .t4m-prj-l{display:flex;align-items:flex-end;gap:4mm;min-width:0;flex:1}
+    #r4_rapport .t4m-prj-txt{min-width:0;flex:1}
     #r4_rapport .t4m-prj-k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6165}
-    #r4_rapport .t4m-prj-n{font-family:'RAIDenmarkNeo',sans-serif;font-size:21px;font-weight:700;letter-spacing:.03em;line-height:1.1;margin-top:.5mm}
-    #r4_rapport .t4m-prj-a{font-size:11px;color:#5E6165;margin-top:.8mm}
+    /* Nom de projet : jamais de retour à la ligne (coûterait ~5-7mm et ferait
+       déborder sur une 3e page en cas dense) — tronqué proprement plutôt. */
+    #r4_rapport .t4m-prj-n{font-family:'RAIDenmarkNeo',sans-serif;font-size:21px;font-weight:700;letter-spacing:.03em;line-height:1.1;margin-top:.5mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #r4_rapport .t4m-prj-a{font-size:11px;color:#5E6165;margin-top:.8mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #r4_rapport .t4m-prj-p{font-family:'RAIDenmarkNeo',sans-serif;font-size:28px;font-weight:700;color:#F07020;line-height:1}
     #r4_rapport .t4m-sec{background:#F07020;color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:1.2mm 4mm;margin:0 0 1mm;display:flex;justify-content:space-between;align-items:baseline;gap:4mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #r4_rapport .t4m-sec em{font-style:normal;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:none;opacity:.95}
-    #r4_rapport .t4m-r{display:flex;justify-content:space-between;align-items:baseline;gap:5mm;padding:.62mm 4mm;border-bottom:1px solid #F0F1F2}
-    #r4_rapport .t4m-r .t4m-k{font-size:13px;color:#333}
+    #r4_rapport .t4m-r{display:flex;justify-content:space-between;align-items:baseline;gap:5mm;padding:.5mm 4mm;border-bottom:1px solid #F0F1F2}
+    /* Libellés (nom d'onduleur libre saisi par l'utilisateur compris) : jamais
+       de retour à la ligne, tronqués proprement — la valeur, elle, reste
+       toujours entièrement lisible (v en nowrap, largeur non contrainte). */
+    #r4_rapport .t4m-r .t4m-k{font-size:13px;color:#333;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #r4_rapport .t4m-r .t4m-v{font-size:14px;font-weight:800;white-space:nowrap}
     #r4_rapport .t4m-r .t4m-v.or{color:#F07020}
     #r4_rapport .t4m-r .t4m-v.gr{color:#1a7a3c}
@@ -3105,7 +3110,6 @@ function calcT4(){
     #r4_rapport .t4m-roi-k{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.3}
     #r4_rapport .t4m-roi-v{font-family:'RAIDenmarkNeo',sans-serif;font-size:31px;font-weight:700;line-height:1;white-space:nowrap}
     #r4_rapport .t4m-nb{font-size:10px;color:#8E9194;font-style:italic;margin-top:2.5mm}
-    #r4_rapport .t4m-ft{margin-top:3mm;border-top:1px solid #DFE1E3;padding-top:2mm;display:flex;justify-content:space-between;font-size:10px;color:#8E9194}
   </style>
   <div class="t4m">
 
@@ -3119,7 +3123,7 @@ function calcT4(){
     <div class="t4m-prj">
       <div class="t4m-prj-l">
         ${t4Images.logo?`<img src="${t4Images.logo}" style="height:12mm;max-width:32mm;object-fit:contain;margin-right:4mm">`:''}
-        <div>
+        <div class="t4m-prj-txt">
           <div class="t4m-prj-k">Projet photovoltaïque</div>
           <div class="t4m-prj-n">${nom}</div>
           <div class="t4m-prj-a">${commune}</div>
@@ -3183,10 +3187,6 @@ function calcT4(){
     </div>
 
     <div class="t4m-nb">NB — Les calculs de production prennent en compte le temps d'ensoleillement moyen des 5 dernières années. Document estimatif, non contractuel.</div>
-
-    <div class="t4m-ft">
-      <span>SOLAR CONCEPT — 47 03 02 — Nouméa, Nouvelle-Calédonie</span><span>${dateStr4}</span>
-    </div>
 
   </div>`;
 
