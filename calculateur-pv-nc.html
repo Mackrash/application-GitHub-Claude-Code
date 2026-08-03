@@ -795,6 +795,18 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     </div>
     <div class="fg"><label>Taux IS / amortissement comptable (%)</label><input type="number" id="t4_is" value="30" min="0" max="50" step="5"></div>
     <div class="fg"><label>Durée amortissement comptable (ans)</label><input type="number" id="t4_amortd" value="10" min="1" max="20" step="1"></div>
+    <div class="fg"><label>Montants du document</label>
+      <select id="t4_mode">
+        <option value="ht" selected>HT — hors taxes</option>
+        <option value="ttc">TTC — TGC incluse</option>
+      </select>
+    </div>
+    <div class="fg"><label>Régime fiscal</label>
+      <select id="t4_regime">
+        <option value="is" selected>Société soumise à l'IS</option>
+        <option value="sansis">Sans IS — association, SCI non assujettie</option>
+      </select>
+    </div>
   </div>
   <button class="btn-calc" onclick="calcT4()">⚡ CALCULER</button>
   <div class="results" id="r4">
@@ -2905,6 +2917,9 @@ function calcT4(){
   const rev=parseFloat(document.getElementById('t4_rev').value??'0');
   const tIS=parseFloat(document.getElementById('t4_is').value)||30;
   const dAmort=parseInt(document.getElementById('t4_amortd').value)||10;
+  const modeTTC=document.getElementById('t4_mode').value==='ttc';
+  const sansIS=document.getElementById('t4_regime').value==='sansis';
+  const kTTC=modeTTC?(1+(parseFloat(document.getElementById('s_tgc').value)||0)/100):1;
   const nom=document.getElementById('t4_nom').value||'Client';
   const ref=document.getElementById('t4_ref').value||'';
   const commune=document.getElementById('t4_commune').value||'Nouméa';
@@ -2976,8 +2991,8 @@ function calcT4(){
 
   // Amortissement comptable (linéaire)
   const amortAn=devis/dAmort;
-  const avantageAn=Math.round(amortAn*tIS/100);
-  const avantageTotal=avantageAn*dAmort;
+  const avantageAn=sansIS?0:Math.round(amortAn*tIS/100);
+  const avantageTotal=sansIS?0:avantageAn*dAmort;
   const coutNetImpot=devis-avantageTotal;
 
   // Rendement annuel = (éco + avantage fiscal annuel) / investissement
@@ -3060,15 +3075,16 @@ function calcT4(){
 
       <!-- 4. DONNÉES ÉCONOMIQUES -->
       <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Données économiques</div>
+      <div style="font-size:.72rem;color:#888;font-style:italic;margin-bottom:8px">Montants ${modeTTC?'TTC':'HT'} — ${sansIS?"structure non soumise à l'IS":"société soumise à l'IS"}</div>
       <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:14px">
-        ${R({k:'Coût total de l\'investissement HT',v:`${fmt(devis)} F.CFP`,or:true})}
-        ${R({k:'Prix du kWh payé actuellement (HT)',v:`${fmtD(tarif,2)} F/kWh`})}
+        ${R({k:`Coût total de l'investissement ${modeTTC?'TTC':'HT'}`,v:`${fmt(Math.round(devis*kTTC))} F.CFP`,or:true})}
+        ${R({k:`Prix du kWh payé actuellement (${modeTTC?'TTC':'HT'})`,v:`${fmtD(tarif*kTTC,2)} F/kWh`})}
         ${R({k:'Nombre de kWh produits sur 15 ans',v:`${fmt(kwh15)} kWh`})}
-        ${R({k:'Prix de revient du kWh sur 15 ans',v:`${fmtD(prixRevkWh,2)} F/kWh`})}
-        ${R({k:'Économie hypothèse / an',v:`${fmt(Math.round(ecoAn))} F.CFP`,g:true})}
-        ${R({k:'Économies réalisées sur 15 ans',v:`${fmt(Math.round(eco15))} F.CFP`,g:true})}
-        ${R({k:`Avantage amort. comptable / an (${dAmort} ans)`,v:`${fmt(avantageAn)} F.CFP`,g:true})}
-        ${R({k:`Économies d'impôt — IS ${tIS}% sur ${dAmort} ans`,v:`${fmt(avantageTotal)} F.CFP`,g:true})}
+        ${R({k:'Prix de revient du kWh sur 15 ans',v:`${fmtD(prixRevkWh*kTTC,2)} F/kWh`})}
+        ${R({k:'Économie hypothèse / an',v:`${fmt(Math.round(ecoAn*kTTC))} F.CFP`,g:true})}
+        ${R({k:'Économies réalisées sur 15 ans',v:`${fmt(Math.round(eco15*kTTC))} F.CFP`,g:true})}
+        ${sansIS?R({k:'Amortissement comptable',v:'sans objet',g:true}):R({k:`Avantage amort. comptable / an (${dAmort} ans)`,v:`${fmt(Math.round(avantageAn*kTTC))} F.CFP`,g:true})}
+        ${sansIS?R({k:"Économies d'impôt — IS",v:'—',g:true}):R({k:`Économies d'impôt — IS ${tIS}% sur ${dAmort} ans`,v:`${fmt(Math.round(avantageTotal*kTTC))} F.CFP`,g:true})}
       </div>
 
       <!-- 5. RENDEMENT ANNUEL ESTIMÉ — bannière simple -->
@@ -3080,19 +3096,19 @@ function calcT4(){
       <!-- 6. COÛT NET APRÈS DÉDUCTION FISCALE — bannière vedette -->
       <div class="rpt-cout-net" style="background:linear-gradient(135deg,#1a7a3c,#0f5e2a);border-radius:12px;padding:16px 22px;margin-bottom:10px;color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px">
         <div>
-          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.85);text-transform:uppercase;margin-bottom:4px">Coût HT après déduction fiscale</div>
-          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1">${fmt(Math.round(coutNetImpot))} F.CFP</div>
+          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.85);text-transform:uppercase;margin-bottom:4px">${sansIS?`Coût réel supporté ${modeTTC?'TTC':'HT'}`:`Coût ${modeTTC?'TTC':'HT'} après déduction fiscale`}</div>
+          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1">${fmt(Math.round(coutNetImpot*kTTC))} F.CFP</div>
         </div>
         <div style="text-align:right;font-size:.78rem;color:rgba(255,255,255,.9);line-height:1.6;border-left:1px solid rgba(255,255,255,.3);padding-left:18px">
-          <div>Invest. brut HT : <strong>${fmt(devis)} F.CFP</strong></div>
-          <div>− Éco IS ${tIS}% × ${dAmort} ans : <strong>−${fmt(avantageTotal)} F.CFP</strong></div>
+          <div>Invest. brut ${modeTTC?'TTC':'HT'} : <strong>${fmt(Math.round(devis*kTTC))} F.CFP</strong></div>
+          <div>${sansIS?`Amortissement comptable : <strong>sans objet</strong>`:`− Éco IS ${tIS}% × ${dAmort} ans : <strong>−${fmt(Math.round(avantageTotal*kTTC))} F.CFP</strong>`}</div>
         </div>
       </div>
 
       <!-- 7. RETOUR SUR INVESTISSEMENT — bannière vedette -->
       <div style="background:linear-gradient(135deg,#F07020,#C05010);border-radius:12px;padding:16px 22px;margin-bottom:12px;color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px">
         <div>
-          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.85);text-transform:uppercase;margin-bottom:4px">Retour sur investissement après amortissement comptable</div>
+          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.85);text-transform:uppercase;margin-bottom:4px">${sansIS?'Retour sur investissement':'Retour sur investissement après amortissement comptable'}</div>
           <div style="font-size:.7rem;color:rgba(255,255,255,.85);font-style:italic">éco énergie + amort. IS, hausse tarif et dégradation incluses</div>
         </div>
         <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1;text-align:right">${rsi>0?fmtD(rsi,1)+' ans':'—'}</div>
