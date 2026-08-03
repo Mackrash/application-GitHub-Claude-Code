@@ -3243,7 +3243,7 @@ function calcT4(){
       ${Rr({k:'Prix de revient du kWh sur 15 ans d\'utilisation',v:`${fmtD(prixRevkWh*kTTC,2)} F/kWh`})}
       ${Rr({k:'Prix du kWh payé actuellement',v:`${fmtD(tarif*kTTC,2)} F/kWh`})}
       ${Rr({k:'Économie hypothèse / an',v:`${fmt(Math.round(ecoAn*kTTC))} F.CFP`,g:true})}
-      ${Rr({k:'Économies réalisées sur 15 ans',v:`${fmt(Math.round(eco15*kTTC))} F.CFP`,g:true})}
+      ${Rr({k:'Économies réalisées sur 15 ans',v:`${fmt(Math.round(ecoAn*15*kTTC))} F.CFP`,g:true})}
       ${sansIS?Rr({k:'Amortissement comptable : sans objet',v:'—',off:true}):Rr({k:`Avantage annuel lié à l'amortissement comptable (${dAmort} ans)`,v:`${fmt(Math.round(avantageAn*kTTC))} F.CFP`})}
       ${Rr({k:'Soit un rendement annuel estimé de',v:`${fmtD(rendement,2)} %`,or:true})}
       ${sansIS?Rr({k:'Prise en compte de l\'amortissement comptable',v:'—',off:true}):Rr({k:'Prise en compte de l\'amortissement comptable (économies d\'impôt correspondantes)',v:`${fmt(Math.round(avantageTotal*kTTC))} F.CFP`})}
