@@ -244,13 +244,14 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   .header,
   .tabs,.tab-btn,
   .btn-calc,.btn-print,
-  .fgrid3,.fgrid2,.fg,
+  .fgrid3,.fgrid2,.fgrid4,.fg,
   .mg,.mg-wrap,.mg-table,
   .alert-i,.alert-d,
   .cb,
   input,select,
   label,
   #tab4,
+  .t4-eec-pro,
   .tab-content:not(.active){display:none!important}
 
   /* Masquer le <p> "Consommation mensuelle — Total" dans les onglets */
@@ -429,33 +430,21 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   #r4 .ps-table{break-before:auto!important}
   /* T4 — masquer les KPI cards (k4_fin) à l'impression : déjà résumés dans le rapport */
   #r4 #k4_fin{display:none!important}
-  /* T4 — pas de saut après .ps-page2 (sinon page blanche en fin de doc) */
-  #r4 .ps-page2{break-after:auto!important}
-  /* Sortie C synthèse : tableau amort masqué → les graphes montent en page 3 */
-  body.print-C.psoff-amort #r4 .ps-charts{break-before:auto}
+  /* T4 — la page 2 (tableau d'amortissement + graphiques) reste visible à l'écran
+     (utile en rendez-vous client) mais ne s'imprime plus : la sortie C tient
+     désormais en une page de garde + une page de contenu. */
+  #r4 .ps-page2{display:none!important}
   table.at thead,table.bc thead{display:table-header-group}
 
-  /* ── RAPPORT ENTREPRISE (onglet 4) — P2=rapport seul, P3=charts, P4=ROI+tableau ── */
-  .t4-recap{break-after:page!important;break-inside:auto}
-  /* ── RAPPORT ENTREPRISE (onglet 4) ── */
+  /* ── RAPPORT ENTREPRISE (onglet 4) — page de contenu unique, cf. maquette
+     _maquettes/T4-sortie-C-1page.html — mise en page gérée par le <style>
+     scopé injecté avec le template (voir #r4_rapport dans calcT4). Le
+     conteneur générique .ps (padding-bottom:8mm, marge, filet) est prévu
+     pour empiler plusieurs sections — ici il n'y en a qu'une, à la mm
+     près du budget de la maquette (264/277mm) : on retire ce matelas
+     générique pour ce bloc précis, sans toucher .ps pour les autres onglets. */
+  #r4 .ps.t4-recap{padding:0!important;margin-bottom:0!important;border-bottom:none!important}
   .recap-grid{display:grid!important;grid-template-columns:1fr 1fr;gap:6pt 20pt}
-  /* Rapport JS généré — overrides print */
-  .rpt-wrap{border:1pt solid #F07020!important;border-radius:4px!important;overflow:visible!important;break-inside:auto;margin-bottom:8pt!important}
-  .rpt-header{padding:7pt 12pt!important;font-size:11pt!important}
-  .rpt-body{padding:8pt 12pt!important;font-size:10pt!important}
-  .rpt-2col{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6pt 16pt!important;margin-bottom:9pt!important}
-  .rpt-kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7pt!important;margin-bottom:8pt!important}
-  .rpt-prod-table{overflow:visible!important;margin-bottom:9pt!important}
-  .rpt-prod-table table{font-size:9pt!important}
-  .rpt-kpi-card{padding:9pt!important;break-inside:avoid}
-  .rpt-kpi-card .rpt-kpi-val{font-size:1.7rem!important}
-  /* Textes internes du rapport entreprise */
-  #r4_rapport [style*="font-size:2.2rem"]{font-size:1.8rem!important}
-  #r4_rapport [style*="font-size:1.8rem"]{font-size:1.5rem!important}
-  #r4_rapport [style*="font-size:1.6rem"]{font-size:1.4rem!important}
-  #r4_rapport [style*="padding:16px 24px"]{padding:7pt 12pt!important}
-  #r4_rapport [style*="margin-bottom:18px"]{margin-bottom:9pt!important}
-  #r4_rapport [style*="margin-bottom:12px"]{margin-bottom:6pt!important}
 
   /* ── FILTRAGE SECTIONS (modal impression) ── */
   body.psoff-pile [data-psec="pile"],
@@ -778,7 +767,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   <div class="mg" id="mg4"></div>
 
   <!-- Bloc facture EEC pro -->
-  <div style="background:#16213E;padding:10px 14px;border-radius:8px;border:1px solid rgba(240,112,32,.4);margin-bottom:8px">
+  <div class="t4-eec-pro" style="background:#16213E;padding:10px 14px;border-radius:8px;border:1px solid rgba(240,112,32,.4);margin-bottom:8px">
     <div style="font-size:.78rem;font-weight:700;color:#F07020;margin-bottom:6px;letter-spacing:1px">FACTURE EEC PROFESSIONNEL — paramètres</div>
     <div class="fgrid4">
       <div class="fg"><label>Puissance souscrite (kVA)</label><input type="number" id="t4_kva" value="19.8" min="1" max="250" step="0.5"></div>
@@ -819,7 +808,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   <button class="btn-calc" onclick="calcT4()">⚡ CALCULER</button>
   <div class="results" id="r4">
     <!-- P2 : Rapport entreprise -->
-    <div class="ps ps-recap t4-recap">
+    <div class="ps t4-recap">
       <div id="r4_rapport"></div>
       <div class="kpi-grid" id="k4_fin" style="margin:12px 0 6px"></div>
     </div>
@@ -1636,8 +1625,13 @@ function preparePrint(noPrint=false){
   </div>`;
 
   // ===== PAGE « L'ESSENTIEL » (sortie A) =====
+  // Sortie C (onglet 4, tab===4) n'a jamais utilisé cette page — son contenu
+  // et sa mise en page sont propres au rapport entreprise (#r4_rapport).
+  // La générer quand même pour l'onglet 4 ajoutait une page fantôme
+  // « L'essentiel » (le graphique factures était même faux : les variables
+  // consoAn/reinjAn de lastStudyData ne sont jamais renseignées par calcT4).
   const ess=document.getElementById('essentiel-page');
-  if(lastStudyData.prodAn>0){
+  if(lastStudyData.prodAn>0&&tab!==4){
     const L=lastStudyData;
     const eco=L.fSansAn-L.fAvecAn;
     const baisse=L.fSansAn>0?Math.round((1-L.fAvecAn/L.fSansAn)*100):0;
@@ -3074,98 +3068,126 @@ function calcT4(){
   const pbMax_t4=buildAmort(devis,ecoAn,0,s.deg,s.dpv,0,0).pb||s.dpv+1;
   const eco15=_proRows.filter(r=>r.y<=15).reduce((a,r)=>a+r.eco,0);
 
-  // === RAPPORT PRO — Charte Solar Concept ===
-  const R=s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"><span style="font-size:.82rem;color:#555">${s.k}</span><span style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.95rem;font-weight:700;color:${s.or?'#F07020':s.g?'#1a7a3c':'#333'}">${s.v}</span></div>`;
+  // === RAPPORT PRO — page de contenu unique conforme à la maquette validée
+  // _maquettes/T4-sortie-C-1page.html (structure, tailles, ordre des blocs).
+  const dateStr4=new Date().toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'});
+  const Rr=o=>`<div class="t4m-r${o.off?' off':''}"><span class="t4m-k">${o.k}</span><span class="t4m-v${o.or?' or':o.g?' gr':''}">${o.v}</span></div>`;
   document.getElementById('r4_rapport').innerHTML=`
-  <div class="rpt-wrap" style="background:#fff;border:2px solid #F07020;border-radius:12px;overflow:hidden;margin-bottom:16px;color:#333">
+  <style>
+    #r4_rapport .t4m{font-family:'Nunito',sans-serif;color:#333}
+    #r4_rapport .t4m-hd{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:3mm}
+    #r4_rapport .t4m-hd img{height:11mm}
+    #r4_rapport .t4m-hd-r{text-align:right;font-size:10px;color:#5E6165;line-height:1.6}
+    #r4_rapport .t4m-hd-r b{display:block;font-size:12px;color:#333;text-transform:uppercase;letter-spacing:.1em}
+    #r4_rapport .t4m-prj{display:flex;justify-content:space-between;align-items:flex-end;gap:5mm;border-bottom:3px solid #F07020;padding-bottom:1.8mm;margin-bottom:2mm}
+    #r4_rapport .t4m-prj-l{display:flex;align-items:flex-end;gap:4mm}
+    #r4_rapport .t4m-prj-k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6165}
+    #r4_rapport .t4m-prj-n{font-family:'RAIDenmarkNeo',sans-serif;font-size:21px;font-weight:700;letter-spacing:.03em;line-height:1.1;margin-top:.5mm}
+    #r4_rapport .t4m-prj-a{font-size:11px;color:#5E6165;margin-top:.8mm}
+    #r4_rapport .t4m-prj-p{font-family:'RAIDenmarkNeo',sans-serif;font-size:28px;font-weight:700;color:#F07020;line-height:1}
+    #r4_rapport .t4m-sec{background:#F07020;color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:1.2mm 4mm;margin:0 0 1mm;display:flex;justify-content:space-between;align-items:baseline;gap:4mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #r4_rapport .t4m-sec em{font-style:normal;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:none;opacity:.95}
+    #r4_rapport .t4m-r{display:flex;justify-content:space-between;align-items:baseline;gap:5mm;padding:.62mm 4mm;border-bottom:1px solid #F0F1F2}
+    #r4_rapport .t4m-r .t4m-k{font-size:13px;color:#333}
+    #r4_rapport .t4m-r .t4m-v{font-size:14px;font-weight:800;white-space:nowrap}
+    #r4_rapport .t4m-r .t4m-v.or{color:#F07020}
+    #r4_rapport .t4m-r .t4m-v.gr{color:#1a7a3c}
+    #r4_rapport .t4m-r.off{opacity:.42}
+    #r4_rapport .t4m-blk{margin-bottom:1.8mm}
+    #r4_rapport .t4m-note{font-size:10.5px;color:#8E9194;font-style:italic;padding:.8mm 4mm 0}
+    #r4_rapport .t4m-sst{font-size:12px;font-weight:700;margin:0 0 1mm 4mm}
+    #r4_rapport table.t4m-m{width:100%;border-collapse:collapse;table-layout:fixed}
+    #r4_rapport table.t4m-m th,#r4_rapport table.t4m-m td{text-align:center;padding:.9mm .5mm;font-size:12px;border:1px solid #fff}
+    #r4_rapport table.t4m-m th{background:#F07020;color:#fff;font-weight:700;letter-spacing:.04em;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #r4_rapport table.t4m-m td{background:#FCF1EA;font-weight:700}
+    #r4_rapport table.t4m-m tr.t4m-lbl td{background:#fff;border:0}
+    #r4_rapport .t4m-roi{display:flex;justify-content:space-between;align-items:center;background:#F07020;color:#fff;padding:2.8mm 5mm;margin-top:1.5mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #r4_rapport .t4m-roi-k{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.3}
+    #r4_rapport .t4m-roi-v{font-family:'RAIDenmarkNeo',sans-serif;font-size:31px;font-weight:700;line-height:1;white-space:nowrap}
+    #r4_rapport .t4m-nb{font-size:10px;color:#8E9194;font-style:italic;margin-top:2.5mm}
+    #r4_rapport .t4m-ft{margin-top:3mm;border-top:1px solid #DFE1E3;padding-top:2mm;display:flex;justify-content:space-between;font-size:10px;color:#8E9194}
+  </style>
+  <div class="t4m">
 
     <!-- EN-TÊTE -->
-    <div class="rpt-header" style="background:#F07020;padding:16px 24px;display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.7);text-transform:uppercase">Projet Photovoltaïque</div>
-        <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:1px;line-height:1.1">${nom}</div>
-        ${ref?`<div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.9rem;color:rgba(255,255,255,.85);letter-spacing:2px">${ref}</div>`:''}
-      </div>
-      <div style="text-align:right">
-        <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:1.8rem;font-weight:700;color:#fff">${fmtD(kwc)} kWc</div>
-        <div style="font-size:.78rem;color:rgba(255,255,255,.8)">${commune}</div>
-      </div>
+    <div class="t4m-hd">
+      <img src="data:image/png;base64,${LOGO_GROS_B64}" alt="Solar Concept" onerror="this.style.display='none'">
+      <div class="t4m-hd-r"><b>Étude photovoltaïque</b>Établie le ${dateStr4}${ref?' — Réf. '+ref:''}</div>
     </div>
 
-    <div class="rpt-body" style="padding:20px 24px">
-
-      <!-- 1. CARACTÉRISTIQUES DU GÉNÉRATEUR PHOTOVOLTAÏQUE -->
-      <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Caractéristiques du générateur photovoltaïque</div>
-      <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:18px">
-        ${R({k:'Puissance crête du générateur',v:`${fmtD(kwc)} kWc`,or:true})}
-        ${R({k:'Panneaux monocristallins',v:`${nbP} panneaux`})}
-        ${ondList.map(o=>R({k:o.label,v:`${o.qty} ${o.unit}`})).join('')}
-        ${R({k:'Puissance de chaque panneau',v:`${panWc} Watts`})}
-        ${batWh>0?R({k:`Batterie ${BLBL[batModel]} (${(batModel/1000).toFixed(2)} kWh)`,v:`${batQty} ${batQty>1?'unités':'unité'}`,or:true}):''}
-        ${R({k:'Surface du générateur PV',v:`${fmtD(surf,0)} m²`})}
-      </div>
-
-      <!-- 2. RENDEMENT ANNUEL DU GÉNÉRATEUR D'ÉNERGIE -->
-      <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Rendement annuel du générateur d'énergie</div>
-      <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:6px">
-        ${R({k:'Production annuelle d\'énergie',v:`${fmt(prodAn)} kWh`,or:true})}
-        ${R({k:'Autoconsommation estimée',v:`${fmtD(txAuto)} %`})}
-        ${R({k:'Émissions CO₂ évitées',v:`${fmtD(co2Tonnes,1)} tonnes`,g:true})}
-      </div>
-      <div style="font-size:.7rem;color:#888;font-style:italic;margin-bottom:18px">1 kWh produit au fioul = 600 g de CO₂</div>
-
-      <!-- 3. PRODUCTION MENSUELLE -->
-      <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Décomposition de la production mensuelle — moyenne sur 20 ans (kWh)</div>
-      <div class="rpt-prod-table" style="overflow-x:auto;margin-bottom:18px">
-        <table style="width:100%;border-collapse:collapse;font-size:.78rem">
-          <thead><tr>${MO.map(m=>`<th style="background:#F07020;color:#fff;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;padding:5px 6px;text-align:center">${m}</th>`).join('')}<th style="background:#333;color:#fff;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;padding:5px 8px;text-align:center">Total</th></tr></thead>
-          <tbody><tr>${prodMoy20.map(v=>`<td style="text-align:center;padding:5px 4px;border-bottom:1px solid #eee;color:#333;font-weight:600">${fmt(v)}</td>`).join('')}<td style="text-align:center;padding:5px 8px;background:#fff8f0;color:#F07020;font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;font-size:.9rem">${fmt(prodMoy20.reduce((a,b)=>a+b,0))}</td></tr></tbody>
-        </table>
-      </div>
-
-      <!-- 4. DONNÉES ÉCONOMIQUES -->
-      <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Données économiques</div>
-      <div style="font-size:.72rem;color:#888;font-style:italic;margin-bottom:8px">Montants ${modeTTC?'TTC':'HT'} — ${sansIS?"structure non soumise à l'IS":"société soumise à l'IS"}</div>
-      <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:14px">
-        ${R({k:`Coût total de l'investissement ${modeTTC?'TTC':'HT'}`,v:`${fmt(Math.round(devis*kTTC))} F.CFP`,or:true})}
-        ${R({k:`Prix du kWh payé actuellement (${modeTTC?'TTC':'HT'})`,v:`${fmtD(tarif*kTTC,2)} F/kWh`})}
-        ${R({k:'Nombre de kWh produits sur 15 ans',v:`${fmt(kwh15)} kWh`})}
-        ${R({k:'Prix de revient du kWh sur 15 ans',v:`${fmtD(prixRevkWh*kTTC,2)} F/kWh`})}
-        ${R({k:'Économie hypothèse / an',v:`${fmt(Math.round(ecoAn*kTTC))} F.CFP`,g:true})}
-        ${R({k:'Économies réalisées sur 15 ans',v:`${fmt(Math.round(eco15*kTTC))} F.CFP`,g:true})}
-        ${sansIS?R({k:'Amortissement comptable',v:'sans objet',g:true}):R({k:`Avantage amort. comptable / an (${dAmort} ans)`,v:`${fmt(Math.round(avantageAn*kTTC))} F.CFP`,g:true})}
-        ${sansIS?R({k:"Économies d'impôt — IS",v:'—',g:true}):R({k:`Économies d'impôt — IS ${tIS}% sur ${dAmort} ans`,v:`${fmt(Math.round(avantageTotal*kTTC))} F.CFP`,g:true})}
-      </div>
-
-      <!-- 5. RENDEMENT ANNUEL ESTIMÉ — bannière simple -->
-      <div style="background:#fff8f0;border-left:4px solid #F07020;border-radius:6px;padding:10px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase">Soit un rendement annuel estimé de</div>
-        <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:1.8rem;font-weight:700;color:#F07020;line-height:1">${fmtD(rendement)} %</div>
-      </div>
-
-      <!-- 6. COÛT NET APRÈS DÉDUCTION FISCALE — bannière vedette -->
-      <div class="rpt-cout-net" style="background:linear-gradient(135deg,#1a7a3c,#0f5e2a);border-radius:12px;padding:16px 22px;margin-bottom:10px;color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px">
+    <!-- BLOC PROJET -->
+    <div class="t4m-prj">
+      <div class="t4m-prj-l">
+        ${t4Images.logo?`<img src="${t4Images.logo}" style="height:12mm;max-width:32mm;object-fit:contain;margin-right:4mm">`:''}
         <div>
-          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.85);text-transform:uppercase;margin-bottom:4px">${sansIS?`Coût réel supporté ${modeTTC?'TTC':'HT'}`:`Coût ${modeTTC?'TTC':'HT'} après déduction fiscale`}</div>
-          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1">${fmt(Math.round(coutNetImpot*kTTC))} F.CFP</div>
-        </div>
-        <div style="text-align:right;font-size:.78rem;color:rgba(255,255,255,.9);line-height:1.6;border-left:1px solid rgba(255,255,255,.3);padding-left:18px">
-          <div>Invest. brut ${modeTTC?'TTC':'HT'} : <strong>${fmt(Math.round(devis*kTTC))} F.CFP</strong></div>
-          <div>${sansIS?`Amortissement comptable : <strong>sans objet</strong>`:`− Éco IS ${tIS}% × ${dAmort} ans : <strong>−${fmt(Math.round(avantageTotal*kTTC))} F.CFP</strong>`}</div>
+          <div class="t4m-prj-k">Projet photovoltaïque</div>
+          <div class="t4m-prj-n">${nom}</div>
+          <div class="t4m-prj-a">${commune}</div>
         </div>
       </div>
-
-      <!-- 7. RETOUR SUR INVESTISSEMENT — bannière vedette -->
-      <div style="background:linear-gradient(135deg,#F07020,#C05010);border-radius:12px;padding:16px 22px;margin-bottom:12px;color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px">
-        <div>
-          <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.85);text-transform:uppercase;margin-bottom:4px">${sansIS?'Retour sur investissement':'Retour sur investissement après amortissement comptable'}</div>
-          <div style="font-size:.7rem;color:rgba(255,255,255,.85);font-style:italic">éco énergie + amort. IS, hausse tarif et dégradation incluses</div>
-        </div>
-        <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1;text-align:right">${rsi>0?fmtD(rsi,1)+' ans':'—'}</div>
-      </div>
-
-      <div style="font-size:.7rem;color:#888;font-style:italic;padding-top:6px;border-top:1px solid #eee">NB : Les calculs de production prennent en compte l'ensoleillement moyen des 5 dernières années. Résultats estimatifs non contractuels.</div>
+      <div class="t4m-prj-p">${fmtD(kwc)} kWc</div>
     </div>
+
+    <!-- 1. CARACTÉRISTIQUES DU GÉNÉRATEUR -->
+    <div class="t4m-blk">
+      <div class="t4m-sec">Caractéristiques du générateur photovoltaïque</div>
+      ${Rr({k:'Puissance',v:`${fmtD(kwc)} kWc`,or:true})}
+      ${ondList.map(o=>Rr({k:o.label,v:`${o.qty} ${o.unit}`})).join('')}
+      ${Rr({k:'Panneaux monocristallins',v:`${nbP}`})}
+      ${Rr({k:'Puissance de chaque panneau',v:`${panWc} Watts`})}
+      ${batWh>0?Rr({k:`Batterie ${BLBL[batModel]} (${(batModel/1000).toFixed(2)} kWh)`,v:`${batQty} ${batQty>1?'unités':'unité'}`,or:true}):''}
+      ${Rr({k:'Surface du générateur PV',v:`${fmtD(surf,0)} m²`})}
+    </div>
+
+    <!-- 2. RENDEMENT ANNUEL -->
+    <div class="t4m-blk">
+      <div class="t4m-sec">Rendement annuel du générateur d'énergie</div>
+      ${Rr({k:'Production annuelle d\'énergie',v:`${fmt(prodAn)} kWh`,or:true})}
+      ${Rr({k:'Autoconsommation estimée',v:`${fmtD(txAuto)} %`})}
+      ${Rr({k:'Émissions CO₂ évitées',v:`${fmtD(co2Tonnes,1)} Tonnes`,g:true})}
+      <div class="t4m-note">1 kWh produit au fioul = 600 g de CO₂</div>
+    </div>
+
+    <!-- 3. PRODUCTION MENSUELLE — deux rangées de six mois, comme l'Excel -->
+    <div class="t4m-blk">
+      <div class="t4m-sst">Décomposition de la production mensuelle (moyenne sur 20 ans en kWh)</div>
+      <table class="t4m-m">
+        <tr>${MO.slice(0,6).map(m=>`<th>${m}</th>`).join('')}</tr>
+        <tr>${prodMoy20.slice(0,6).map(v=>`<td>${fmt(v)}</td>`).join('')}</tr>
+        <tr class="t4m-lbl"><td colspan="6" style="height:.8mm"></td></tr>
+        <tr>${MO.slice(6,12).map(m=>`<th>${m}</th>`).join('')}</tr>
+        <tr>${prodMoy20.slice(6,12).map(v=>`<td>${fmt(v)}</td>`).join('')}</tr>
+      </table>
+    </div>
+
+    <!-- 4. DONNÉES ÉCONOMIQUES -->
+    <div class="t4m-blk">
+      <div class="t4m-sec">Données économiques<em>Montants <b>${modeTTC?'TTC':'HT'}</b> — <b>${sansIS?"structure non soumise à l'IS":"société soumise à l'IS"}</b></em></div>
+      ${Rr({k:`Coût total de l'investissement ${modeTTC?'TTC':'HT'}`,v:`${fmt(Math.round(devis*kTTC))} F.CFP`,or:true})}
+      ${Rr({k:'Production annuelle',v:`${fmt(prodAn)} kWh/an`})}
+      ${Rr({k:'Nombre de kWh produits sur 15 ans',v:`${fmt(kwh15)} kWh`})}
+      ${Rr({k:'Prix de revient du kWh sur 15 ans d\'utilisation',v:`${fmtD(prixRevkWh*kTTC,2)} F/kWh`})}
+      ${Rr({k:'Prix du kWh payé actuellement',v:`${fmtD(tarif*kTTC,2)} F/kWh`})}
+      ${Rr({k:'Économie hypothèse / an',v:`${fmt(Math.round(ecoAn*kTTC))} F.CFP`,g:true})}
+      ${Rr({k:'Économies réalisées sur 15 ans',v:`${fmt(Math.round(eco15*kTTC))} F.CFP`,g:true})}
+      ${sansIS?Rr({k:'Amortissement comptable : sans objet',v:'—',off:true}):Rr({k:`Avantage annuel lié à l'amortissement comptable (${dAmort} ans)`,v:`${fmt(Math.round(avantageAn*kTTC))} F.CFP`})}
+      ${Rr({k:'Soit un rendement annuel estimé de',v:`${fmtD(rendement,2)} %`,or:true})}
+      ${sansIS?Rr({k:'Prise en compte de l\'amortissement comptable',v:'—',off:true}):Rr({k:'Prise en compte de l\'amortissement comptable (économies d\'impôt correspondantes)',v:`${fmt(Math.round(avantageTotal*kTTC))} F.CFP`})}
+      ${Rr({k:sansIS?'Coût réel supporté':"Coût de l'installation net d'impôt",v:`${fmt(Math.round(coutNetImpot*kTTC))} F.CFP`})}
+    </div>
+
+    <!-- BANDEAU ROI -->
+    <div class="t4m-roi">
+      <div class="t4m-roi-k">${sansIS?'Retour sur investissement':'Retour sur investissement<br>après amortissement comptable'}</div>
+      <div class="t4m-roi-v">${rsi>0?fmtD(rsi,1)+' ans':'—'}</div>
+    </div>
+
+    <div class="t4m-nb">NB — Les calculs de production prennent en compte le temps d'ensoleillement moyen des 5 dernières années. Document estimatif, non contractuel.</div>
+
+    <div class="t4m-ft">
+      <span>SOLAR CONCEPT — 47 03 02 — Nouméa, Nouvelle-Calédonie</span><span>${dateStr4}</span>
+    </div>
+
   </div>`;
 
   kpiGrid('k4_fin',[
