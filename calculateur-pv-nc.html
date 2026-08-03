@@ -749,6 +749,14 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
         <option value="hybride_string">Hybride + String</option>
       </select>
     </div>
+    <div class="fg"><label>Logo du client (optionnel)</label>
+      <input type="file" id="t4_logo_file" accept="image/*" onchange="t4LoadImage(this,'logo',400)">
+      <div id="t4_logo_prev" style="margin-top:6px"></div>
+    </div>
+    <div class="fg"><label>Photo du site (optionnel)</label>
+      <input type="file" id="t4_photo_file" accept="image/*" onchange="t4LoadImage(this,'photo',1400)">
+      <div id="t4_photo_prev" style="margin-top:6px"></div>
+    </div>
   </div>
   <div id="t4_ond_blocks" style="margin-bottom:10px">
     <div id="t4_ond_micro_block" class="fgrid2" style="background:#16213E;padding:10px 14px;border-radius:8px;border:1px solid rgba(240,112,32,.4);margin-bottom:6px">
@@ -1124,7 +1132,8 @@ function buildStudyJSON(){
       factureApresAnXPF:Math.round(d.fAvecAn),economieAn1XPF:Math.round(d.ecoAn1||d.ecoAn),
       gains10ansXPF:Math.round(d.eco10||0),gains15ansXPF:Math.round(d.eco15||0),paybackAn:d.pb||null},
     tranchesFiscales:tranches,
-    parametres:s
+    parametres:s,
+    images:{logo:t4Images.logo,photo:t4Images.photo}
   };
 }
 function exportStudyJSON(){
@@ -2904,6 +2913,47 @@ function t4_getOndList(){
   return list;
 }
 
+// ===== IMAGES DU DOSSIER (logo client, photo du site) =====
+// Redimensionnées par canvas AVANT stockage : une photo brute de téléphone
+// saturerait le quota localStorage et alourdirait le JSON d'étude.
+let t4Images={logo:null,photo:null};
+
+function t4LoadImage(input,cible,maxPx){
+  const f=input.files&&input.files[0];
+  if(!f)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const ech=Math.min(1,maxPx/img.width);
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*ech);
+      c.height=Math.round(img.height*ech);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      t4Images[cible]=c.toDataURL('image/jpeg',0.85);
+      t4RenderPreview(cible);
+    };
+    img.src=e.target.result;
+  };
+  rd.readAsDataURL(f);
+}
+
+function t4RenderPreview(cible){
+  const d=document.getElementById('t4_'+cible+'_prev');
+  if(!d)return;
+  d.innerHTML=t4Images[cible]
+    ? `<img src="${t4Images[cible]}" style="max-height:46px;max-width:150px;border-radius:4px">
+       <button type="button" onclick="t4ClearImage('${cible}')" style="margin-left:8px;cursor:pointer">Retirer</button>`
+    : '';
+}
+
+function t4ClearImage(cible){
+  t4Images[cible]=null;
+  const inp=document.getElementById('t4_'+cible+'_file');
+  if(inp)inp.value='';
+  t4RenderPreview(cible);
+}
+
 // ===== CALCUL TAB 4 =====
 function calcT4(){
   const s=getS();
@@ -3196,6 +3246,17 @@ function calcT4(){
       const l=document.getElementById(lid);
       if(s&&l) l.textContent=s.value;
     });
+    // Restaurer le logo client / la photo du site depuis l'étude rechargée
+    // (un <input type="file"> ne peut pas être pré-rempli — voir saveStudy()).
+    const t4ImgTag=document.getElementById('t4-images-data');
+    if(t4ImgTag){
+      try{
+        const imgs=JSON.parse(t4ImgTag.textContent);
+        t4Images.logo=imgs.logo||null;
+        t4Images.photo=imgs.photo||null;
+        t4RenderPreview('logo'); t4RenderPreview('photo');
+      }catch(e){console.error('Restauration images T4 échouée:',e);}
+    }
   }
 })();
 
@@ -3239,6 +3300,18 @@ async function saveStudy(){
     if(!metaTag){metaTag=document.createElement('meta');metaTag.name='saved-study';document.head.appendChild(metaTag);}
     metaTag.content='true';
 
+    // --- Sérialiser le logo client / la photo du site ---
+    // Un <input type="file"> ne peut pas être pré-rempli : sans ceci, les
+    // images seraient perdues à la réouverture de la copie HTML sauvegardée.
+    let t4ImgTag=document.getElementById('t4-images-data');
+    if(!t4ImgTag){
+      t4ImgTag=document.createElement('script');
+      t4ImgTag.type='application/json';
+      t4ImgTag.id='t4-images-data';
+      document.head.appendChild(t4ImgTag);
+    }
+    t4ImgTag.textContent=JSON.stringify(t4Images);
+
     // --- Capturer le HTML complet ---
     const clientRaw=clientName()||document.getElementById('t4_nom')?.value||'Etude';
     const client=clientRaw.replace(/[^\w\sÀ-ÿ]/g,'').replace(/\s+/g,' ').trim()||'Etude';
@@ -3247,8 +3320,13 @@ async function saveStudy(){
     const filename=client+' '+dStr+'.html';
     const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
 
-    // --- Retirer le meta tag ---
+    // --- Retirer le meta tag et les données images du document en mémoire ---
+    // (même logique que le meta tag : ces balises n'ont de sens que dans la
+    // copie téléchargée. Les laisser dans le document vivant créerait une
+    // copie figée de t4Images qui divergerait silencieusement de la variable
+    // si l'utilisateur change une image puis sauvegarde à nouveau.)
     metaTag.remove();
+    t4ImgTag.remove();
 
     // --- Restaurer les selects ---
     selectStates.forEach(({el,saved})=>{
