@@ -62,6 +62,41 @@ Dépendances : Plotly 2.27.0 (CDN)
 - Sortie B ramenée de 4 à 3 pages
 - **Onglet 4 (sortie C) volontairement hors périmètre** : rendu d'origine conservé
 
+### Sortie C (onglet 4, entreprise) — Août 2026
+
+**L'Excel fait foi pour la sortie entreprise.** Document de référence :
+`Solar Concept/1.2 - MODELES De Documents/Modèles Etude à joindre au Devis/Simulation financière Pro1.xlsx`.
+
+- **Format figé : deux pages**, garde + une page de contenu. Les graphiques et le tableau
+  d'amortissement restent visibles à l'écran mais **ne s'impriment plus** (`#r4 .ps-page2`
+  masqué en `@media print`). L'entrée `amort` a été retirée de `PRINT_CFG.C` : elle serait
+  restée sans effet.
+- **Production : `IDX_PRO`**, coefficients mensuels du modèle Excel (somme 1486 kWh/kWc/an).
+  ⚠️ **Réservée à l'onglet 4.** Les onglets 1 à 3 continuent d'utiliser `prodM()` — ce n'est
+  pas un doublon, ne pas fusionner.
+- **ROI : formule Excel** `coût net ÷ économie annuelle` (`rsi`), et non plus le payback
+  dynamique `pbPro`, qui reste calculé et exposé mais ne s'imprime plus. Repli sur « — »
+  quand le retour n'est pas atteignable.
+- **Surface : 2,2 m²/panneau** sur les quatre onglets (l'Excel fait `ROUND(nb × 2,2)`).
+- **Deux bascules** : montants `HT` (défaut) ou `TTC` (taux du champ `#s_tgc`), et régime
+  `IS` (défaut) ou `sans IS`. En TTC, le facteur ne s'applique **qu'à l'affichage** :
+  le ROI et le rendement doivent rester identiques entre HT et TTC — un écart est un bug.
+- **Logo client et photo du site** : `t4Images`, import de fichier uniquement (jamais de
+  recherche web — le calculateur tourne hors ligne). Redimensionnés par canvas avant
+  stockage (400 px / 1400 px), sérialisés dans le HTML par `saveStudy()` via la balise
+  `#t4-images-data`. Emplacement absent = rien d'affiché, aucun cadre vide.
+- **Garde dédiée** : `coverPro()`, aiguillée par `isPro` dans `preparePrint()`. La garde des
+  particuliers n'est jamais modifiée.
+- **Plus de compensation carbone en arbres** (absente du modèle). Les tonnes de CO₂ restent.
+- La **configuration des onduleurs préexistait** (`t4_getOndList()`) : micro, hybride,
+  string, hybride + string.
+
+**Test de référence** — saisir dans T4 les paramètres du modèle (18,9 kWc, 42 × 450 Wc,
+19,8 kVA, prime 964, redevance 681, taxe 9 %, tarif 29,62, autoconso 65 %, revente 0,
+sans batterie, devis 2 900 000, IS 30 % sur 10 ans, conso 2 300 kWh × 12) doit redonner :
+production 28 085 kWh, surface 92 m², économie 579 207 F, avantage 87 000 F, économies
+d'impôt 870 000 F, coût net 2 030 000 F, rendement 22,97 %, **ROI 3,5 ans**.
+
 ### Comptes rendus de session
 Chaque session de travail produit un compte rendu dans `docs/sessions/`, nommé
 `AAAA-MM-JJ-sujet.md`. Il consigne les arbitrages et ce qui a été écarté, pas
