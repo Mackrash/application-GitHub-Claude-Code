@@ -2427,7 +2427,7 @@ function calcT1(){
   const prod=prodM(kwc,s.en,s.pe);
   const prodAn=prod.reduce((a,b)=>a+b,0);
   const nbP=Math.ceil(kwc*1000/panWc);
-  const surf=nbP*2.1;
+  const surf=nbP*2.2;
   const dod=s.dod/100;
   const batUtileJ=batWh>0?batWh/1000*dod:0; // kWh utile par jour
 
@@ -2559,7 +2559,7 @@ function calcT2(){
   const autoconsoDirecteM=prodM2.map((p,i)=>Math.max(0,p-reinjM[i]));
   const autoconsoDirecteAn=autoconsoDirecteM.reduce((a,b)=>a+b,0);
   const nbP=Math.ceil(kwc*1000/panWc);
-  const surf=nbP*2.1;
+  const surf=nbP*2.2;
 
   // === SIMULATION AJOUT BATTERIE ===
   // La réinjection réseau charge la batterie en journée → décharge la nuit → réduit achat réseau
@@ -2687,7 +2687,7 @@ function calcT3(){
   const achatAn=achatM.reduce((a,b)=>a+b,0);
   const injAn=injM.reduce((a,b)=>a+b,0);
   const nbP=Math.ceil(kwc*1000/450);
-  const surf=nbP*2.1;
+  const surf=nbP*2.2;
 
   // Recommandation batterie (pic journalier × couverture souhaitée)
   const peakAchat=Math.max(...achatM.map((a,i)=>a/DM[i]));
@@ -2929,7 +2929,7 @@ function calcT4(){
   const achatAvantAn=achatAvant.reduce((a,b)=>a+b,0);
   const txAuto=autoAn/prodAn*100;
   const nbP=Math.ceil(kwc*1000/panWc);
-  const surf=nbP*2.1;
+  const surf=nbP*2.2;
 
   // === SIMULATION BATTERIE ===
   // Surplus PV charge la batterie en journée → décharge réduit l'achat réseau
