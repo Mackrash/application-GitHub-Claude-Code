@@ -887,6 +887,12 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 // Indices de production saisonnière NC (courbe métier Solar Concept — creux d'hiver Juin 0.65, pic Déc 1.50)
 const IDX=[1.38,1.38,1.32,0.90,0.80,0.65,0.80,0.95,1.25,1.25,1.40,1.50];
 const IDXSUM=IDX.reduce((a,b)=>a+b,0);
+// Coefficients mensuels kWh/kWc du modèle Excel « Simulation financière Pro1.xlsx »
+// (feuille Simul Conso, colonne B : =F4*147, =F4*138, …). Somme = 1486 kWh/kWc/an.
+// RÉSERVÉ À L'ONGLET 4 : décision Tony 03/08/2026, l'Excel fait foi pour la sortie
+// entreprise. Les onglets 1 à 3 continuent d'utiliser prodM(). Ce n'est PAS un doublon
+// de IDX — ne pas fusionner les deux.
+const IDX_PRO=[147,138,132,102,99,90,93,108,133,144,148,152];
 const MO=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 const DM=[31,28,31,30,31,30,31,31,30,31,30,31];
 const TRANCHES_NC=[
@@ -2917,7 +2923,8 @@ function calcT4(){
   const redevM=redev;
   const tcMul=1+tc/100;
 
-  const prod=prodM(kwc,s.en,s.pe);
+  // Production selon le modèle Excel (voir IDX_PRO) — spécifique à l'onglet 4
+  const prod=IDX_PRO.map(c=>kwc*c);
   const prodAn=prod.reduce((a,b)=>a+b,0);
   // Autoconso = part de la conso couverte directement par PV le jour (limité par la prod dispo)
   // Le reste de la conso (1-partA) est consommé hors prod (nuit) → achat ou décharge batterie
