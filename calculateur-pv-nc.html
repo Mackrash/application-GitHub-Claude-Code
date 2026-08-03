@@ -3095,7 +3095,7 @@ function calcT4(){
           <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.85);text-transform:uppercase;margin-bottom:4px">Retour sur investissement après amortissement comptable</div>
           <div style="font-size:.7rem;color:rgba(255,255,255,.85);font-style:italic">éco énergie + amort. IS, hausse tarif et dégradation incluses</div>
         </div>
-        <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1;text-align:right">${fmtD(rsi,1)} ans</div>
+        <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1;text-align:right">${rsi>0?fmtD(rsi,1)+' ans':'—'}</div>
       </div>
 
       <div style="font-size:.7rem;color:#888;font-style:italic;padding-top:6px;border-top:1px solid #eee">NB : Les calculs de production prennent en compte l'ensoleillement moyen des 5 dernières années. Résultats estimatifs non contractuels.</div>
