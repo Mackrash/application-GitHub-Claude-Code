@@ -90,10 +90,50 @@ Non-régression contrôlée par rendu PDF : sortie A à 6 pages, sorties B à 8 
 au pixel près** avant et après. Réserve verticale de la page de contenu : 23,1 mm en cas dense
 (deux lignes d'onduleurs, logo client, nom de projet de 80 caractères).
 
-## Reste à faire
+## Un douzième écart, trouvé au rendu final seulement
 
-- Fusionner la branche `t4-sortie-c` dans `main` et pousser.
-- Régénérer les PDF de référence dans `_rendu-final/`.
-- Deux points mineurs différés : `t4LoadImage()` sans `onerror` (échec silencieux si le
-  fichier n'est pas une image), et règles CSS devenues mortes autour du tableau
-  d'amortissement.
+L'analyse ligne à ligne avait conclu à trois écarts. Le **contrôle visuel du document imprimé**
+en a révélé un quatrième que la comparaison des formules avait manqué : les **économies sur
+15 ans**. Le calculateur sommait les bénéfices année par année en appliquant la dégradation des
+panneaux (8 567 523 F) là où l'Excel fait simplement `économie annuelle × 15` (8 688 109 F).
+Corrigé, l'Excel faisant foi.
+
+Leçon : comparer les formules ne suffit pas. Il faut **regarder le document produit**, ligne à
+ligne, contre le modèle.
+
+## Erreurs de méthode de cette session
+
+- **La configuration des onduleurs a été proposée au développement alors qu'elle existait
+  déjà.** L'analyse initiale s'était appuyée sur des `grep` trop étroits et sur la lecture
+  d'une seule ligne d'un objet qui s'étend sur plusieurs. Tony a validé une fonctionnalité
+  inutile avant que la vérification ne l'annule. Le réflexe manquant : lister *tous* les
+  identifiants d'un onglet (`grep -o 'id="t4_[a-z_]*"'`) avant de conclure à une absence.
+- **Le plan s'appuyait sur un import d'étude au format JSON qui n'existe pas.** Le mécanisme
+  réel est `saveStudy()`, qui régénère une copie du fichier HTML. Détecté au moment de
+  dispatcher la tâche, corrigé dans la consigne — mais le plan aurait dû le vérifier.
+- **Une fausse alerte sur les séparateurs de milliers** : lus comme absents sur un rendu à
+  90 dpi, ils étaient bien présents (espace fine U+202F, peu visible à cette résolution).
+  Vérifier dans le texte extrait du PDF, jamais à l'œil sur une image basse résolution.
+- **La revue finale globale de la branche n'a pas été faite**, à la demande de Tony qui
+  trouvait le protocole de revue disproportionné. Chaque tâche a été revue individuellement
+  et le test de référence passe, mais aucune relecture d'ensemble n'a eu lieu.
+
+## Déploiement
+
+Branche `t4-sortie-c` (13 commits) fusionnée dans `main`, poussée, et GitHub Pages
+redéployé. **Vérification faite sur la version publiée** — pas seulement sur le local : la
+page en ligne a été retéléchargée et le rendu rejoué dessus, il donne bien 2 pages,
+8 688 109 F d'économies sur 15 ans et 22,97 % de rendement.
+
+## Reste ouvert
+
+- **Horizon 20 ans / 25 ans** : libellé de section et tableau d'amortissement tronqué à
+  20 lignes restent codés en dur face au paramètre `s.dpv`. Concerne toutes les sorties.
+- **Taux d'autoconsommation** : le calculateur affiche le taux réellement atteint (63,9 %),
+  l'Excel afficherait le paramètre saisi (65 %). Le calculateur est plus juste ; à trancher
+  si la conformité stricte au modèle est voulue.
+- **`t4LoadImage()` sans `onerror`** : échec silencieux si le fichier choisi n'est pas une
+  image valide.
+- **Règles CSS mortes** autour du tableau d'amortissement, devenues sans objet depuis le
+  masquage de `.ps-page2` à l'impression.
+- **Police Nunito** déclarée dans le template T4 sans `@import` : repli sur la police système.
