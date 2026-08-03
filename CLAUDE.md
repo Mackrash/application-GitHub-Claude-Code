@@ -1,6 +1,20 @@
-# CLAUDE.md — Solar Concept
+# CLAUDE.md — Calculateur PV NC (Solar Concept)
 
-This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
+Guide de travail pour ce dépôt. Projet **monopage HTML** : tout tient dans
+`calculateur-pv-nc.html`.
+
+## Emplacement — règle dure
+
+**Décision Tony 03/08/2026** : le calculateur vit dans **un seul dossier**, `AppIA/CalcPV/`.
+Il occupait auparavant `SOLAR/Calculateur SOLAIRE/`, doublé d'une copie périmée à la racine
+`SOLAR/` — les deux ont disparu. **Ne jamais recréer de copie ailleurs dans le portfolio.**
+
+La **source de vérité est la version en ligne** (GitHub Pages, URL ci-dessous). En cas de
+doute sur l'état du fichier, c'est elle qui tranche, pas une copie locale.
+
+Seule exception légitime : `AppIA/Intranet/SOLAR/intranet-front/public/calculateur-pv-nc.html`,
+qui n'est pas une copie mais une **redirection** de 648 octets vers l'URL publique. Ne pas y
+coller le vrai fichier.
 
 ## Repo GitHub
 
@@ -87,7 +101,12 @@ Slogan : *"Votre meilleure source d'énergie"*
 - **Logo / Titres** : **Raidenmark Neo Bold** — géométrique, tout en MAJUSCULES
 - Pas de serif, pas de couleurs froides (bleu, vert)
 
-### Logos disponibles (`Données/Graphique/`)
+### Logos disponibles (`Graphique/`, copie de travail locale)
+
+Le **canon** reste `../../SOLAR/Données/Graphique/`. La copie locale `Graphique/` porte en
+plus quelques visuels propres au calculateur (`Facture Avant_apres.jpg`,
+`Maison Caledonienne claire.png`). Elle est ignorée par git.
+
 | Fichier | Usage |
 |---|---|
 | `LOGO SC ORANGE.png` | Texte orange sur fond blanc |
@@ -99,7 +118,7 @@ Slogan : *"Votre meilleure source d'énergie"*
 | `Diapositive1.PNG` | Visuel présentation Solar Concept |
 | `MAison 1.png` / `MAison 2.jpg` | Photos installation solaire |
 
-### Données batteries OMEGA Power (`Données/Données Batterie/`)
+### Données batteries OMEGA Power (`../../SOLAR/Données/Données Batterie/`)
 Fiches techniques des 3 modèles de batteries :
 | Modèle | Fichiers |
 |---|---|
