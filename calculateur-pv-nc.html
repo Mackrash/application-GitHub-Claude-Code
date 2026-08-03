@@ -2962,7 +2962,6 @@ function calcT4(){
 
   // CO2 & compensation carbone (1 kWh PV = 600g CO2 évité au fioul)
   const co2Tonnes=Math.round(prodAn*0.0006*10)/10;
-  const arbres=Math.round(prodAn*0.03); // 1 arbre absorbe ~20kg CO2/an
 
   // kWh sur 15 ans (simplifié)
   const kwh15=Math.round(prodAn*15);
@@ -3039,10 +3038,9 @@ function calcT4(){
       <div class="rpt-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:6px">
         ${R({k:'Production annuelle d\'énergie',v:`${fmt(prodAn)} kWh`,or:true})}
         ${R({k:'Autoconsommation estimée',v:`${fmtD(txAuto)} %`})}
-        ${R({k:'Compensation carbone par an',v:`${fmt(arbres)} arbres`,g:true})}
         ${R({k:'Émissions CO₂ évitées',v:`${fmtD(co2Tonnes,1)} tonnes`,g:true})}
       </div>
-      <div style="font-size:.7rem;color:#888;font-style:italic;margin-bottom:18px">1 kWh produit au fioul = 600 g de CO₂ — 1 arbre absorbe ~20 kg CO₂/an</div>
+      <div style="font-size:.7rem;color:#888;font-style:italic;margin-bottom:18px">1 kWh produit au fioul = 600 g de CO₂</div>
 
       <!-- 3. PRODUCTION MENSUELLE -->
       <div style="font-family:'RAIDenmarkNeo',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;color:#F07020;text-transform:uppercase;border-left:3px solid #F07020;padding-left:8px;margin-bottom:8px">Décomposition de la production mensuelle — moyenne sur 20 ans (kWh)</div>
