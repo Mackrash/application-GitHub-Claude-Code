@@ -91,6 +91,31 @@ Dépendances : Plotly 2.27.0 (CDN)
 - La **configuration des onduleurs préexistait** (`t4_getOndList()`) : micro, hybride,
   string, hybride + string.
 
+#### Page de garde — refonte du 04/08/2026
+
+Barre orange latérale pleine hauteur, bord à bord. Règles dures :
+
+- **La garde doit tenir debout sans photo du site.** La photo est un bonus, jamais un
+  prérequis de mise en page — c'est le défaut qui a motivé la refonte. **Pas de bloc de
+  texte à sa place** (un bloc de synthèse chiffré a été construit puis retiré), et **pas de
+  photo générique en repli** : elle montrerait une installation qui n'est pas celle du client.
+- ⚠️ **`@page cover` (marge nulle) reste restreinte à `body.print-C`.** Les gardes des
+  sorties A et B partagent le conteneur `#cover-page` et dépendent des marges `@page`
+  globales — les leur retirer casse leur mise en page.
+- **Hauteur de la garde en `100vh`, jamais en `mm`.** Une hauteur fixe dépassant la zone
+  imprimable déclenche un shrink-to-fit qui réduit toute la page (91 % constatés).
+- **Aucune mention ni visuel de batterie** sur cette garde.
+- **Logos : émetteur à gauche** (Solar Concept, 27 mm), **destinataire à droite** (logo
+  client importé, 28 mm max).
+- Le pied de page répété (`body::after`) est masqué en sortie C : il traversait la barre, et
+  la page de contenu porte déjà sa propre mention légale.
+- Contrôle : `node tests/rendu-garde-pro.js` — rendu avec et sans photo, 2 pages, test de
+  référence et stabilité HT/TTC en une commande.
+- Spec : `docs/superpowers/specs/2026-08-04-garde-entreprise-barre-orange-design.md`.
+
+⚠️ Piège d'outillage : **Playwright ignore les `@page` nommées sans `preferCSSPageSize: true`**.
+Un test sans cette option rogne la barre alors que Chrome la rend correctement.
+
 **Test de référence** — saisir dans T4 les paramètres du modèle (18,9 kWc, 42 × 450 Wc,
 19,8 kVA, prime 964, redevance 681, taxe 9 %, tarif 29,62, autoconso 65 %, revente 0,
 sans batterie, devis 2 900 000, IS 30 % sur 10 ans, conso 2 300 kWh × 12) doit redonner :
@@ -101,6 +126,10 @@ d'impôt 870 000 F, coût net 2 030 000 F, rendement 22,97 %, **ROI 3,5 ans**.
 Chaque session de travail produit un compte rendu dans `docs/sessions/`, nommé
 `AAAA-MM-JJ-sujet.md`. Il consigne les arbitrages et ce qui a été écarté, pas
 seulement ce qui a été fait. Convention détaillée dans `docs/sessions/README.md`.
+
+**Rituel v3** (04/08/2026) : quatre sections — *Fait · Décidé · Reste ouvert · Reprise* — et
+**la dernière fiche porte l'état du projet**. Plus d'`ETAT.md` : au démarrage d'une session,
+lire `ls docs/sessions/ | tail -1`, c'est tout.
 
 ### Règles de travail sur ce fichier
 - **Ne jamais modifier les calculs** (`calcT1` à `calcT4`, `buildAmort`, `factureMois`, `prodM`) sans accord explicite. `lastStudyData` ne doit qu'exposer des valeurs déjà produites.
