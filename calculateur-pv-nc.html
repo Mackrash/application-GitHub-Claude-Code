@@ -220,6 +220,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 #essentiel-page{display:none}
 /* Marges : 1.5cm côtés, 1.8cm haut, 2.2cm bas (pied de page) */
 @page{size:A4 portrait;margin:12mm 9mm 14mm 9mm}
+/* Page nommée réservée à la garde entreprise : sa barre orange latérale doit
+   filer jusqu'aux bords de la feuille, ce qu'interdit la marge @page globale.
+   Les marges reviennent d'elles-mêmes sur les pages suivantes. */
+@page cover{size:A4 portrait;margin:0}
 @media print{
 
   /* ── FIDÉLITÉ COULEURS ── */
@@ -485,6 +489,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
   /* ── PAGE DE GARDE ── */
   #cover-page{display:block!important;break-after:page;margin:0;padding:0}
+  /* Marge nulle réservée à la sortie C : sa barre orange doit filer jusqu'aux
+     bords. Les gardes particulier (sorties A et B) partagent ce conteneur et
+     restent sur les marges @page globales — leur mise en page en dépend. */
+  body.print-C #cover-page{page:cover}
   #last-page{display:block!important;break-before:page;margin:0;padding:0}
   #essentiel-page{display:block!important;break-before:page;margin:0;padding:0}
   /* Le bloc « Impact financier » ouvre sa propre page : son bandeau coiffe
@@ -511,6 +519,12 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     padding-top:4pt;
     text-align:center;
   }
+  /* Sortie C : ce pied est en position:fixed, donc répété sur chaque page — il
+     traversait le bas de la barre orange de la garde. On le retire pour la
+     sortie entreprise : la garde porte déjà le téléphone dans sa barre, et la
+     page de contenu a sa propre mention « Document estimatif, non contractuel ».
+     (Arbitrage Tony, 04/08/2026.) */
+  body.print-C::after{display:none}
   body{padding-bottom:1.5cm}
 }
 </style>
@@ -1492,71 +1506,108 @@ function preparePrint(noPrint=false){
   const kwcStr=kwc?fmtD(kwc)+' kWc':'';
 
   // ===== GARDE ENTREPRISE (sortie C) — template dédié, distinct de la garde
-  // particulier ci-dessous (jamais modifiée). Design validé par le client :
-  // _maquettes/T4-garde-entreprise.html. Orange en accent seulement (filet,
-  // barre verticale) — pas d'aplat de fond, à l'inverse de la garde particulier.
+  // particulier ci-dessous (jamais modifiée). Design validé par Tony le
+  // 04/08/2026 : barre orange latérale pleine hauteur portant le slogan.
+  // Spec : docs/superpowers/specs/2026-08-04-garde-entreprise-barre-orange-design.md
+  // Maquettes : _maquettes/T4-garde-A5-{sans,avec}-photo.png
+  //
+  // Le bloc central (photo du site OU synthèse chiffrée) porte flex:1 : il absorbe
+  // la hauteur disponible. C'est ce qui empêche le blanc de se former en bas de
+  // page — le défaut de la version précédente, où seule une photo importée
+  // pouvait remplir la moitié basse.
   function coverPro(){
     const refAuto=`SC-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
     const prodAnStr=lastStudyData.prodAn?fmt(Math.round(lastStudyData.prodAn))+' kWh':'—';
     const roiStr=lastStudyData.rsi>0?fmtD(lastStudyData.rsi,1)+' ans':'—';
     const nomClient=client||'Entreprise';
+
     return `
     <style>
-      #cover-page .tcv{width:100%;min-height:271mm;background:#fff;font-family:'Nunito',sans-serif;color:#333;
-        display:flex;flex-direction:column;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      /* Marges négatives = celles de @page (12mm 9mm 14mm 9mm) : la barre orange
+         doit filer jusqu'aux bords de la feuille, sinon elle flotte dans un cadre
+         blanc. Seule la garde déborde ainsi ; les autres pages gardent leurs marges. */
+      /* 100vh, pas 297mm : si le navigateur honore @page cover (marge nulle), la
+         garde occupe la feuille entière ; sinon elle remplit la zone imprimable
+         sans déborder. Une hauteur fixe en mm déclenchait un shrink-to-fit qui
+         réduisait toute la page à 91 %. */
+      #cover-page .tcv{width:100%;height:100vh;
+        background:#fff;font-family:'Nunito',sans-serif;color:#333;
+        display:flex;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      /* Barre identitaire : seul aplat de couleur de la page. */
+      #cover-page .tcv-bar{width:26mm;flex:0 0 26mm;background:#F07020;color:#fff;display:flex;
+        flex-direction:column;align-items:center;justify-content:space-between;padding:14mm 0 12mm;
+        position:relative;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      #cover-page .tcv-bar:after{content:'';position:absolute;left:-24mm;bottom:28mm;width:70mm;height:70mm;
+        border-radius:50%;background:rgba(255,255,255,.11)}
+      #cover-page .tcv-bar-slogan{writing-mode:vertical-rl;transform:rotate(180deg);
+        font-family:'RAIDenmarkNeo',sans-serif;font-size:18px;letter-spacing:.15em;text-transform:uppercase;position:relative}
+      #cover-page .tcv-bar-tel{writing-mode:vertical-rl;transform:rotate(180deg);font-size:17px;
+        font-weight:800;letter-spacing:.12em;position:relative}
+      #cover-page .tcv-bar-nom{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;
+        font-weight:700;letter-spacing:.06em;position:relative;opacity:.92;margin-bottom:5mm}
+      #cover-page .tcv-body{flex:1;display:flex;flex-direction:column;padding:20mm 16mm 20mm 14mm;min-width:0}
       #cover-page .tcv-logos{display:flex;justify-content:space-between;align-items:center;gap:8mm}
-      #cover-page .tcv-logos img.sc{height:14mm;max-width:60mm;width:auto;object-fit:contain}
-      #cover-page .tcv-logos img.cli{max-height:16mm;max-width:45mm;object-fit:contain}
-      #cover-page .tcv-rule{height:2px;background:#F07020;margin:5mm 0 0}
-      #cover-page .tcv-ttl{margin-top:14mm}
-      #cover-page .tcv-ttl-k{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#F07020;font-weight:700}
-      #cover-page .tcv-ttl-h{font-size:40px;font-weight:800;letter-spacing:.02em;line-height:1.08;margin-top:3mm;color:#333}
-      #cover-page .tcv-ttl-s{font-size:14px;color:#6A6D71;margin-top:2.5mm}
-      #cover-page .tcv-ttl-r{font-size:11px;color:#8E9194;margin-top:4mm}
-      #cover-page .tcv-cli{margin-top:12mm;border-left:4px solid #F07020;padding-left:6mm}
-      #cover-page .tcv-cli-k{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#6A6D71}
-      #cover-page .tcv-cli-n{font-size:31px;font-weight:800;letter-spacing:.02em;line-height:1.1;margin-top:1.5mm;color:#333}
-      #cover-page .tcv-cli-a{font-size:13px;color:#6A6D71;margin-top:1.5mm;line-height:1.6}
-      #cover-page .tcv-kpi{display:flex;margin-top:10mm;border-top:1px solid #DFE1E3;border-bottom:1px solid #DFE1E3}
-      #cover-page .tcv-kpi div{flex:1;padding:4.5mm 3mm 4.5mm 6mm;border-left:1px solid #DFE1E3}
-      #cover-page .tcv-kpi div:first-child{border-left:0;padding-left:0}
-      #cover-page .tcv-kpi-v{font-size:26px;font-weight:800;color:#F07020;line-height:1}
-      #cover-page .tcv-kpi-l{font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:#6A6D71;margin-top:2mm;line-height:1.4}
-      #cover-page .tcv-photo{margin-top:10mm;height:66mm}
-      #cover-page .tcv-photo img{width:100%;height:100%;object-fit:cover;border-radius:1.5mm;display:block}
-      
-        
-      
-      
+      #cover-page .tcv-logos img.sc{height:27mm;max-width:78mm;width:auto;object-fit:contain}
+      #cover-page .tcv-logos img.cli{max-height:28mm;max-width:52mm;object-fit:contain}
+      #cover-page .tcv-rule{height:3px;background:#F07020;margin:5mm 0 0}
+      #cover-page .tcv-ttl{margin-top:10mm}
+      #cover-page .tcv-ttl-k{font-size:16px;letter-spacing:.32em;text-transform:uppercase;color:#F07020;font-weight:800}
+      #cover-page .tcv-ttl-h{font-size:44px;font-weight:800;letter-spacing:-.01em;line-height:1.05;margin-top:4mm;color:#333}
+      #cover-page .tcv-ttl-s{font-size:14.5px;color:#6A6D71;margin-top:3.5mm}
+      #cover-page .tcv-ttl-r{font-size:11px;color:#9EA1A4;margin-top:3mm}
+      #cover-page .tcv-cli{margin-top:9mm;border-left:6px solid #F07020;padding-left:6mm}
+      #cover-page .tcv-cli-k{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#8E9194}
+      #cover-page .tcv-cli-n{font-size:50px;font-weight:800;letter-spacing:.01em;line-height:1.1;margin-top:2mm;color:#333}
+      #cover-page .tcv-cli-a{font-size:13.5px;color:#6A6D71;margin-top:2mm;line-height:1.6}
+      /* flex:1 sur le bloc central — voir le commentaire de coverPro(). */
+      #cover-page .tcv-photo{margin-top:9mm;flex:1;min-height:50mm;border-radius:2mm;overflow:hidden}
+      #cover-page .tcv-photo img{width:100%;height:100%;object-fit:cover;display:block}
+      #cover-page .tcv-kpi{margin-top:auto;display:flex;gap:5mm}
+      #cover-page .tcv-kpi>div{flex:1;border-top:4px solid #F07020;border-left:1px solid #E7E9EB;
+        border-right:1px solid #E7E9EB;border-bottom:1px solid #E7E9EB;border-radius:0 0 2mm 2mm;padding:6.5mm 5mm 7mm}
+      /* nowrap : « 28 085 kWh » ne doit jamais casser sur deux lignes. */
+      #cover-page .tcv-kpi-v{font-size:25px;font-weight:800;color:#F07020;line-height:1;white-space:nowrap}
+      #cover-page .tcv-kpi-l{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#6A6D71;margin-top:3mm;line-height:1.4}
     </style>
     <div class="tcv">
 
-      <div class="tcv-logos">
-        <img class="sc" src="data:image/png;base64,${LOGO_GROS_B64}" alt="Solar Concept" onerror="this.style.display='none'">
-        ${t4Images.logo?`<img class="cli" src="${t4Images.logo}" alt="Logo client">`:''}
-      </div>
-      <div class="tcv-rule"></div>
-
-      <div class="tcv-ttl">
-        <div class="tcv-ttl-k">Étude technique et financière</div>
-        <div class="tcv-ttl-h">Étude photovoltaïque</div>
-        <div class="tcv-ttl-s">Installation en autoconsommation — Nouvelle-Calédonie</div>
-        <div class="tcv-ttl-r">Réf. ${refAuto} — Établie le ${dateStr}</div>
+      <div class="tcv-bar">
+        <div class="tcv-bar-slogan">Votre meilleure source d'énergie</div>
+        <div>
+          ${commName?`<div class="tcv-bar-nom">${commName}</div>`:''}
+          <div class="tcv-bar-tel">${commTel||'47 03 02'}</div>
+        </div>
       </div>
 
-      <div class="tcv-cli">
-        <div class="tcv-cli-k">Établie pour</div>
-        <div class="tcv-cli-n">${nomClient}</div>
-        <div class="tcv-cli-a">${adresse||'Nouvelle-Calédonie'}</div>
-      </div>
+      <div class="tcv-body">
+        <div class="tcv-logos">
+          <img class="sc" src="data:image/png;base64,${LOGO_GROS_B64}" alt="Solar Concept" onerror="this.style.display='none'">
+          ${t4Images.logo?`<img class="cli" src="${t4Images.logo}" alt="Logo client">`:''}
+        </div>
+        <div class="tcv-rule"></div>
 
-      <div class="tcv-kpi">
-        <div><div class="tcv-kpi-v">${kwcStr||'—'}</div><div class="tcv-kpi-l">Puissance installée</div></div>
-        <div><div class="tcv-kpi-v">${prodAnStr}</div><div class="tcv-kpi-l">Production annuelle</div></div>
-        <div><div class="tcv-kpi-v">${roiStr}</div><div class="tcv-kpi-l">Retour sur investissement</div></div>
-      </div>
+        <div class="tcv-ttl"${t4Images.photo?'':' style="margin-top:auto"'}>
+          <div class="tcv-ttl-k">Étude technique et financière</div>
+          <div class="tcv-ttl-h">Étude photovoltaïque</div>
+          <div class="tcv-ttl-s">Installation en autoconsommation — Nouvelle-Calédonie</div>
+          <div class="tcv-ttl-r">Réf. ${refAuto} — Établie le ${dateStr}</div>
+        </div>
 
-      ${t4Images.photo?`<div class="tcv-photo"><img src="${t4Images.photo}" alt="Site du client"></div>`:''}
+        <div class="tcv-cli">
+          <div class="tcv-cli-k">Établie pour</div>
+          <div class="tcv-cli-n">${nomClient}</div>
+          <div class="tcv-cli-a">${adresse||'Nouvelle-Calédonie'}</div>
+        </div>
+
+        ${t4Images.photo?`<div class="tcv-photo"><img src="${t4Images.photo}" alt="Site du client"></div>`:''}
+
+        <div class="tcv-kpi">
+          <div><div class="tcv-kpi-v">${kwcStr||'—'}</div><div class="tcv-kpi-l">Puissance installée</div></div>
+          <div><div class="tcv-kpi-v">${prodAnStr}</div><div class="tcv-kpi-l">Production annuelle</div></div>
+          <div><div class="tcv-kpi-v">${roiStr}</div><div class="tcv-kpi-l">Retour sur investissement</div></div>
+        </div>
+
+      </div>
 
     </div>`;
   }
