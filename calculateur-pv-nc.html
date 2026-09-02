@@ -495,7 +495,12 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
      bords. Les gardes particulier (sorties A et B) partagent ce conteneur et
      restent sur les marges @page globales — leur mise en page en dépend. */
   body.print-C #cover-page{page:cover}
-  #last-page{display:block!important;break-before:page;margin:0;padding:0}
+  /* Le récapitulatif final ne force plus sa page : quand ce qui précède laisse
+     assez de blanc, il y remonte (décision Tony 03/09/2026 — une demi-page vide
+     n'est tolérable que s'il n'y a rien après). break-inside:avoid garantit
+     qu'il reste d'un seul tenant ; s'il ne tient pas, le navigateur le reporte
+     de lui-même. Contrôle : node tests/remplissage-sections.js */
+  #last-page{display:block!important;break-before:auto;break-inside:avoid;margin:0;padding:0}
   #essentiel-page{display:block!important;break-before:page;margin:0;padding:0}
   /* Le bloc « Impact financier » ouvre sa propre page : son bandeau coiffe
      la facture puis le retour sur investissement. */
@@ -1107,14 +1112,14 @@ const PRINT_CFG={
   A:[{id:'fpast',label:'Facture — les douze mois',def:1},
      {id:'fmois',label:'Facture — l’écart mois par mois',def:0},
      {id:'tranches',label:'ROI par tranche fiscale',def:1},
-     {id:'groi',label:'Graphique ROI 20 ans',def:0},
+     {id:'groi',label:'Graphique ROI {dpv} ans',def:0},
      {id:'amort',label:"Tableau d'amortissement",def:0},
      {id:'factures',label:'Estimation de vos factures',def:0},
      {id:'bilan',label:'Bilan énergétique mensuel',def:0}],
   B:[{id:'tranches',label:'ROI par tranche fiscale',def:0},
      {id:'pile',label:'Pile répartition énergétique',def:0},
      {id:'gfact',label:'Graphique factures avant/après',def:0},
-     {id:'groi',label:'Graphique ROI 20 ans',def:0},
+     {id:'groi',label:'Graphique ROI {dpv} ans',def:0},
      {id:'bilanEn',label:'Bilan énergétique annuel',def:0},
      {id:'amort',label:"Tableau d'amortissement",def:0},
      {id:'factures',label:'Estimation de vos factures',def:0},
@@ -1159,7 +1164,9 @@ function openPrintModal(){
   // Ouverture toujours vierge : aucune case cochée, aucun preset actif (pas de mémorisation).
   const list=document.getElementById('pm-list');
   list.innerHTML=PRINT_CFG[pmSortie].map(s=>{
-    return `<label class="pm-chk"><input type="checkbox" data-psec-id="${s.id}" onchange="pmSync(this)"> ${s.label}</label>`;
+    // {dpv} : l'horizon d'étude est paramétrable, le libellé ne peut pas le figer
+    const lbl=s.label.replace('{dpv}',getS().dpv);
+    return `<label class="pm-chk"><input type="checkbox" data-psec-id="${s.id}" onchange="pmSync(this)"> ${lbl}</label>`;
   }).join('');
   pmMarkPreset('');
   pmCount();
@@ -2651,7 +2658,8 @@ function calcT1(){
   // Le remplacement de la batterie doit être déduit, sinon le récapitulatif
   // annonce un gain supérieur à celui du tableau d'amortissement.
   const ecoDuree=(function(){const am=buildAmort(devis,ecoAn,s.hau,s.deg,s.dpv,0,s.ded,batModel>0?BAT_REPL[batModel]*batQty:0,batModel>0?s.bat_repl:0);return am.rows[am.rows.length-1].cumul;})();
-  lastStudyData={tab:1,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10,eco15,
+  syncRoiTitres(); // le titre du graphe annonce l'horizon réel, sans attendre l'impression
+    lastStudyData={tab:1,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn,fAvecAn,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10,eco15,
     prodAn,consoAn:consoM.reduce((a,b)=>a+b,0),
     directAutoAn,batAutoAn,reinjAn,achatAn,
     fSansM,fAvecM,rev,
@@ -2796,7 +2804,8 @@ function calcT2(){
 
   const eco10_t2=rows.filter(r=>r.y<=10).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const eco15_t2=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
-  lastStudyData={tab:2,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2,
+  syncRoiTitres(); // le titre du graphe annonce l'horizon réel, sans attendre l'impression
+    lastStudyData={tab:2,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansBat,fAvecAn:fAvecBat,batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t2,eco15:eco15_t2,
     prodAn,consoAn:consoAn,
     directAutoAn:autoconsoDirecteAn,batAutoAn:bDischAn,reinjAn:newReinjAn,achatAn:newAchatAn,
     fSansM,fAvecM,rev,
@@ -2941,7 +2950,8 @@ function calcT3(){
   const eco15_t3=rows.filter(r=>r.y<=15).reduce((a,r)=>a+(r.ben>0?r.ben:0),0);
   const fSansMean=fSansM.reduce((a,b)=>a+b,0)/12;
   const fAvecMean=fAvecM.reduce((a,b)=>a+b,0)/12;
-  lastStudyData={tab:3,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3,
+  syncRoiTitres(); // le titre du graphe annonce l'horizon réel, sans attendre l'impression
+    lastStudyData={tab:3,kwc,devis,ecoAn,ecoAn1:ecoAn,fSansAn:fSansM.reduce((a,b)=>a+b,0),fAvecAn:fAvecM.reduce((a,b)=>a+b,0),batModel,batQty,client:clientName(),commercial:clientCommercial(),adresse:clientAdresse(),rows,pb,pbMin,pbMax,eco10:eco10_t3,eco15:eco15_t3,
     prodAn:injAn,consoAn:achatAn,
     directAutoAn:0,batAutoAn:bDischAn,reinjAn:newInjAn,achatAn:newAchatAn,
     fSansM,fAvecM,rev,

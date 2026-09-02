@@ -160,7 +160,7 @@ const cum = (() => { const a = []; let c = -1650000, e = 213355;
 const roi = R.svgReliefROI(cum, 8);
 eq('responsive', /width="100%"/.test(roi), true);
 eq('jalon investissement', /INVESTISSEMENT/.test(roi), true);
-eq('jalon bascule', /An 8/.test(roi), true);
+eq('jalon bascule', /8 ans/.test(roi), true);
 eq('jalon gain final', /GAIN FINAL/.test(roi), true);
 eq('trois jalons seulement', (roi.match(/<circle[^>]*stroke-width="2\.6"/g) || []).length, 3);
 eq('aucun gris clair', /#8A8C8F|#9A9CA0|#999|#aaa/i.test(roi), false);
@@ -168,7 +168,7 @@ eq('aucun NaN dans le tracé', /NaN/.test(roi), false);
 
 // jamais remboursé : pas de jalon de bascule, pas de plantage
 const jamais = R.svgReliefROI(cum.map(() => -100000), 0);
-eq('jamais remboursé', /An 0/.test(jamais), false);
+eq('jamais remboursé', /\b0 ans/.test(jamais), false);
 eq('jamais remboursé : deux jalons seulement (investissement + gain final)',
   (jamais.match(/<circle[^>]*stroke-width="2\.6"/g) || []).length, 2);
 eq('jamais remboursé : pas de plantage', /width="100%"/.test(jamais), true);
@@ -219,7 +219,7 @@ const roiAn1 = R.svgReliefROI(cum, 1);
 eq('aucune paire de jalons superposés', coordsUniques(roiAn1), true);
 eq('deux cercles seulement (fusion avec investissement)',
   (roiAn1.match(/<circle[^>]*stroke-width="2\.6"/g) || []).length, 2);
-eq('année de remboursement toujours lisible', /Remboursée en l'an 1/.test(roiAn1), true);
+eq('année de remboursement toujours lisible', /Remboursée en 1 ans/.test(roiAn1), true);
 eq('pas de jalon « Remboursée » séparé', /<text[^>]*>REMBOURSÉE</.test(roiAn1), false);
 
 console.log('svgReliefROI — bascule à la toute dernière année (paybackAn = n)');
@@ -227,7 +227,7 @@ const roiAnN = R.svgReliefROI(cum, cum.length);
 eq('aucune paire de jalons superposés', coordsUniques(roiAnN), true);
 eq('deux cercles seulement (fusion avec gain final)',
   (roiAnN.match(/<circle[^>]*stroke-width="2\.6"/g) || []).length, 2);
-eq('année de remboursement toujours lisible', new RegExp(`Remboursée en l'an ${cum.length}`).test(roiAnN), true);
+eq('année de remboursement toujours lisible', new RegExp(`Remboursée en ${cum.length} ans`).test(roiAnN), true);
 eq('pas de jalon « Remboursée » séparé', /<text[^>]*>REMBOURSÉE</.test(roiAnN), false);
 
 // cas nominal (bascule au milieu, paybackAn=8 déjà testé plus haut) : pas de
