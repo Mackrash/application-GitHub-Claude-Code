@@ -1,5 +1,22 @@
 # CLAUDE.md — Calculateur PV NC (Solar Concept)
 
+## 👁️ RÈGLE DURE — tout visuel s'OUVRE dans le navigateur
+
+> **Tony, 25/08/2026 : « je suis fatigué de répéter ça ».**
+
+1. **Tout travail de design passe par un mockup ouvert pour validation** — on montre, on ne décrit
+   pas. Rien n'est appliqué avant que Tony ait vu la maquette.
+2. **Tout fichier HTML ou PDF s'ouvre dès sa création** (`xdg-open`), et à chaque version corrigée,
+   sans attendre qu'il le demande.
+
+⛔ Une capture lue par l'agent ne remplace pas l'ouverture chez Tony. Énoncé complet : `AppIA/CLAUDE.md`.
+
+## ⏰ Heures : toujours en heure de Nouvelle-Calédonie (UTC+11)
+
+Logs, bases et API horodatent en **UTC** ; l'équipe vit en `Pacific/Noumea` = **UTC+11**.
+**Toute heure présentée à Tony est convertie** — recopier un horodatage brut est une faute :
+`01:30 UTC` = **12h30 à Nouméa**. Règle complète : `~/.claude/CLAUDE.md`.
+
 Guide de travail pour ce dépôt. Projet **monopage HTML** : tout tient dans
 `calculateur-pv-nc.html`.
 
@@ -45,14 +62,56 @@ Dépendances : Plotly 2.27.0 (CDN)
 
 ### Refonte sortie A — Juillet 2026
 - Page « L'essentiel » (print-only, `#essentiel-page`) : deux colonnes, argent à gauche, énergie à droite
-- Batterie OMEGA Maestro-G en SVG remplace la pile de répartition
+- ~~Batterie OMEGA Maestro-G en SVG~~ — **caduc depuis le 03/09/2026** : c'est une maison, voir plus bas
 - « Réinjection réseau » → « Réserve de production » (revente à 0) ou « Énergie revendue » (tarif > 0)
 - Facture : douze pastilles par défaut, écart mensuel en alternative cochable via le marqueur `pson-fmois` posé par le panneau d'impression
 - ROI en relief, trois jalons
-- Armoire batterie SVG : mode compact pour les colonnes étroites (onglets 2/3)
+- ~~Armoire batterie SVG, mode compact pour les colonnes étroites~~ — **caduc** (`svgMaestro()` n'est plus appelée)
 - Quatre blocs redondants supprimés
-- ⚠️ Horizon des gains cumulés (page « L'essentiel », graphe ROI, récap final) aligné sur le paramètre `s.dpv` (25 ans par défaut) — mais le libellé de section « Retour sur investissement — 20 ans » et le tableau d'amortissement (tronqué à 20 lignes en CSS print, `table.at tbody tr:nth-child(23)`) restent codés en dur sur 20 ans. Le même document affiche donc deux horizons différents (20 ans / 25 ans) — connu, non corrigé, à trancher.
+- **Horizon d'étude : 15 ans, un seul paramètre.** Le champ `dpv` (onglet Paramètres) s'appelle
+  désormais « Horizon d'étude » et vaut **15** par défaut. Il commande les gains cumulés, le
+  graphe ROI, le tableau d'amortissement et le récapitulatif — plus aucun horizon codé en dur.
+  ⚠️ Le titre du graphe et le libellé du panneau d'impression annonçaient 20 ans : le premier
+  parce que `syncRoiTitres()` n'était appelée qu'à l'impression, le second parce que le texte
+  était figé. Les deux suivent maintenant `dpv` — contrôle : `node tests/coherence-horizon.js`.
 - Spec : `docs/superpowers/specs/2026-07-30-refonte-sortie-client-design.md`
+
+### Sortie A — Septembre 2026
+
+Reprise du rapport annoté par Tony (`a refaire.pdf`, 03/09/2026).
+
+- **Le visuel « Où va votre énergie » montre une MAISON, jamais une batterie.** L'armoire OMEGA
+  Maestro a été retirée : c'est la maison du client qui est le sujet. L'illustration est une
+  **image générée** (Gemini via `outils/nano.py`, à partir de `Graphique/Maison Caledonienne
+  claire.png`), détourée et embarquée en WebP dans `MAISON_B64` — 52 ko. La répartition passe
+  dans `barreFluxHTML()`, une barre proportionnelle rangée dans le même ordre que les blocs
+  chiffrés qui suivent.
+  ⛔ **Ne pas redessiner ce visuel en SVG à la main** : quatre tentatives successives ont été
+  refusées (« designs à 2 francs », « une maison dessinée par un enfant de 3 ans »). Une
+  illustration de niveau produit se génère, elle ne se code pas.
+- **Le taux de couverture est plafonné à 99 %** : on n'annonce jamais l'autonomie totale. Quand
+  l'achat au réseau tombe à zéro, il s'écrit « achat au réseau quasi nul » et « < 1 kWh ».
+- **« Autonomie énergétique » est devenue « Part des énergies renouvelables dans votre
+  consommation »**, avec la note « \* Selon vos consommations actuelles ».
+- **Le retour s'écrit « 8 ans », jamais « An 8 »** — partout, écran compris.
+- **Prochaines étapes en quatre temps** : validation · **démarches administratives (environ
+  8 semaines)** · visite technique · pose. Les délais « sous 10 jours » et « ½ journée » ont été
+  retirés.
+- Page de garde : chiffres des tuiles en Nunito (RAIDenmarkNeo déformait les glyphes), et le logo
+  répété en bas de garde a disparu (doublon de l'en-tête et du pied).
+
+#### Pagination — l'invariant
+
+> **Décision Tony 03/09/2026 : une demi-page blanche est tolérable s'il n'y a rien après.
+> Jamais si le contenu de la page suivante y tenait.**
+
+`#last-page` ne force plus sa page (`break-before:auto` + `break-inside:avoid`) : le récapitulatif
+final remonte quand la place le permet. Avec une seule option cochée, le document sortait deux
+demi-pages consécutives (38 % puis 58 %).
+
+Contrôle : **`node tests/remplissage-sections.js`** — il mesure le PDF réellement produit (pas un
+modèle de pagination : la première version simulait l'empilement et validait à tort), sur huit
+combinaisons d'options en sorties A et B.
 
 ### Sorties B — Juillet 2026
 - Onglets 2 et 3 : deux premières pages identiques à la sortie A (garde + « L'essentiel »)
@@ -140,6 +199,14 @@ lire `ls docs/sessions/ | tail -1`, c'est tout.
 ```bash
 node -e "const fs=require('fs');const html=fs.readFileSync('calculateur-pv-nc.html','utf8');const m=html.match(/<script>([\s\S]*?)<\/script>/g);if(m){const js=m.map(s=>s.replace(/<\/?script>/g,'')).join('\n');fs.writeFileSync('_check.js',js);}" && node --check _check.js && echo "SYNTAXE OK"
 ```
+
+## Icône
+
+Source unique : **`icone-calculateur.svg`** — soleil orange `#F07020` et panneau blanc sur tuile
+anthracite `#333333`, lisible jusqu'à 16 px. Le favicon du HTML embarque le SVG (plus un PNG 64 en
+repli et un `apple-touch-icon`) ; `solar_calc.ico` en dérive pour l'exécutable PyInstaller, en sept
+tailles de 16 à 256. ⚠️ Le `.ico` est exclu du dépôt par la règle `*.ico` du `.gitignore` : il ne
+vit que sur la machine de Tony.
 
 ## Skill disponible
 
