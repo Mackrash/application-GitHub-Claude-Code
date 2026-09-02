@@ -23,7 +23,11 @@ const lastStudyData={
 // Stub DOM minimal pour getS() (aucun élément trouvé → valeurs par défaut utilisées)
 const document={getElementById:()=>null,querySelector:()=>null};
 
-const fn=new Function('lastStudyData','document',
+// buildStudyJSON reporte les images importées de la sortie C (logo client, photo
+// du site) : sans ce stub, la fonction lève ReferenceError avant toute assertion.
+const t4Images={logo:'data:image/png;base64,LOGO',photo:null};
+
+const fn=new Function('lastStudyData','document','t4Images',
   tranchesSrc+'\n'+
   calcDeductionSrc+'\n'+
   tabActifSrc+'\n'+
@@ -34,7 +38,7 @@ const fn=new Function('lastStudyData','document',
   'return buildStudyJSON();'
 );
 
-const json=fn(lastStudyData,document);
+const json=fn(lastStudyData,document,t4Images);
 
 let ok=true;
 const check=(cond,msg)=>{if(!cond){ok=false;console.log('FAIL: '+msg)}else{console.log('OK  : '+msg)}};
@@ -45,13 +49,15 @@ check(json.tranchesFiscales.every(t=>t.deductionXPF>0), 'toutes les tranches ont
 check(json.finances && json.finances.economieAn1XPF===231000, 'finances.economieAn1XPF === 231000');
 check(json.finances.devisTTC===1850000, 'finances.devisTTC === 1850000');
 check(json.installation.kwc===6, 'installation.kwc === 6');
+check(json.images && json.images.logo===t4Images.logo && json.images.photo===null,
+      'images : logo et photo repris tels quels (emplacement vide = null)');
 
 // Sortie C (T4) : tranchesFiscales doit être vide
-const fnT4=new Function('lastStudyData','document',
+const fnT4=new Function('lastStudyData','document','t4Images',
   tranchesSrc+'\n'+calcDeductionSrc+'\n'+tabActifSrc+'\n'+sortieActiveSrc+'\n'+getSSrc+'\n'+buildAmortSrc+'\n'+buildStudyJSONSrc+
   '\nreturn buildStudyJSON();'
 );
-const jsonT4=fnT4(Object.assign({},lastStudyData,{tab:4}),document);
+const jsonT4=fnT4(Object.assign({},lastStudyData,{tab:4}),document,t4Images);
 check(jsonT4.meta.sortie==='C', 'meta.sortie === "C" (T4)');
 check(Array.isArray(jsonT4.tranchesFiscales) && jsonT4.tranchesFiscales.length===0, 'tranchesFiscales vide en sortie C');
 
