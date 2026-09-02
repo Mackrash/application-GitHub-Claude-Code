@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>Calculateur PV — Solar Concept</title>
+  <rect width="64" height="64" rx="14" fill="#333333"/>
+  <circle cx="32" cy="23" r="11" fill="#F07020"/>
+  <g stroke="#F07020" stroke-width="3.2" stroke-linecap="round">
+    <path d="M32 5.5v4.2"/>
+    <path d="M16.6 11.6l3 3"/>
+    <path d="M47.4 11.6l-3 3"/>
+    <path d="M7.5 23h4.2"/>
+    <path d="M52.3 23h4.2"/>
+  </g>
+  <path d="M15.5 38.5h33l5 13.5h-43z" fill="#FFFFFF"/>
+  <g stroke="#333333" stroke-width="2.1" stroke-linecap="round">
+    <path d="M26.8 38.5l-2.1 13.5"/>
+    <path d="M37.2 38.5l2.1 13.5"/>
+    <path d="M13.9 45.2h36.2"/>
+  </g>
+</svg>
