@@ -100,6 +100,30 @@ Reprise du rapport annoté par Tony (`a refaire.pdf`, 03/09/2026).
 - Page de garde : chiffres des tuiles en Nunito (RAIDenmarkNeo déformait les glyphes), et le logo
   répété en bas de garde a disparu (doublon de l'en-tête et du pied).
 
+#### Le récapitulatif du dossier — une page, le dossier de base
+
+> **Décision Tony 03/09/2026 : « le récap du dossier se base sur les infos essentielles,
+> dossier de base, c'est tout » — et il DOIT tenir en une page.**
+
+`#last-page` ne porte plus que l'en-tête, la fiche d'installation, l'investissement et les trois
+retours (économie annuelle, remboursement, bilan cumulé). Il mesure **157 mm, identiques d'une
+sortie à l'autre**, là où la sortie B en faisait 361 pour 271 disponibles et débordait sur une
+seconde page ne portant que la fin d'une liste.
+
+Ce qui en est sorti :
+- **« Ce que la batterie change »** et **« ROI par tranche fiscale »** sont des analyses, pas le
+  dossier : elles vivent dans **`#annexes-page`**, un conteneur sans saut de page forcé, placé
+  juste avant le récapitulatif. La case `tranches` continue de les piloter.
+- **« Les prochaines étapes »** ont disparu du récapitulatif : elles figurent déjà sur la page
+  « L'essentiel », c'était un doublon.
+
+⚠️ Un `.lp-h2` des annexes porte `break-after:avoid` : sans lui, « Ce que la batterie change »
+restait seul en bas de page, son tableau renvoyé à la suivante.
+⚠️ `.lp-roi td.roi` est repassée en Nunito : RAIDenmarkNeo déformait le chevron de « > 15 ans »,
+exactement comme elle déformait les chiffres des tuiles de la garde.
+
+Contrôle : **`node tests/recap-une-page.js`** — hauteur, contenu et identité entre sorties.
+
 #### Pagination — l'invariant
 
 > **Décision Tony 03/09/2026 : une demi-page blanche est tolérable s'il n'y a rien après.

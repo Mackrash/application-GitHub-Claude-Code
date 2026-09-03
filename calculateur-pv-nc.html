@@ -218,7 +218,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
 
 /* PRINT */
 #cover-page{display:none}
-#last-page{display:none}
+#last-page,#annexes-page{display:none}
 #essentiel-page{display:none}
 /* Marges : 1.5cm côtés, 1.8cm haut, 2.2cm bas (pied de page) */
 @page{size:A4 portrait;margin:12mm 9mm 14mm 9mm}
@@ -503,6 +503,16 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
      qu'il reste d'un seul tenant ; s'il ne tient pas, le navigateur le reporte
      de lui-même. Contrôle : node tests/remplissage-sections.js */
   #last-page{display:block!important;break-before:auto;break-inside:avoid;margin:0;padding:0}
+  /* Les analyses suivent le corps du document et précèdent le récapitulatif.
+     Elles n'ont pas de hauteur imposée : chaque bloc évite d'être coupé, le
+     reste se tasse. */
+  #annexes-page{display:block!important;break-before:auto;margin:0;padding:0}
+  #annexes-page .lp-h2{margin-bottom:0.25cm;padding-bottom:0.08cm;font-size:1.15rem;
+    break-after:avoid!important;page-break-after:avoid!important}
+  #annexes-page .lp-body{padding:0.7cm 1.5cm 0}
+  #annexes-page .bs-tbl th,#annexes-page .bs-tbl td{padding:4pt 8pt;font-size:0.82rem}
+  #annexes-page .recap-box{padding:5pt 9pt;margin-top:5pt!important}
+  #annexes-page .lp-roi,#annexes-page .bs-tbl,#annexes-page .recap-box{break-inside:avoid}
   #essentiel-page{display:block!important;break-before:page;margin:0;padding:0}
   /* Le bloc « Impact financier » ouvre sa propre page : son bandeau coiffe
      la facture puis le retour sur investissement. */
@@ -912,6 +922,10 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
     </div>
   </div>
 </div>
+<!-- Analyses (ROI par tranche fiscale, apport de la batterie) : elles ne sont
+     pas le dossier de base et ne doivent donc pas gonfler le récapitulatif.
+     Sans break forcé, elles se tassent derrière le contenu qui précède. -->
+<div id="annexes-page" style="display:none"></div>
 <div id="last-page" style="display:none"></div>
 
 <script>
@@ -1905,6 +1919,19 @@ function preparePrint(noPrint=false){
         <tr><td class="tr">4. Pose et mise en service</td><td></td></tr>
       </tbody></table>`:'';
 
+  // Les analyses (apport de la batterie, ROI par tranche) quittent le
+  // récapitulatif : celui-ci porte le dossier de base, et lui seul — il doit
+  // tenir sur une page, à l'identique d'une sortie à l'autre (Tony, 03/09/2026).
+  // « Les prochaines étapes » disparaissent d'ici : elles figurent déjà sur la
+  // page « L'essentiel », c'était un doublon.
+  const annexes=document.getElementById('annexes-page');
+  if(annexes) annexes.innerHTML=(synthB||roiSection)
+    ? `<div class="lp"><div class="lp-body">
+         ${synthB?`<h2 class="lp-h2">Ce que la batterie change</h2>${synthB}`:''}
+         ${roiSection}
+       </div></div>`
+    : '';
+
   document.getElementById('last-page').innerHTML=`
   <style>
     .lp{font-family:'Nunito',sans-serif;color:#333;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -1926,7 +1953,7 @@ function preparePrint(noPrint=false){
     .lp-roi th{background:#F07020;color:#fff;font-weight:800;text-transform:uppercase;font-size:0.78rem;letter-spacing:0.5px}
     .lp-roi th:first-child,.lp-roi td:first-child{text-align:left}
     .lp-roi td.tr{font-weight:800;color:#333}
-    .lp-roi td.roi{font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;color:#008040;font-size:1.15rem}
+    .lp-roi td.roi{font-family:'Nunito',sans-serif;font-weight:800;color:#008040;font-size:1.1rem;white-space:nowrap}
     .lp-roi tr.best td{background:#F0FBF6}
     #last-page .bs-tbl th,#last-page .bs-tbl td{padding:4pt 8pt;font-size:0.82rem}
     #last-page .bs-tbl{margin-bottom:0.3cm}
@@ -1968,8 +1995,6 @@ function preparePrint(noPrint=false){
     <div class="lp-body">
       <h2 class="lp-h2">Récapitulatif du dossier</h2>
       ${isPro?`<div class="lp-kpis">${recapCards}</div>`:recapParticulier}
-      ${synthB?`<h2 class="lp-h2">Ce que la batterie change</h2>${synthB}`:''}
-      ${roiSection}${stepsSection}
     </div>
     <div class="lp-foot">
       <div class="lp-foot-brand">Solar Concept</div>
