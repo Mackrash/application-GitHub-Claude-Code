@@ -225,6 +225,22 @@ seulement ce qui a été fait. Convention détaillée dans `docs/sessions/README
 **la dernière fiche porte l'état du projet**. Plus d'`ETAT.md` : au démarrage d'une session,
 lire `ls docs/sessions/ | tail -1`, c'est tout.
 
+### Valeurs par défaut — elles font foi pour la démo
+
+Un commercial ouvre un onglet et clique CALCULER sans rien changer : ce qu'il obtient doit être un
+dossier plausible. Le contrôle vit dans **`node tests/defauts-coherents.js`** — même batterie par
+défaut sur les onglets 2 et 3, et un dossier remboursé dans l'horizon.
+
+- **Onglet 2 : Maestro par défaut** (03/09/2026). Le devis pré-rempli, 1 200 000 XPF, est le prix
+  d'une Maestro ; faute de `selected`, le sélecteur retombait sur l'Élite 4,8 kWh et le dossier
+  d'exemple sortait un retour à **25 ans**, avec un tableau fiscal affichant « > 15 ans » sur ses
+  cinq lignes. Avec la Maestro : 12 · 12 · 11 · 9 · 7 ans selon la tranche. L'onglet 3 avait déjà
+  le bon défaut.
+- ⚠️ **Prestige et Maestro donnent la même économie** sur le profil par défaut, et ce n'est pas un
+  bug : dès la Prestige (10,65 kWh) l'achat au réseau tombe à zéro, le besoin nocturne est couvert
+  et une batterie plus grande n'a plus rien à stocker. `tests/test_t2_monotonie.js` couvre ce
+  plafond. C'est un argument de vente, pas un défaut à corriger.
+
 ### Règles de travail sur ce fichier
 - **Ne jamais modifier les calculs** (`calcT1` à `calcT4`, `buildAmort`, `factureMois`, `prodM`) sans accord explicite. `lastStudyData` ne doit qu'exposer des valeurs déjà produites.
 - **Tester par la vraie route** : cliquer le bouton, ouvrir le panneau, appeler `pmPrint()`. Ne jamais réécrire la logique dans le test.
