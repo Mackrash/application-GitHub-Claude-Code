@@ -120,6 +120,17 @@ combinaisons d'options en sorties A et B.
 - « Gains cumulés » devient « Bilan cumulé » quand le cumul reste négatif sur l'horizon
 - Sortie B ramenée de 4 à 3 pages
 - **Onglet 4 (sortie C) volontairement hors périmètre** : rendu d'origine conservé
+- **L'argent d'abord, l'énergie ensuite** (03/09/2026) : la « Répartition énergétique » a été
+  déplacée juste avant le « Bilan énergétique mensuel », après les blocs financiers. Elle occupait
+  seule une page à 32 % de remplissage, coincée devant l'impact financier. La sortie B tout coché
+  passe de 8 à 7 pages, et les deux blocs énergie voisinent à 93 %.
+- **Le titre « Répartition énergétique » ne s'écrit qu'une fois à l'impression** : le bandeau de
+  section (`.ps-label`, injecté par `setPrintLabels()` depuis `window.onbeforeprint`) faisait
+  doublon avec le titre dessiné dans le graphique. Ce dernier est masqué en print via
+  `.donut-titre` — il reste à l'écran, où le bandeau n'existe pas.
+  ⚠️ Piège de test : `pmPrint()` ne déclenche pas `beforeprint`, `page.pdf()` si. Un test qui
+  inspecte le DOM imprimé doit émettre l'événement lui-même, sinon il ne voit aucun bandeau.
+  Contrôle : `node tests/sortie-b-energie.js`.
 
 ### Sortie C (onglet 4, entreprise) — Août 2026
 

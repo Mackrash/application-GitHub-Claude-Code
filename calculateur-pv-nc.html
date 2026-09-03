@@ -354,6 +354,11 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   /* PAGE 4 : Tableau seul */
   .ps-table{break-inside:auto;margin-top:0}
 
+  /* Le bandeau de section porte déjà « Répartition énergétique » : le titre
+     dessiné dans le graphique ferait doublon sur le papier. Il reste à l'écran,
+     où le bandeau, lui, est masqué. */
+  .donut-titre{display:none}
+
   /* ── TITRE DE SECTION (bandeau orange) ── */
   .ps-label{
     font-family:'RAIDenmarkNeo',sans-serif;
@@ -651,9 +656,6 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div class="kpi-grid" id="k2_fin" style="margin:12px 0 6px"></div>
       <div id="recap2_efy_bilan" data-psec="bilanEn"></div>
     </div>
-    <div class="ps ps-donut" data-psec="pile">
-      <div id="g2_donut" style="height:340px"></div>
-    </div>
     </div>
     <div class="ps ps-financial">
       <div data-psec="gfact"><div id="recap2_efy_eco"></div>
@@ -670,6 +672,9 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <span class="ps-label">Estimation de vos factures (moyenne mensuelle)</span>
       <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
       <div class="tw" id="t2_facture"></div>
+    </div>
+    <div class="ps ps-donut" data-psec="pile">
+      <div id="g2_donut" style="height:340px"></div>
     </div>
     <div class="ps ps-table" data-psec="bilan">
       <div id="t2_dedie_card"></div>
@@ -702,9 +707,6 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <div class="kpi-grid" id="k3_fin" style="margin:12px 0 6px"></div>
       <div id="recap3_efy_bilan" data-psec="bilanEn"></div>
     </div>
-    <div class="ps ps-donut" data-psec="pile">
-      <div id="g3_donut" style="height:340px"></div>
-    </div>
     </div>
     <div class="ps ps-financial">
       <div data-psec="gfact"><div id="recap3_efy_eco"></div>
@@ -723,6 +725,9 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
       <span class="ps-label">Estimation de vos factures (moyenne mensuelle)</span>
       <div class="st">Estimation de vos factures (moyenne mensuelle)</div>
       <div class="tw" id="t3_facture"></div>
+    </div>
+    <div class="ps ps-donut" data-psec="pile">
+      <div id="g3_donut" style="height:340px"></div>
     </div>
     <div class="ps ps-table" data-psec="bilan">
       <span class="ps-label">Bilan énergétique mensuel</span>
@@ -2460,7 +2465,7 @@ function plotPile(div,dA,bA,reinj,achat){
   document.getElementById(div).innerHTML=`<svg width="100%" height="100%"
     viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="xMidYMid meet" style="display:block">
     <defs>${defs}</defs>
-    <text x="${VW/2}" y="26" text-anchor="middle"
+    <text class="donut-titre" x="${VW/2}" y="26" text-anchor="middle"
       font-family="RAIDenmarkNeo,sans-serif" font-size="20" font-weight="700"
       letter-spacing="3" fill="#F07020">RÉPARTITION ÉNERGÉTIQUE</text>
     ${shell}
