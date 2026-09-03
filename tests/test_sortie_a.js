@@ -37,43 +37,45 @@ eq('revente à 15', libelleSurplus(15).titre, 'Énergie revendue');
 eq('revente à 21', libelleSurplus(21).titre, 'Énergie revendue');
 eq('couleur verte', libelleSurplus(0).couleur, '#35A46B');
 
-console.log('svgMaestro');
+console.log('barreFluxHTML — la répartition sous la maison');
 const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const uidSrc = grab('let _svgUidSeq=0;', "(_svgUidSeq++);}");
-const srcM = grab('function svgMaestro(', '\n}');
-const { svgMaestro } = new Function('fmt',
-  uidSrc + '\n' + grab('function libelleSurplus(', '\n}') + '\n' + srcM + '\nreturn {svgMaestro};')(fmt);
-const svg = svgMaestro({
+const FLUX = new Function('fmt',
+  grab('function libelleSurplus(', '\n}') + '\n' +
+  grab('function barreFluxHTML(', '\n}') + '\n' +
+  grab('function blocsFluxHTML(', '\n}') + '\nreturn {barreFluxHTML, blocsFluxHTML};')(fmt);
+
+const CAS = {
   prodAn: 8692, directAutoAn: 2699, batAutoAn: 1800, surplusAn: 4193,
   consoAn: 4499, achatAn: 0, batLabel: 'OMEGA Maestro 14,3 kWh', tarifRevente: 0
-});
-eq('svg responsive', /width="100%"/.test(svg), true);
-eq('aucune largeur fixe', /<svg[^>]*width="\d+"/.test(svg), false);
-eq('les trois pourcentages', [/31%/, /21%/, /48%/].every(re => re.test(svg)), true);
-eq('libellé réserve', /Réserve de production/i.test(svg), true);
-eq('aucune réinjection', /éinjection/.test(svg), false);
-eq('aucun gris clair', /#8A8C8F|#9A9CA0|#999|#aaa/i.test(svg), false);
-// bascule du vocabulaire quand la revente est rémunérée
-const svgVendu = svgMaestro({
-  prodAn: 8692, directAutoAn: 2699, batAutoAn: 1800, surplusAn: 4193,
-  consoAn: 4499, achatAn: 0, batLabel: 'OMEGA Maestro 14,3 kWh', tarifRevente: 21
-});
-eq('bascule en revendue', /Énergie revendue/i.test(svgVendu), true);
-// id de <linearGradient> namespacés : deux instances sur une même page ne
-// doivent jamais partager le même id (sinon la seconde écrase la première).
-const idsMaestro1 = [...svg.matchAll(/id="(mgAlu_[^"]+)"/g)].map(m => m[1]);
-const idsMaestro2 = [...svgVendu.matchAll(/id="(mgAlu_[^"]+)"/g)].map(m => m[1]);
-eq('ids mgAlu différents entre deux appels', idsMaestro1[0] !== idsMaestro2[0] && !!idsMaestro1[0], true);
-// somme des pourcentages = 100 quel que soit l'arrondi
-const pct = [...svg.matchAll(/>(\d+)%</g)].map(m => +m[1]);
+};
+const barre = FLUX.barreFluxHTML(CAS);
+eq('les trois pourcentages', [/31%/, /21%/, /48%/].every(re => re.test(barre)), true);
+// les arrondis sont répartis : le lecteur ne doit jamais pouvoir additionner 99 ou 101
+const pct = [...barre.matchAll(/>(\d+)%</g)].map(m => +m[1]);
 eq('somme des pourcentages = 100', pct.reduce((a, b) => a + b, 0), 100);
-// géométrie : le dernier segment (« Consommée le jour ») ne doit pas déborder du cadre de la jauge
-const cadre = svg.match(/<rect x="44" y="([\d.]+)" width="202" height="([\d.]+)" rx="7"/);
-const basCadre = +cadre[1] + +cadre[2];
-const segments = [...svg.matchAll(/<rect x="48" y="([\d.]+)" width="194" height="([\d.]+)"/g)];
-const dernier = segments[segments.length - 1];
-const basDernierSegment = +dernier[1] + +dernier[2];
-eq('dernier segment ne déborde pas du cadre', basDernierSegment <= basCadre + 0.01, true);
+// réserve 48 %, nuit 21 %, jour 31 % — la largeur de chaque segment EST sa part
+eq('largeurs proportionnelles (flex)', /flex:48;[\s\S]*flex:21;[\s\S]*flex:31;/.test(barre), true);
+eq('aucune largeur fixe', /width:\s*\d+px/.test(barre), false);
+eq('couleurs imprimées telles quelles', (barre.match(/print-color-adjust:exact/g) || []).length >= 3, true);
+// même ordre que les blocs chiffrés qui suivent : réserve, nuit, jour
+eq('ordre réserve → nuit → jour', barre.indexOf('#35A46B') < barre.indexOf('#F5A623')
+   && barre.indexOf('#F5A623') < barre.indexOf('#F07020'), true);
+// une part nulle ne laisse pas de segment fantôme
+const sansBat = FLUX.barreFluxHTML(Object.assign({}, CAS, { batAutoAn: 0 }));
+eq('part nulle : aucun segment', /flex:0;/.test(sansBat), false);
+eq('part nulle : somme toujours 100',
+   [...sansBat.matchAll(/>(\d+)%</g)].map(m => +m[1]).reduce((a, b) => a + b, 0), 100);
+eq('production nulle : rien du tout', FLUX.barreFluxHTML(
+   Object.assign({}, CAS, { directAutoAn: 0, batAutoAn: 0, surplusAn: 0 })), '');
+
+console.log('blocsFluxHTML — la légende chiffrée');
+const blocs = FLUX.blocsFluxHTML(CAS);
+eq('libellé réserve', /Réserve de production/i.test(blocs), true);
+eq('aucune réinjection', /éinjection/.test(blocs), false);
+eq('bascule en revendue', /Énergie revendue/i.test(
+   FLUX.blocsFluxHTML(Object.assign({}, CAS, { tarifRevente: 21 }))), true);
+eq('aucun gris clair', /#8A8C8F|#9A9CA0|#999|#aaa/i.test(blocs), false);
 
 console.log('svgDouzeMois');
 const srcF = grab('function splinePath(', '\n}') + '\n' +
