@@ -138,6 +138,7 @@ table.at th:first-child{text-align:left}
 table.at td{padding:5px 7px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--tx2);text-align:right;white-space:nowrap}
 table.at td:first-child{text-align:left;color:var(--tx);font-weight:600}
 table.at tr.pos td{color:var(--gr);font-weight:700;background:rgba(0,212,160,.06)}
+table.at td.pb{color:var(--gr);font-weight:700;background:rgba(0,212,160,.14);box-shadow:inset 0 0 0 1px rgba(0,212,160,.45)}
 table.at tr:hover td{background:rgba(240,112,32,.04)}
 table.bc{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:7px}
 table.bc th{background:rgba(79,195,247,.1);color:var(--bl);font-family:'RAIDenmarkNeo',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:7px 9px;border-bottom:1px solid rgba(79,195,247,.2);text-align:right;white-space:nowrap}
@@ -426,6 +427,7 @@ table.efy-fiscal tr:hover td{background:rgba(240,112,32,.05)}
   table.at td,table.bc td{padding:4pt 7pt;border:0.5pt solid #ddd;color:#333}
   table.at tr:nth-child(even) td{background:#FFF8F4!important}
   table.at tr.pos td{color:#008040!important;background:#F0FBF6!important;font-weight:700}
+  table.at td.pb{color:#008040!important;background:#DFF5E9!important;font-weight:700;border:1pt solid #008040!important}
   table.bc tr.rec td{color:#008040!important;background:#F0FBF6!important}
   /* Pagination tableau : autoriser les sauts de ligne */
   table.at tbody tr,table.bc tbody tr{break-inside:avoid}
@@ -1732,7 +1734,6 @@ function preparePrint(noPrint=false){
     const eco=L.fSansAn-L.fAvecAn;
     const baisse=L.fSansAn>0?Math.round((1-L.fAvecAn/L.fSansAn)*100):0;
     const largeurApres=L.fSansAn>0?Math.max(14,Math.round(L.fAvecAn/L.fSansAn*100)):0;
-    const ratio=L.devis>0?(L.ecoDuree/L.devis).toFixed(1).replace('.',','):'—';
     // Plafond 99 % : afficher 100 % ferait promettre l'autonomie totale (Tony, 03/09/2026)
     const couvert=L.consoAn>0?Math.min(99,Math.round((L.consoAn-L.achatAn)/L.consoAn*100)):0;
     // Forme par défaut : douze pastilles (svgDouzeMois). Cocher « Facture —
@@ -1802,7 +1803,7 @@ function preparePrint(noPrint=false){
           <div><div class="es-k">Installation remboursée</div>
             <div class="es-v">${L.pb?L.pb+' ans':'> '+getS().dpv+' ans'} <small>${L.pb&&getS().dpv>L.pb?'puis '+(getS().dpv-L.pb)+' ans de gain net':(L.pb?'':'sur l\'horizon étudié')}</small></div></div>
           <div><div class="es-k">${(L.ecoDuree||0)>=0?'Gains cumulés':'Bilan cumulé'} · ${getS().dpv} ans</div>
-            <div class="es-v">${fmt(Math.round(L.ecoDuree||0))} <small>XPF${(L.ecoDuree||0)>=0?` · ${ratio} × l'investissement`:''}</small></div></div>
+            <div class="es-v">${fmt(Math.round(L.ecoDuree||0))} <small>XPF</small></div></div>
           <div><div class="es-k">Part des énergies renouvelables<br>dans votre consommation *</div>
             <div class="es-v">${couvert} % <small>${Math.round(L.achatAn)>0?fmt(Math.round(L.achatAn))+' kWh acheté au réseau':'achat au réseau quasi nul'}</small></div></div>
         </div>
@@ -2132,13 +2133,17 @@ function renderCombinedAmort(divId,invest,ecoAn,hausse,deg,duree,plafond,coutBat
   h+='</tr>';
   // Une ligne par année
   for(var y=1;y<=duree;y++){
-    var isPaybackRow=trancheData.some(function(d){return d.pb===y;});
-    h+='<tr'+(isPaybackRow?' class="pos"':'')+'>'+
-      '<td style="text-align:left">'+'An '+y+(isPaybackRow?' <small style="opacity:.7">★ payback</small>':'')+'</td>';
+    // Surbrillance : la CELLULE de la tranche qui atteint son payback cette
+    // année-là, jamais la ligne entière. Les cinq tranches remboursent à des
+    // dates différentes (7 à 12 ans) : peindre la ligne marquait quatre lignes
+    // sur cinq colonnes et ne disait plus quelle tranche était concernée.
+    h+='<tr><td style="text-align:left">An '+y+'</td>';
     trancheData.forEach(function(d){
       var row=d.rows.find(function(r){return r.y===y;});
       var cumul=row?row.cumul:0;
-      h+='<td'+(cumul>=0?' class="pos"':'')+'>'+fmt(Math.round(cumul))+' XPF</td>';
+      var isPb=d.pb===y;
+      h+='<td'+(isPb?' class="pb" title="Investissement remboursé"':'')+'>'+
+        fmt(Math.round(cumul))+' XPF'+(isPb?' ★':'')+'</td>';
     });
     h+='</tr>';
   }
