@@ -150,6 +150,16 @@ combinaisons d'options en sorties A et B.
 - « Gains cumulés » devient « Bilan cumulé » quand le cumul reste négatif sur l'horizon
 - Sortie B ramenée de 4 à 3 pages
 - **Onglet 4 (sortie C) volontairement hors périmètre** : rendu d'origine conservé
+- **Un dossier de stockage ne parle pas comme un dossier PV** (10/09/2026, Tony) :
+  - **Titre de garde** — T1 : « Installation d'un système photovoltaïque » ; T2 et T3 :
+    « Installation du système de stockage d'énergie ». ⚠️ T1 porte un sélecteur batterie
+    (`t1_bat`) et garde ce titre même avec stockage : la variante « Système hybride PV +
+    Batterie » a été retirée, c'est voulu.
+  - **« Installation remboursée » ne s'affiche pas sur T2/T3** (page « L'essentiel ») : sur un
+    ajout batterie le bloc sortait « > 15 ans sur l'horizon étudié ». Conservé sur T1.
+  - **« Démarches administratives — environ 8 semaines » ne s'affiche pas sur T2/T3.** Les
+    quatre temps du 03/09 valent pour T1 seul. Les étapes sont générées depuis une liste et se
+    **numérotent seules** — en retirer une ne doit jamais laisser 1, 3, 4.
 - **L'argent d'abord, l'énergie ensuite** (03/09/2026) : la « Répartition énergétique » a été
   déplacée juste avant le « Bilan énergétique mensuel », après les blocs financiers. Elle occupait
   seule une page à 32 % de remplissage, coincée devant l'impact financier. La sortie B tout coché
