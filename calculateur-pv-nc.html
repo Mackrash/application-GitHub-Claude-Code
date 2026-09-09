@@ -972,7 +972,12 @@ function getS(){
   return d;
 }
 function saveSettings(){
-  const s=getS();localStorage.setItem('sc2_settings',JSON.stringify(s));
+  const s=getS();
+  // L'horizon d'étude ne se mémorise pas : c'est une règle produit (15 ans),
+  // pas une préférence de poste. Le mémoriser laissait un « 30 » d'avant
+  // l'arbitrage réécrire le champ à chaque ouverture — voir loadSettings().
+  delete s.dpv;
+  localStorage.setItem('sc2_settings',JSON.stringify(s));
   const b=event.target;b.textContent='✅ Sauvegardé !';setTimeout(()=>b.textContent='💾 SAUVEGARDER',2000);
 }
 function loadSettings(){
@@ -980,6 +985,11 @@ function loadSettings(){
     const s=JSON.parse(localStorage.getItem('sc2_settings')||'{}');
     // Ne pas charger pf depuis localStorage (peut être corrompu) — toujours utiliser la valeur par défaut
     delete s.pf;
+    // Horizon d'étude : la valeur du HTML fait foi (15 ans). Un « 30 » stocké
+    // avant l'arbitrage écrasait le champ à chaque ouverture, et le document
+    // entier annonçait « Gains cumulés sur 30 ans ». On l'ignore ET on le
+    // purge du stock, sinon le poste reste contaminé indéfiniment.
+    if(s.dpv!==undefined){delete s.dpv;localStorage.setItem('sc2_settings',JSON.stringify(s));}
     Object.keys(s).forEach(k=>{const e=document.getElementById('s_'+k);if(e)e.value=s[k]});
   }catch(e){}
 }
