@@ -1497,7 +1497,10 @@ function preparePrint(noPrint=false){
   const commName=parts[0]||'';
   const commTel=parts[1]||'';
   const commEmail=parts[2]||'';
-  const typeEtude=(tab===2||tab===3)?"Ajout d'un système de stockage d'énergie":(batModel>0?'Système hybride PV + Batterie':'Installation Photovoltaïque');
+  // Titre de garde (Tony, 10/09/2026) : T1 annonce le photovoltaïque, T2 et T3
+  // le stockage. ⚠️ T1 porte un sélecteur batterie (t1_bat) : le titre y reste
+  // « photovoltaïque » même avec stockage, c'est la consigne.
+  const typeEtude=(tab===2||tab===3)?"Installation du système de stockage d'énergie":"Installation d'un système photovoltaïque";
   const kwcStr=kwc?fmtD(kwc)+' kWc':'';
 
   // ===== GARDE ENTREPRISE (sortie C) — template dédié, distinct de la garde
@@ -1810,8 +1813,9 @@ function preparePrint(noPrint=false){
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8mm">
+          ${(tab===2||tab===3)?'':`
           <div><div class="es-k">Installation remboursée</div>
-            <div class="es-v">${L.pb?L.pb+' ans':'> '+getS().dpv+' ans'} <small>${L.pb&&getS().dpv>L.pb?'puis '+(getS().dpv-L.pb)+' ans de gain net':(L.pb?'':'sur l\'horizon étudié')}</small></div></div>
+            <div class="es-v">${L.pb?L.pb+' ans':'> '+getS().dpv+' ans'} <small>${L.pb&&getS().dpv>L.pb?'puis '+(getS().dpv-L.pb)+' ans de gain net':(L.pb?'':'sur l\'horizon étudié')}</small></div></div>`}
           <div><div class="es-k">${(L.ecoDuree||0)>=0?'Gains cumulés':'Bilan cumulé'} · ${getS().dpv} ans</div>
             <div class="es-v">${fmt(Math.round(L.ecoDuree||0))} <small>XPF</small></div></div>
           <div><div class="es-k">Part des énergies renouvelables<br>dans votre consommation *</div>
@@ -1819,13 +1823,20 @@ function preparePrint(noPrint=false){
         </div>
         <div>
           <div class="es-k" style="margin-bottom:3.5mm">Les prochaines étapes</div>
-          <div class="es-etape"><b>1</b><span style="font-size:12px;font-weight:700">Validation de l'étude</span><span style="font-size:10px;color:#55585C;margin-left:auto">ensemble, aujourd'hui</span></div>
-          <div class="es-sep"></div>
-          <div class="es-etape"><b>2</b><span style="font-size:12px;font-weight:700">Démarches administratives</span><span style="font-size:10px;color:#55585C;margin-left:auto">environ 8 semaines</span></div>
-          <div class="es-sep"></div>
-          <div class="es-etape"><b>3</b><span style="font-size:12px;font-weight:700">Visite technique</span></div>
-          <div class="es-sep"></div>
-          <div class="es-etape"><b>4</b><span style="font-size:12px;font-weight:700">Pose et mise en service</span></div>
+          ${(function(){
+            // Les étapes se numérotent toutes seules : retirer une étape ne doit
+            // jamais laisser un trou dans la suite (1, 3, 4).
+            var etapes=[{t:"Validation de l'étude",d:"ensemble, aujourd'hui"}];
+            // T2 et T3 (dossiers de stockage) : pas de démarches administratives
+            // — décision Tony 10/09/2026. Elles restent sur T1.
+            if(tab!==2&&tab!==3) etapes.push({t:"Démarches administratives",d:"environ 8 semaines"});
+            etapes.push({t:"Visite technique"},{t:"Pose et mise en service"});
+            return etapes.map(function(e,i){
+              return (i?'<div class="es-sep"></div>':'')+
+                '<div class="es-etape"><b>'+(i+1)+'</b><span style="font-size:12px;font-weight:700">'+e.t+'</span>'+
+                (e.d?'<span style="font-size:10px;color:#55585C;margin-left:auto">'+e.d+'</span>':'')+'</div>';
+            }).join('');
+          })()}
         </div>
         <div style="font-size:8px;color:#55585C">* Selon vos consommations actuelles.<br>Solar Concept · ${commTel||'47 03 02'} · document estimatif non contractuel</div>
       </div>
