@@ -74,7 +74,7 @@ Dépendances : Plotly 2.27.0 (CDN)
   ⚠️ Le titre du graphe et le libellé du panneau d'impression annonçaient 20 ans : le premier
   parce que `syncRoiTitres()` n'était appelée qu'à l'impression, le second parce que le texte
   était figé. Les deux suivent maintenant `dpv` — contrôle : `node tests/coherence-horizon.js`.
-  ⛔ **L'horizon n'entre pas dans le `localStorage`** (09/09/2026). `loadSettings()` réécrit les
+  ⛔ **L'horizon n'entre pas dans le `localStorage`** (10/09/2026). `loadSettings()` réécrit les
   champs Paramètres depuis la clé `sc2_settings` à chaque ouverture : un `dpv` sauvegardé à 30
   avant l'arbitrage écrasait le `value="15"` du HTML, en silence, et tout le dossier annonçait
   « Gains cumulés sur 30 ans ». L'horizon est une **règle produit, pas une préférence de poste** :
