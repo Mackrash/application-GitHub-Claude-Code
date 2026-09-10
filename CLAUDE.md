@@ -143,6 +143,64 @@ Contrôle : **`node tests/remplissage-sections.js`** — il mesure le PDF réell
 modèle de pagination : la première version simulait l'empilement et validait à tort), sur huit
 combinaisons d'options en sorties A et B.
 
+### Impression — les pièges vérifiés (10/09/2026)
+
+Trois pièges constatés le même jour, chacun ayant produit un document faux livré à Tony. Ils ne
+relèvent pas du goût : ils sont mesurés, et le contrôle est `node tests/largeur-graphiques.js`.
+
+#### Un graphique Plotly fige sa largeur au moment du tracé
+
+Les graphiques sont dessinés pendant que `.results` est encore en `display:none`. Plotly mesure un
+conteneur de largeur nulle et retombe sur son **défaut de 700 px**, définitivement — 700 px dans un
+conteneur de 952 (écran) ou 794 (papier), avec une bande morte à droite. D'où `resizePlots()`,
+appelée après chaque passage de `#r1`…`#r4` en `display:block`.
+
+⚠️ Fixer une largeur **coupe l'`autosize`** : la hauteur demandée s'applique alors pour de bon et
+déborde du div (310 px, `overflow:hidden`), ce qui décapite la légende. Le conteneur doit suivre.
+
+#### ⛔ Une largeur d'impression se CALCULE, elle ne se mesure pas
+
+**Chrome déclenche `beforeprint` AVANT d'appliquer la mise en page d'impression.** Un
+`getBoundingClientRect()` pris dans ce handler renvoie la largeur **écran** : appliquée à une page
+de 794 px, elle a produit un graphique débordant qui n'affichait plus que **quatre mois sur douze**.
+
+La largeur papier vient de `largeurPapierPx()` — une sonde en millimètres (210 mm), dont la
+conversion ne dépend pas du média actif.
+
+#### ⛔ Un test d'impression ne force ni le média ni l'événement
+
+Le test qui a laissé passer le bug ci-dessus faisait `emulateMedia({media:'print'})` **puis**
+dispatchait `beforeprint` à la main : il mesurait la page papier là où Chrome mesure encore
+l'écran, et **certifiait un code cassé**. Un test d'impression appelle `page.pdf()` et laisse le
+navigateur suivre sa séquence.
+
+Corollaire : **un test de non-régression se vérifie en échec sur le bug qu'il vise.** S'il passe
+aussi bien avec le code fautif, il ne prouve rien.
+
+#### Le pied de page répété vit DANS la zone de contenu
+
+`body::after` est en `position:fixed`, et en impression son bloc conteneur est la **zone de
+contenu**, pas la feuille : il flotte 6 mm au-dessus du bas du texte, donc *dedans*. Tout élément
+qui descend jusqu'en bas de page le chevauche — constaté sur la note du tableau fiscal (pied
+776→785, note 777→797 dans le PDF).
+
+Le retrait se réserve **côté contenu** : `padding-bottom` sur `.lp-note`. ⚠️ Une **marge** ne sert à
+rien, Chrome tronque les marges en fin de fragment et les ignore pour la pagination.
+⛔ **Ne pas tenter un `bottom` négatif** pour envoyer le pied dans la marge : Chrome le repositionne
+alors **en haut de la feuille**, en travers du bandeau orange.
+
+### « Économies sur X ans » — jamais un cumul net (10/09/2026)
+
+> **Décision Tony : « si le monsieur économise 72 000 par an, économies sur 15 ans c'est
+> 15 × 72 000 ».**
+
+La page « L'essentiel » et les deux récapitulatifs affichent `ecoAn × dpv`. **Ni cumul net, ni
+chiffre négatif sur un document client** : l'ancien « Bilan cumulé » retranchait l'investissement et
+sortait `−55 426 XPF` en gros sur la première page d'un dossier réel.
+
+⛔ Ne pas « améliorer » la formule : `eco15` (bénéfices annuels nets de fiscalité et de remplacement
+batterie) a été essayé, il est plus exact et **ce n'est pas ce qui est demandé**.
+
 ### Sorties B — Juillet 2026
 - Onglets 2 et 3 : deux premières pages identiques à la sortie A (garde + « L'essentiel »)
 - Onglet 3 (ajout sur PV existant) : libellés adaptés — « injection constatée » et non production, pas de panneaux, bloc d'autoconsommation directe masqué car nul
@@ -151,6 +209,8 @@ combinaisons d'options en sorties A et B.
 - Sortie B ramenée de 4 à 3 pages
 - **Onglet 4 (sortie C) volontairement hors périmètre** : rendu d'origine conservé
 - **Un dossier de stockage ne parle pas comme un dossier PV** (10/09/2026, Tony) :
+  - **« Avec la batterie », pas « Avec le PV »** sur la barre de facture de la page
+    « L'essentiel » (10/09/2026). T1 conserve « Avec le PV ».
   - **Titre de garde** — T1 : « Installation d'un système photovoltaïque » ; T2 et T3 :
     « Installation du système de stockage d'énergie ». ⚠️ T1 porte un sélecteur batterie
     (`t1_bat`) et garde ce titre même avec stockage : la variante « Système hybride PV +
