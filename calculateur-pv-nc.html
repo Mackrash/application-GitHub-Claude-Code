@@ -1807,7 +1807,7 @@ function preparePrint(noPrint=false){
             <div class="es-bar" style="flex:1;background:#A8ACB1">${fmt(Math.round(L.fSansAn))} XPF</div>
           </div>
           <div style="display:flex;align-items:center;gap:3mm">
-            <span class="es-k" style="width:19mm;text-align:right;letter-spacing:.08em">Avec le PV</span>
+            <span class="es-k" style="width:19mm;text-align:right;letter-spacing:.08em">${(tab===2||tab===3)?'Avec la batterie':'Avec le PV'}</span>
             <div class="es-bar" style="width:${largeurApres}%;background:#F07020">${fmt(Math.round(L.fAvecAn))}</div>
             <span style="font-size:10.5px;color:#55585C;white-space:nowrap">XPF/an — soit <b style="color:#333">−${baisse}&nbsp;%</b></span>
           </div>
@@ -1816,8 +1816,8 @@ function preparePrint(noPrint=false){
           ${(tab===2||tab===3)?'':`
           <div><div class="es-k">Installation remboursée</div>
             <div class="es-v">${L.pb?L.pb+' ans':'> '+getS().dpv+' ans'} <small>${L.pb&&getS().dpv>L.pb?'puis '+(getS().dpv-L.pb)+' ans de gain net':(L.pb?'':'sur l\'horizon étudié')}</small></div></div>`}
-          <div><div class="es-k">${(L.ecoDuree||0)>=0?'Gains cumulés':'Bilan cumulé'} · ${getS().dpv} ans</div>
-            <div class="es-v">${fmt(Math.round(L.ecoDuree||0))} <small>XPF</small></div></div>
+          <div><div class="es-k">Économies · ${getS().dpv} ans</div>
+            <div class="es-v">${fmt(Math.round((L.ecoAn||0)*getS().dpv))} <small>XPF</small></div></div>
           <div><div class="es-k">Part des énergies renouvelables<br>dans votre consommation *</div>
             <div class="es-v">${couvert} % <small>${Math.round(L.achatAn)>0?fmt(Math.round(L.achatAn))+' kWh acheté au réseau':'achat au réseau quasi nul'}</small></div></div>
         </div>
@@ -1880,7 +1880,7 @@ function preparePrint(noPrint=false){
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>`:`
         <div class="lp-kpi"><div class="lp-kpi-v">${fmt(devis)} F</div><div class="lp-kpi-l">Investissement TTC</div></div>
         <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn))} F</div><div class="lp-kpi-l">Économie annuelle estimée</div></div>
-        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoDuree||eco15))} F</div><div class="lp-kpi-l">Gains cumulés sur ${getS().dpv} ans</div></div>`;
+        <div class="lp-kpi green"><div class="lp-kpi-v">${fmt(Math.round(ecoAn*getS().dpv))} F</div><div class="lp-kpi-l">Économies sur ${getS().dpv} ans</div></div>`;
 
   // Récapitulatif reproduit d'après la maquette validée : fiche technique,
   // puis l'investissement, puis les retours. Ni cartes vertes ni horizon figé.
@@ -1904,7 +1904,7 @@ function preparePrint(noPrint=false){
       <div class="lp-retours">
         <div><span>Économie annuelle</span><b class="or">${fmt(Math.round(ecoAn))} XPF</b></div>
         <div><span>Installation remboursée</span><b>${pb?pb+' ans':'> '+s.dpv+' ans'}</b></div>
-        <div><span>${(ecoDuree||eco15)>=0?'Gains cumulés':'Bilan cumulé'} sur ${s.dpv} ans</span><b>${fmt(Math.round(ecoDuree||eco15))} XPF</b></div>
+        <div><span>Économies sur ${s.dpv} ans</span><b>${fmt(Math.round(ecoAn*s.dpv))} XPF</b></div>
       </div>`;
 
   // Section ROI : tranche par tranche (particuliers) — sinon rien (pro garde son ROI dans les cartes)
