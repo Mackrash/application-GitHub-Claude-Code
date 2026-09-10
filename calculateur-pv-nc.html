@@ -2526,6 +2526,19 @@ function plotPile(div,dA,bA,reinj,achat){
 }
 
 // ===== AVANT / APRÈS — Courbes spline avec zone économie =====
+// Plotly fige la largeur de son SVG au moment du tracé. Or les graphiques sont
+// dessinés pendant que `.results` est encore `display:none` : le conteneur mesure
+// 0, Plotly retombe sur son défaut de 700 px et n'en bouge plus jamais — le
+// graphique restait donc à 700 px dans un conteneur de 952 (écran) ou 794 (print).
+// D'où ce redimensionnement, une fois les résultats réellement visibles.
+function resizePlots(rootId){
+  const root=document.getElementById(rootId);
+  if(!root||!window.Plotly)return;
+  root.querySelectorAll('.js-plotly-plot').forEach(function(d){
+    try{Plotly.Plots.resize(d);}catch(e){}
+  });
+}
+
 function plotAvantApres(div,fSansM,fAvecM,lblAvant,lblApres){
   const la=lblAvant||'Avant';
   const lp=lblApres||'Après';
@@ -2686,6 +2699,7 @@ function calcT1(){
   renderBilanMensuel('t1_bilan',{prod,besoins:consoM,autoconso:directAutoM,batInj:batAutoM,surplus:reinjM,reseau:achatM},rev);
 
   document.getElementById('r1').style.display='block';
+  resizePlots('r1');
   document.getElementById('r1').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -2824,6 +2838,7 @@ function calcT2(){
   renderDedieCard('t2_dedie_card',kwcDedie>0?{nb:panBatNb,wc:panBatWc,kwc:kwcDedie,bCDedieAn,part:partDedie}:null);
 
   document.getElementById('r2').style.display='block';
+  resizePlots('r2');
   document.getElementById('r2').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(err){
     const er=document.getElementById('r2');
@@ -2967,6 +2982,7 @@ function calcT3(){
   renderBilanMensuel('t3_bilan',{prod:null,besoins:null,autoconso:null,batInj:bDischM,surplus:newInjM,reseau:newAchatM},rev);
 
   document.getElementById('r3').style.display='block';
+  resizePlots('r3');
   document.getElementById('r3').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -3373,6 +3389,7 @@ function calcT4(){
     ondList};
 
   document.getElementById('r4').style.display='block';
+  resizePlots('r4');
   document.getElementById('r4').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -3761,7 +3778,16 @@ window.onbeforeprint=function(){
   var hFill=bigCharts.length<=1?380:(bigCharts.length===2?300:240);
   bigCharts.forEach(function(el){
     if(!el.hasAttribute('data-h0'))el.setAttribute('data-h0',Math.round(el._fullLayout.height));
-    try{Plotly.relayout(el,{height:hFill});}catch(e){}
+    // La hauteur seule ne suffisait pas : la largeur restait figée à la valeur
+    // du tracé (700 px par défaut, cf. resizePlots). On la recale sur le
+    // conteneur, mesuré ici en pleine mise en page d'impression.
+    var w=Math.round(el.getBoundingClientRect().width)||0;
+    // Fixer la largeur coupe l'autosize de Plotly : la hauteur demandée
+    // s'applique alors pour de bon, et débordait du div (310px, overflow
+    // hidden) — la légende disparaissait sous le bord. Le conteneur suit donc.
+    if(!el.hasAttribute('data-sh0'))el.setAttribute('data-sh0',el.style.height||'');
+    el.style.height=hFill+'px';
+    try{Plotly.relayout(el,w>0?{height:hFill,width:w}:{height:hFill});}catch(e){}
   });
   // Injecte les titres de sections
   setPrintLabels();
@@ -3789,7 +3815,10 @@ window.onafterprint=function(){
   // Restaure les hauteurs d'origine des graphes densifiés
   document.querySelectorAll('[data-h0]').forEach(function(el){
     var h0=parseInt(el.getAttribute('data-h0'),10);
-    if(h0&&el._fullLayout){try{Plotly.relayout(el,{height:h0});}catch(e){}}
+    // La largeur figée pour l'impression (794 px) doit repartir : sans ce
+    // relâchement, le graphique resterait au format papier sur l'écran.
+    if(el.hasAttribute('data-sh0')){el.style.height=el.getAttribute('data-sh0');el.removeAttribute('data-sh0');}
+    if(h0&&el._fullLayout){try{Plotly.relayout(el,{height:h0,width:null});Plotly.Plots.resize(el);}catch(e){}}
     el.removeAttribute('data-h0');
   });
 };
