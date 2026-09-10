@@ -2531,6 +2531,21 @@ function plotPile(div,dA,bA,reinj,achat){
 // 0, Plotly retombe sur son défaut de 700 px et n'en bouge plus jamais — le
 // graphique restait donc à 700 px dans un conteneur de 952 (écran) ou 794 (print).
 // D'où ce redimensionnement, une fois les résultats réellement visibles.
+// Largeur utile d'une page A4 en pixels CSS, mesurée par une sonde en
+// millimètres : la conversion mm → px ne dépend pas du média actif, donc le
+// résultat est le même qu'on soit en écran ou en impression. C'est ce qui
+// permet de dimensionner les graphiques depuis `beforeprint`, moment où la
+// mise en page d'impression n'est pas encore appliquée. `@media print` pose
+// `body{width:210mm}` : la page fait donc 210 mm de large.
+function largeurPapierPx(){
+  const sonde=document.createElement('div');
+  sonde.style.cssText='position:absolute;visibility:hidden;width:210mm;height:0';
+  document.body.appendChild(sonde);
+  const w=Math.round(sonde.getBoundingClientRect().width);
+  sonde.remove();
+  return w||794;
+}
+
 function resizePlots(rootId){
   const root=document.getElementById(rootId);
   if(!root||!window.Plotly)return;
@@ -3781,7 +3796,12 @@ window.onbeforeprint=function(){
     // La hauteur seule ne suffisait pas : la largeur restait figée à la valeur
     // du tracé (700 px par défaut, cf. resizePlots). On la recale sur le
     // conteneur, mesuré ici en pleine mise en page d'impression.
-    var w=Math.round(el.getBoundingClientRect().width)||0;
+    // ⚠️ Ne JAMAIS mesurer le conteneur ici : Chrome déclenche beforeprint
+    // AVANT d'appliquer la mise en page d'impression. getBoundingClientRect
+    // renvoie donc la largeur ÉCRAN (1331 px), qu'on appliquait à une page de
+    // 794 — le graphique débordait et ne montrait plus que quatre mois.
+    // La largeur papier se calcule, elle ne se mesure pas : largeurPapierPx().
+    var w=largeurPapierPx();
     // Fixer la largeur coupe l'autosize de Plotly : la hauteur demandée
     // s'applique alors pour de bon, et débordait du div (310px, overflow
     // hidden) — la légende disparaissait sous le bord. Le conteneur suit donc.
@@ -3818,7 +3838,22 @@ window.onafterprint=function(){
     // La largeur figée pour l'impression (794 px) doit repartir : sans ce
     // relâchement, le graphique resterait au format papier sur l'écran.
     if(el.hasAttribute('data-sh0')){el.style.height=el.getAttribute('data-sh0');el.removeAttribute('data-sh0');}
-    if(h0&&el._fullLayout){try{Plotly.relayout(el,{height:h0,width:null});Plotly.Plots.resize(el);}catch(e){}}
+    // width:null rend la main à l'autosize, mais Plotly repart alors de son
+    // défaut 700px : on lui redonne la largeur écran explicitement, sinon le
+    // graphique reste rabougri après un retour d'impression. Le second passage
+    // différé couvre le cas où la mise en page écran n'est pas encore rétablie.
+    if(h0&&el._fullLayout){
+      try{
+        var wEcran=Math.round(el.getBoundingClientRect().width)||0;
+        Plotly.relayout(el,wEcran>0?{height:h0,width:wEcran}:{height:h0,width:null});
+        setTimeout(function(){
+          try{
+            var w2=Math.round(el.getBoundingClientRect().width)||0;
+            if(w2>0&&Math.abs(w2-(el._fullLayout&&el._fullLayout.width||0))>1)Plotly.relayout(el,{width:w2});
+          }catch(e){}
+        },150);
+      }catch(e){}
+    }
     el.removeAttribute('data-h0');
   });
 };
