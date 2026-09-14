@@ -1,5 +1,20 @@
 # CLAUDE.md — Calculateur PV NC (Solar Concept)
 
+## 📓 RÈGLE DURE — les fiches de session vivent en local, dans le dossier de travail
+
+> **Tony, 11/09/2026.** Née d'une fiche écrite dans un worktree secondaire, introuvable dans le
+> dossier où Tony la cherchait.
+
+Toute fiche de session s'écrit **en local, dans le dossier de travail du projet, sous `Sessions/`**
+— celui que Tony ouvre. Jamais seulement dans un worktree, une branche à part ou un dossier
+secondaire : si le travail s'est fait ailleurs, la fiche est **recopiée** dans le `Sessions/` du
+dossier de travail avant d'annoncer la fin de session.
+
+⛔ **Rien sur Internet** : les fiches ne se commitent pas et ne partent jamais sur GitHub.
+`Sessions/` est dans le `.gitignore` de chaque dépôt. Tony : « mes fiches de session sont sur
+mon poste, je veux rien sur internet ».
+
+
 ## 👁️ RÈGLE DURE — tout visuel s'OUVRE dans le navigateur
 
 > **Tony, 25/08/2026 : « je suis fatigué de répéter ça ».**
@@ -391,3 +406,20 @@ Ces images contiennent les specs (capacité, puissance, DoD, garantie) utiles po
 - Fond sombre = anthracite `#333333`, jamais noir pur
 - Texte courant : anthracite `#333333` sur fond blanc
 - Ne jamais déformer ou recolorer le logo
+
+## 🧹 `/tmp` est en MÉMOIRE — le nettoyer régulièrement
+
+> Règle dure — **Tony, 15/09/2026**. Recopiée dans **tous** les `CLAUDE.md` d'AppIA par choix
+> de robustesse. Règle complète : `~/.claude/CLAUDE.md`.
+
+`/tmp` est un **tmpfs** pris sur la RAM : saturé, il fait échouer **toutes** les commandes du
+shell (`exit 1` sans sortie, même `echo ok`). **À chaque fin de session**, et dès que
+`df -h /tmp` dépasse 50 % :
+
+```bash
+find /tmp/claude-1000 -mindepth 1 -maxdepth 1 -mtime +1 -exec rm -rf {} +
+rm -rf /tmp/pytest-of-tony-linux
+find /tmp -maxdepth 1 -name '.com.google.Chrome.*' -mtime +1 -exec rm -rf {} +
+```
+
+⛔ Jamais le dossier de la session en cours (d'où le `-mtime +1`).
