@@ -423,3 +423,17 @@ find /tmp -maxdepth 1 -name '.com.google.Chrome.*' -mtime +1 -exec rm -rf {} +
 ```
 
 ⛔ Jamais le dossier de la session en cours (d'où le `-mtime +1`).
+
+## 📘 RÈGLE DURE — tout mode d'emploi se range dans `Solar Concept/NEXIA/Manual/`
+
+> **Tony, 16/09/2026.** Recopiée dans **tous** les `CLAUDE.md` d'AppIA par choix de robustesse.
+
+Tout mode d'emploi produit pour l'équipe (guide utilisateur, pas à pas, notice interne, avec ou
+sans captures) se dépose dans **`/home/tony-linux/Documents/Synology/Solar Concept/NEXIA/Manual/<Outil>/`**
+— HTML **et** PDF, captures dans un sous-dossier `captures/`.
+
+- ⛔ Jamais **seulement** dans le dépôt ou le `docs/` du projet : une copie dans le dépôt est permise,
+  la **référence** est dans `Manual/`.
+- Chaque nouveau mode d'emploi (ou nouvelle version) **ajoute ou met à jour sa ligne** dans
+  `Manual/Liste des modes d'emploi.md`.
+- Il s'ouvre chez Tony dès sa création (règle « tout visuel s'ouvre »). Police 20 px à l'écran, 12 pt à l'impression.
