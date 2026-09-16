@@ -437,3 +437,26 @@ sans captures) se dépose dans **`/home/tony-linux/Documents/Synology/Solar Conc
 - Chaque nouveau mode d'emploi (ou nouvelle version) **ajoute ou met à jour sa ligne** dans
   `Manual/Liste des modes d'emploi.md`.
 - Il s'ouvre chez Tony dès sa création (règle « tout visuel s'ouvre »). Police 20 px à l'écran, 12 pt à l'impression.
+
+## ⛔⛔ RÈGLE DURE — une fenêtre ne s'ouvre JAMAIS sur l'écran de travail de Tony
+
+> **Tony, 16/09/2026 : « ouverture des fenêtres ne se fait pas sur l'écran actif. Jamais, sinon
+> quand j'écris ça coupe. »**
+
+Une fenêtre qui surgit sur l'écran où Tony écrit lui prend le focus et lui coupe sa saisie.
+
+**Tout aperçu passe par le script prévu pour ça** — il place la fenêtre sur l'**écran du portable**
+(`eDP-1`) grâce à une règle KWin, avec un profil Chrome séparé et l'environnement nettoyé :
+
+```bash
+~/bin/apercu-claude <fichier ou URL>      # maquette, PDF, page, dossier
+```
+
+- ⛔ **Plus aucun `xdg-open`, `okular`, `dolphin` ou navigateur lancé directement** : ils
+  atterrissent sur l'écran de travail.
+- ⛔ **Ne jamais redimensionner la fenêtre de travail de Tony.**
+- 💡 Détail technique et diagnostic (Wayland ignore `--class` sans `--ozone-platform=x11`) :
+  `~/.claude/CLAUDE.md`, section « Et sur QUEL ÉCRAN ».
+
+⚠️ La règle « tout visuel s'ouvre » **reste entière** : le livrable est produit ET montré. C'est
+**l'écran de destination** qui change, jamais l'obligation de montrer.
